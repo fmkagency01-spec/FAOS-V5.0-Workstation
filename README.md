@@ -60,7 +60,7 @@ After Render provisions the service, `GET https://<service>.onrender.com/` must 
 ## Local development
 
 ```bash
-cp .env.example .env.local
+cp .env.local.example .env.local
 # put your OpenRouter key in .env.local as OPENROUTER_API_KEY=...
 
 npm install

@@ -19,6 +19,8 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.local.example
+!.env.production.example
 !frontend/.env.production.example
 
 # debug / logs

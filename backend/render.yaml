@@ -5,6 +5,7 @@ services:
     runtime: python
     rootDir: backend
     plan: free
+    autoDeploy: true
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
@@ -13,6 +14,8 @@ services:
         value: "3.12.0"
       - key: CORS_ALLOW_ALL
         value: "true"
+      - key: CORS_ALLOW_ORIGINS
+        value: https://faos-v5-0-workstation.vercel.app
       - key: OPENROUTER_API_KEY
         sync: false
       - key: TAC_CENTRAL_CORE_URL

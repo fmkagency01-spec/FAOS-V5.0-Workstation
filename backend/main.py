@@ -76,11 +76,11 @@ async def strip_trailing_slash(request: Request, call_next):
 
 
 @app.get("/")
-async def root_telemetry_verification() -> Dict[str, Any]:
+async def root_health() -> Dict[str, Any]:
     """Default root health handler for Render uptime / browser probes."""
     return {
         "status": "active",
-        "message": "FAOS v5.0 Backend running on Render",
+        "message": "FAOS v5.0 Backend serving on Render cluster",
         "system": "FAOS v5.0 Central Framework",
         "engine": "Aigorithm System Core Active",
         "health_check": "100% Functional",
@@ -94,7 +94,7 @@ async def root_telemetry_verification() -> Dict[str, Any]:
 
 @app.get("/health")
 async def health() -> Dict[str, Any]:
-    return await root_telemetry_verification()
+    return await root_health()
 
 
 @app.get("/api/v5/agent-trigger")
