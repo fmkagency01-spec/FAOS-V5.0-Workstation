@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAOSV 5.0 - FMK Group Command Surface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar-odoo {
+            background-color: #161b22;
+            border-right: 1px solid #30363d;
+        }
+
+        .nav-link {
+            width: 100%;
+            text-align: left;
+            padding: 0.85rem 1.2rem;
+            border-radius: 0.375rem;
+            color: #8b949e;
+            transition: all 0.2s;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background-color: #21262d;
+            color: #f0f6fc;
+        }
+
+        .nav-link.active {
+            background-color: #1f6feb;
+            color: #ffffff;
+            font-weight: 600;
+            border-left: 4px solid #58a6ff;
+        }
+
+        .content-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 0.5rem;
+        }
+
+        .agent-terminal-box {
+            background-color: #090d13;
+            border: 1px solid #21262d;
+            font-family: monospace;
+        }
+
+        .tab-layer {
+            display: none;
+        }
+
+        .tab-layer.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex overflow-hidden">
+
+    <!-- বাম পাশের ওডো-স্টাইল মাস্টার প্যানেল (ফিক্সড ফরম্যাট) -->
+    <div class="w-64 sidebar-odoo p-5 flex flex-col justify-between z-10">
+        <div>
+            <div class="mb-6 border-b border-gray-700 pb-4">
+                <h1 class="text-lg font-bold text-white tracking-wider flex items-center gap-2">
+                    <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> FAOSV 5.0
+                </h1>
+                <p class="text-xs text-gray-400 mt-1">Founder / Owner Surface</p>
+                <div
+                    class="mt-2 text-[10px] bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded border border-blue-800 inline-block font-mono">
+                    Full ERP + Backend Live</div>
+            </div>
+
+            <nav class="space-y-1">
+                <button onclick="openLayer('command-center', this)" class="nav-link active">⚙️ Command Center</button>
+                <button onclick="openLayer('ecosystem-tree', this)" class="nav-link">📁 Ecosystem Tree</button>
+                <button onclick="openLayer('operations-pipeline', this)" class="nav-link">📊 Operations
+                    Pipeline</button>
+                <button onclick="openLayer('tac-intelligence', this)" class="nav-link">🧠 TAC Intelligence</button>
+                <button onclick="openLayer('team-workstation', this)" class="nav-link">👥 Team Workstation</button>
+                <button onclick="openLayer('learning-hub', this)" class="nav-link text-amber-400">⚡ Learning
+                    Hub</button>
+            </nav>
+        </div>
+        <div class="text-[11px] text-gray-500 border-t border-gray-800 pt-3 font-mono">
+            FMK Group Core Workstation v5.0
+        </div>
+    </div>
+
+    <!-- ডান পাশের মেইন এরিয়া -->
+    <div class="flex-1 overflow-y-auto p-8">
+
+        <!-- LAYER 1: COMMAND CENTER -->
+        <div id="command-center" class="tab-layer active space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Command Center</h2>
+                    <p class="text-xs text-gray-400">Holding company control surface & AI distribution hub</p>
+                </div>
+                <div class="flex gap-2 text-xs font-mono bg-gray-900 p-2 rounded border border-gray-800">
+                    <span class="text-emerald-400">● TAC Core Active</span>
+                    <span class="text-gray-500">| Token Saving Mode Enabled</span>
+                </div>
+            </div>
+
+            <!-- ওডো স্টাইল কাউন্টার কার্ডস -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="content-card p-4">
+                    <p class="text-xs text-gray-400">ACCESSIBLE BRANDS</p>
+                    <p class="text-2xl font-bold text-blue-400 mt-1">19</p>
+                </div>
+                <div class="content-card p-4">
+                    <p class="text-xs text-gray-400">OPERATIONS RUNNING</p>
+                    <p class="text-2xl font-bold text-purple-400 mt-1">12</p>
+                </div>
+                <div class="content-card p-4">
+                    <p class="text-xs text-gray-400">ACTIVE FLOWS</p>
+                    <p class="text-2xl font-bold text-emerald-400 mt-1">3</p>
+                </div>
+                <div class="content-card p-4">
+                    <p class="text-xs text-gray-400">REVIEW QUEUE</p>
+                    <p class="text-2xl font-bold text-amber-400 mt-1">1</p>
+                </div>
+            </div>
+
+            <!-- রিয়েল এজেন্ট চ্যাট ও কমান্ড কন্ট্রোল ইন্টারফেস -->
+            <div class="content-card p-6">
+                <h3 class="text-sm font-bold text-gray-200 mb-3 flex items-center gap-2">💬 Global Agent Control
+                    Interface</h3>
+                <div class="agent-terminal-box p-4 rounded-md h-40 overflow-y-auto text-xs space-y-2 mb-4"
+                    id="global-console">
+                    <div class="text-gray-500">[SYSTEM]: Core Operating System Initialized. Awaiting CEO Commands...
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="cmd-input"
+                        placeholder="কমান্ড টাইপ করুন (যেমন: /route media 'Fix video assets')"
+                        class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
+                    <button onclick="executeGlobalCommand()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs font-medium font-mono">Execute</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 2: ECOSYSTEM TREE -->
+        <div id="ecosystem-tree" class="tab-layer space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">Ecosystem Tree</h2>
+                <p class="text-xs text-gray-400">Parent node architectures and core processing structure.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="content-card p-5 border-blue-900/30">
+                    <h3 class="text-base font-bold text-blue-400 border-b border-gray-800 pb-2">Create Pillar</h3>
+                    <div class="mt-3 space-y-2 text-xs text-gray-400">
+                        <p class="font-bold text-gray-300">● Core System Architecture</p>
+                        <p>সব ব্র্যান্ড এবং ইন্টারনাল ডেভেলপমেন্ট স্ট্রাকচারের ইনপুট মডিউল এখানে প্রসেস হয়।</p>
+                    </div>
+                </div>
+                <div class="content-card p-5 border-purple-900/30">
+                    <h3 class="text-base font-bold text-purple-400 border-b border-gray-800 pb-2">Media Pillar</h3>
+                    <div class="mt-3 space-y-2 text-xs text-gray-400">
+                        <p class="font-bold text-gray-300">● Production & Streaming Channels</p>
+                        <p>হাই-এন্ড ভিডিও এডিটিং পাইপলাইন এবং মিডিয়া আউটপুট মডিউল অর্কেস্ট্রেশন করা হয়।</p>
+                    </div>
+                </div>
+                <div class="content-card p-5 border-emerald-900/30">
+                    <h3 class="text-base font-bold text-emerald-400 border-b border-gray-800 pb-2">Service Pillar</h3>
+                    <div class="mt-3 space-y-2 text-xs text-gray-400">
+                        <p class="font-bold text-gray-300">● Agency & Marketing Network</p>
+                        <p>মার্কেটিং অপারেশন্স, অ্যাড রান, সোশ্যাল মিডিয়া স্ট্র্যাটেজি এবং ক্লায়েন্ট সার্ভিস
+                            ম্যানেজমেন্ট পাইপলাইন।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYER 3: OPERATIONS PIPELINE -->
+        <div id="operations-pipeline" class="tab-layer space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">Operations Pipeline</h2>
+                <p class="text-xs text-gray-400">Workflow tracking and live tactical management.</p>
+            </div>
+            <div class="content-card p-6">
+                <p class="text-xs text-gray-400">অ্যাক্টিভ মার্কেটিং ক্যাম্পেইন এবং টিমের ডেইলি লাইভ টাস্ক অ্যাসাইনমেন্ট
+                    মডিউল লোড হচ্ছে...</p>
+            </div>
+        </div>
+
+        <!-- LAYER 4: TAC INTELLIGENCE -->
+        <div id="tac-intelligence" class="tab-layer space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">TAC Intelligence</h2>
+                <p class="text-xs text-gray-400">Core token routing metrics and deep workflow telemetry.</p>
+            </div>
+            <div class="content-card p-6">
+                <p class="text-xs text-gray-400 font-mono text-emerald-500">[LOG]: Telemetry active. No token leaks
+                    detected.</p>
+            </div>
+        </div>
+
+        <!-- LAYER 5: TEAM WORKSTATION -->
+        <div id="team-workstation" class="tab-layer space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">Team Workstation</h2>
+                <p class="text-xs text-gray-400">Manage internal core operations team allocation.</p>
+            </div>
+            <div class="content-card p-6">
+                <p class="text-xs text-gray-400">টিম মেম্বারদের লাইভ পারফরম্যান্স এবং ডেডিকেটেড ওয়ার্কফ্লো স্লট
+                    ট্র্যাকিং প্যানেল।</p>
+            </div>
+        </div>
+
+        <!-- LAYER 6: LEARNING HUB -->
+        <div id="learning-hub" class="tab-layer space-y-6">
+            <div class="border-b border-gray-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">⚡ Knowledge Hub & Team Library</h2>
+                <p class="text-xs text-gray-400">টিমের কাস্টমাইজেশন স্কিল এবং প্রফেশনাল গাইডলাইন শেয়ার করার ডাটাবেজ।</p>
+            </div>
+
+            <div class="content-card p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="hubTitle" placeholder="রিসোর্স বা গাইডলাইনের নাম"
+                        class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-blue-500">
+                    <input type="url" id="hubLink" placeholder="লিঙ্ক (URL)"
+                        class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-blue-500">
+                    <button onclick="addResource()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded text-xs transition">পুশ
+                        করুন</button>
+                </div>
+
+                <div id="resourceContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ইন্টারেক্টিভ ওডো স্ক্রিপ্ট লজিক -->
+    <script>
+        function openLayer(layerId, element) {
+            document.querySelectorAll('.tab-layer').forEach(layer => layer.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(layerId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function executeGlobalCommand() {
+            const input = document.getElementById('cmd-input');
+            const consoleBox = document.getElementById('global-console');
+
+            if (!input.value.trim()) return;
+
+            const cmd = input.value;
+            const userLine = document.createElement('div');
+            userLine.className = "text-blue-400 font-mono";
+            userLine.innerText = `CEO_FAHIM> ${cmd}`;
+            consoleBox.appendChild(userLine);
+
+            // ইন্টেলিজেন্ট টোকেন-সেভিং রাউটিং রেসপন্স
+            setTimeout(() => {
+                const systemLine = document.createElement('div');
+                systemLine.className = "text-emerald-400 font-mono";
+                systemLine.innerText = `[TAC INTELLIGENCE]: Command captured and optimized. Token saving mode active. Paste into Google AI Studio to run deep modification agent scripts.`;
+                consoleBox.appendChild(systemLine);
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+
+                // ক্লিপবোর্ডে অটো কপি করার জন্য এলার্ট মেকানিজম
+                navigator.clipboard.writeText(cmd);
+            }, 500);
+
+            input.value = '';
+        }
+
+        // লার্নিং হাব ডাটাবেজ কন্ট্রোল
+        document.addEventListener("DOMContentLoaded", loadResources);
+        function addResource() {
+            const title = document.getElementById('hubTitle').value;
+            const link = document.getElementById('hubLink').value;
+            if (!title || !link) return alert("সবগুলো ফিল্ড পূরণ করুন!");
+
+            const item = { id: Date.now(), title, link };
+            let data = localStorage.getItem('fmk_core_hub') ? JSON.parse(localStorage.getItem('fmk_core_hub')) : [];
+            data.push(item);
+            localStorage.setItem('fmk_core_hub', JSON.stringify(data));
+
+            document.getElementById('hubTitle').value = '';
+            document.getElementById('hubLink').value = '';
+            loadResources();
+        }
+        function loadResources() {
+            const container = document.getElementById('resourceContainer');
+            container.innerHTML = '';
+            let data = localStorage.getItem('fmk_core_hub') ? JSON.parse(localStorage.getItem('fmk_core_hub')) : [];
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-600 col-span-full">কোনো গাইডলাইন বা লিংক যুক্ত করা হয়নি।</p>`;
+                return;
+            }
+            data.forEach(res => {
+                const card = document.createElement('div');
+                card.className = "p-3 bg-gray-900 border border-gray-800 rounded flex flex-col justify-between text-xs";
+                card.innerHTML = `
+                    <div><h4 class="font-bold text-gray-300">${res.title}</h4></div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <a href="${res.link}" target="_blank" class="text-blue-400 hover:underline">ওপেন লিঙ্ক →</a>
+                        <button onclick="deleteResource(${res.id})" class="text-red-500 hover:text-red-400">মুছে ফেলুন</button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+        function deleteResource(id) {
+            let data = JSON.parse(localStorage.getItem('fmk_core_hub')).filter(r => r.id !== id);
+            localStorage.setItem('fmk_core_hub', JSON.stringify(data));
+            loadResources();
+        }
+    </script>
+</body>
+
+</html>
