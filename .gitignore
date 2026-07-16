@@ -3,6 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # next.js
 .next/
 out/

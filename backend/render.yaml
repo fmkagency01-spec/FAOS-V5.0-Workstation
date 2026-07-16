@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: faos-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: TAC_CENTRAL_CORE_URL
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12.0"

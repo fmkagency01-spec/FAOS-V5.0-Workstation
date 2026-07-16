@@ -6,11 +6,47 @@ import {
   triggerGatekeeperProtocol,
   type CreatePillarPayload,
 } from "@/lib/create-pillar";
+import { getFaosBackendBaseUrl } from "@/lib/backend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+async function proxyToRender(request: NextRequest, method: "GET" | "POST") {
+  const base = getFaosBackendBaseUrl();
+  if (!base) return null;
+
+  const target = `${base}/api/v5/create-pillar`;
+  const init: RequestInit = {
+    method,
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  };
+  if (method === "POST") {
+    init.body = await request.text();
+  }
+
+  const upstream = await fetch(target, init);
+  const text = await upstream.text();
+  return new NextResponse(text, {
+    status: upstream.status,
+    headers: {
+      "Content-Type": upstream.headers.get("Content-Type") || "application/json",
+    },
+  });
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const proxied = await proxyToRender(request, "GET");
+    if (proxied) return proxied;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Render proxy failed";
+    return NextResponse.json(
+      { error: `Backend proxy error: ${message}` },
+      { status: 502 }
+    );
+  }
+
   const pillar = getCreatePillarNamespace();
   return NextResponse.json({
     ok: true,
@@ -26,9 +62,38 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Clone-safe: read body once for local processing if proxy unavailable.
+  const raw = await request.text();
+
+  const base = getFaosBackendBaseUrl();
+  if (base) {
+    try {
+      const upstream = await fetch(`${base}/api/v5/create-pillar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: raw,
+        cache: "no-store",
+      });
+      const text = await upstream.text();
+      return new NextResponse(text, {
+        status: upstream.status,
+        headers: {
+          "Content-Type":
+            upstream.headers.get("Content-Type") || "application/json",
+        },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Render proxy failed";
+      return NextResponse.json(
+        { error: `Backend proxy error: ${message}` },
+        { status: 502 }
+      );
+    }
+  }
+
   let body: CreatePillarPayload & { action?: string };
   try {
-    body = (await request.json()) as CreatePillarPayload & { action?: string };
+    body = JSON.parse(raw) as CreatePillarPayload & { action?: string };
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }

@@ -266,10 +266,12 @@ export default function FaosDashboard() {
               <h3 className="text-lg font-bold text-white">FMK Create Pillar Manufacturing Hub</h3>
               <p className="text-sm text-[#94a3b8]">
                 Namespace <code className="text-amber-300">fmk_create_pillar_retail_core</code> under FMK Group LTD.
-                Isolated agents: FMK Week, MK Clothing, MK Kitchen, FMK Shoes (Kadam / Pothik / The Posh Pa).
+                Isolated agents: FMK WIG, MK Clothing, MK Kitchen, FMK Shoes (Kadam / Pothik / The Posh Pa).
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">FMK Week — FMCG / Supply</div>
+                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">
+                  FMK WIG — <code className="text-amber-300">fmk_wig_prosthetic_hair_agent</code>
+                </div>
                 <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">MK Clothing — Omni lifestyle</div>
                 <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">MK Kitchen — Cloud food ops</div>
                 <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">FMK Shoes — Kadam / Pothik / Posh Pa</div>

@@ -25,12 +25,28 @@ The browser never receives `OPENROUTER_API_KEY`. Only the Next.js server uses it
 
 - UI: `/dashboard/create-pillar`
 - Namespace DB: `data/fmk_create_pillar_retail_core.json`
-- Python execution module: `backend/router/create_pillar_routing.py`
-- Live Vercel orchestrator: `lib/create-pillar.ts` + `/api/create-pillar`
+- Python FastAPI core: `backend/main.py` (Render) — root `/` returns JSON health
+- Python router: `backend/router/create_pillar_routing.py`
+- Live Vercel orchestrator / proxy: `lib/create-pillar.ts` + `/api/create-pillar`
 
-Entity memory lanes are isolated (MK Clothing / MK Kitchen / FMK Shoes never share runtime arrays).
+**Locked prosthetic hair namespace:**
+- brand: `FMK WIG`
+- id: `fmk_wig_prosthetic_hair_agent`
+- Never alias as "FMK Week", "FMCG Wish", or `fmk_fmcg_week_supply_agent`
 
-> Note: `https://faos-backend.onrender.com` is **not** used (that host has no server). This app’s backend is the Vercel API routes above.
+Entity memory lanes are isolated (FMK WIG / MK Clothing / MK Kitchen / FMK Shoes never share runtime arrays).
+
+### Render backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+# GET / → {"status":"ONLINE", ...}
+# GET /api/v5/create-pillar/fmk-wig → FMK WIG lock payload
+```
+
+Set on Vercel: `NEXT_PUBLIC_FAOS_BACKEND_URL=https://<your-render-service>.onrender.com`
 
 ## Local development
 
