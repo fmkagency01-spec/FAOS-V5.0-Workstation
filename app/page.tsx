@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 type BackendStatus = 'checking' | 'online' | 'degraded' | 'offline';
 
@@ -137,7 +138,7 @@ export default function FaosDashboard() {
     { id: 'tab2', label: '🎨 ২. আর্ট অফ ক্রিয়েটিভিটি (ব্রেইন)', title: 'আর্ট অফ ক্রিয়েটিভিটি (ব্রেইন)' },
     { id: 'tab3', label: '🧠 ৩. এআই ও কোর অ্যালগরিদম গেট', title: 'এআই ও কোর অ্যালগরিদম গেট' },
     { id: 'tab4', label: '📊 ৪. কনসিউমার টেক ফ্রেমওয়ার্ক', title: 'কনসিউমার টেক ফ্রেমওয়ার্ক' },
-    { id: 'tab5', label: '🛍️ ৫. গ্লোবাল সোর্সিং ও ই-কমার্স', title: 'গ্লোবাল সোর্সিং ও ই-কমার্স' },
+    { id: 'tab5', label: '🛍️ ৫. ক্রিয়েট পিলার (Retail Core)', title: 'ক্রিয়েট পিলার (Retail Core)' },
     { id: 'tab6', label: '🌍 六. ইন্টারন্যাশনাল লজিস্টিকস (Wig)', title: 'ইন্টারন্যাশনাল লজিস্টিকস (Wig)' },
     { id: 'tab7', label: '📺 ৭. সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)', title: 'সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)' },
     { id: 'tab8', label: '🎓 ৮. লার্নিং হাব ও নলেজ বেইজ', title: 'লার্নিং হাব ও নলেজ বেইজ' },
@@ -259,6 +260,32 @@ export default function FaosDashboard() {
             </div>
           )}
 
+          {activeTab === 'tab5' && (
+            <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-emerald-400 space-y-4">
+              <span className="text-xs bg-emerald-500/10 text-emerald-300 px-2.5 py-1 rounded font-bold inline-block">Create Pillar · Retail Core</span>
+              <h3 className="text-lg font-bold text-white">FMK Create Pillar Manufacturing Hub</h3>
+              <p className="text-sm text-[#94a3b8]">
+                Namespace <code className="text-amber-300">fmk_create_pillar_retail_core</code> under FMK Group LTD.
+                Isolated agents: FMK Week, MK Clothing, MK Kitchen, FMK Shoes (Kadam / Pothik / The Posh Pa).
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">FMK Week — FMCG / Supply</div>
+                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">MK Clothing — Omni lifestyle</div>
+                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">MK Kitchen — Cloud food ops</div>
+                <div className="p-3 rounded-lg bg-[#060b19] border border-[#334155]">FMK Shoes — Kadam / Pothik / Posh Pa</div>
+              </div>
+              <p className="text-xs text-slate-500 font-mono">
+                Gatekeeper: Generation Request → Aigorithm Technical Permit → TAC Creative Brand Approval → Live API Deployment
+              </p>
+              <Link
+                href="/dashboard/create-pillar"
+                className="inline-flex w-full items-center justify-center bg-[#00f5d4] text-[#060b19] font-bold py-3 rounded-lg hover:bg-[#00bbf9] hover:text-white transition-all duration-300 text-sm"
+              >
+                Open One-Click Manufacturing & Sales Console →
+              </Link>
+            </div>
+          )}
+
           {activeTab === 'tab7' && (
             <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-[#00bbf9]">
               <span className="text-xs bg-[#00bbf9]/10 text-[#00bbf9] px-2.5 py-1 rounded font-bold mb-3 inline-block">1-100 Channels Suite</span>
@@ -316,7 +343,7 @@ export default function FaosDashboard() {
             </div>
           )}
 
-          {!['tab1', 'tab2', 'tab3', 'tab7', 'tab10'].includes(activeTab) && (
+          {!['tab1', 'tab2', 'tab3', 'tab5', 'tab7', 'tab10'].includes(activeTab) && (
             <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl">
               <h3 className="text-lg font-bold text-white mb-2">⚙️ মডিউল স্ট্যাটাস: অপারেশনাল</h3>
               <p className="text-sm text-[#94a3b8]">

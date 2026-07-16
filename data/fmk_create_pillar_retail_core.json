@@ -1,0 +1,51 @@
+{
+  "fmk_create_pillar_retail_core": {
+    "parent_hub": "FMK (Manufacturing & Construction Hub)",
+    "holding_umbrella": "FMK Group LTD.",
+    "parent_manufacturing_anchor": "fmk_parent_manufacturing_core",
+    "gatekeeper_protocol": [
+      "Generation Request",
+      "Aigorithm Technical Permit",
+      "TAC Creative Brand Approval",
+      "Live API Deployment"
+    ],
+    "entities": {
+      "fmk_fmcg_week_supply_agent": {
+        "brand_name": "FMK Week",
+        "route_key": "supply",
+        "scope": "Fast-Moving Consumer Goods, Global & Local Supply Chain Logistics, Inventory Forecasting, Voice-to-Command Filtering Stack."
+      },
+      "fmk_mk_clothing_lifestyle_agent": {
+        "brand_name": "MK Clothing",
+        "route_key": "apparel",
+        "scope": "International & Local Omni-channel E-commerce, Trend Ingestion, Content Hook Generation, Fabric Sourcing, Meta Ads API Synchronization."
+      },
+      "fmk_mk_kitchen_cloud_food_agent": {
+        "brand_name": "MK Kitchen",
+        "route_key": "kitchen",
+        "scope": "Cloud Kitchen Operations, Frozen Foods, Virtual Catering Systems, Menu Rotation Analytics, Third-Party Delivery Integration (Foodpanda/Logistics APIs)."
+      },
+      "fmk_shoes_footwear_wing": {
+        "brand_name": "FMK Shoes",
+        "route_key": "footwear",
+        "scope": "Footwear manufacturing and omni-channel retail under Kadam, Pothik, and The Posh Pa.",
+        "sub_categories": {
+          "kadam": "Exclusive Female Collection (Casual/Ethnic/Regular)",
+          "pothik": "Dedicated Male Collection (Comfort/Everyday/Sturdy)",
+          "the_posh_pa": "Premium Luxury Unisex Footwear Line"
+        }
+      }
+    },
+    "future_extensions": [
+      "MK GNA",
+      "MK Gears & Accessories",
+      "TakaBachaw.com",
+      "KiiLaagbe.com"
+    ],
+    "cross_pillar_routes": {
+      "media_synergy_route": "fmk_media_empire_pipeline ➡️ fmk_editing_hub",
+      "audio_engine": "Suno_ElevenLabs_Generative_Stack",
+      "audio_queue": "fmk_records_audio_empire_pipeline"
+    }
+  }
+}
