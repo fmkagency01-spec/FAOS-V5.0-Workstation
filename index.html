@@ -71,7 +71,7 @@
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="cmd-field" placeholder="Target sub-module command (e.g., /route agent=hermes 'Initialize lead extraction')" class="flex-1 bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono">
-                    <button onclick="fireCommand()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-xs font-semibold font-mono">Execute</button>
+                    <button id="cmd-execute" onclick="fireCommand()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-xs font-semibold font-mono">Execute</button>
                 </div>
             </div>
         </div>
@@ -150,6 +150,28 @@
 
     <script>
         const API_KEY = "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";
+        const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+
+        // OpenRouter Gateway model routing:
+        //   automation -> Hermes 3 (405B) handles agent automation / operational tasks
+        //   strategy   -> Claude Sonnet handles high-end strategy logic
+        // Note: the legacy "anthropic/claude-3.5-sonnet" slug is retired on OpenRouter
+        // (returns 404 "No endpoints found"), so strategy routes to the current Claude Sonnet.
+        const MODEL_ROUTES = {
+            automation: "nousresearch/hermes-3-llama-3.1-405b",
+            strategy: "anthropic/claude-sonnet-4.5"
+        };
+
+        // Background Token Saving Mode: caps output length + temperature to minimise spend.
+        const TOKEN_SAVING_MODE = { enabled: true, maxTokens: 700, temperature: 0.4 };
+
+        // Prompts matching these triggers escalate to the high-end strategy model.
+        const STRATEGY_TRIGGERS = ["/strategy", "/plan", "/analyze", "strategy", "roadmap", "forecast", "vision", "acquisition"];
+
+        function resolveModel(query) {
+            const q = query.toLowerCase();
+            return STRATEGY_TRIGGERS.some(t => q.includes(t)) ? MODEL_ROUTES.strategy : MODEL_ROUTES.automation;
+        }
 
         function switchLayer(layerId, element) {
             document.querySelectorAll('.layer-view').forEach(layer => layer.classList.remove('active'));
@@ -161,47 +183,102 @@
         async function fireCommand() {
             const input = document.getElementById('cmd-field');
             const logs = document.getElementById('terminal-logs');
+            const button = document.getElementById('cmd-execute');
             const query = input.value.trim();
             if(!query) return;
+
+            const model = resolveModel(query);
+            const isStrategy = model === MODEL_ROUTES.strategy;
 
             const userLine = document.createElement('div');
             userLine.className = "text-blue-400 font-mono";
             userLine.innerText = `CEO_FAHIM> ${query}`;
             logs.appendChild(userLine);
 
+            const routeLine = document.createElement('div');
+            routeLine.className = "text-slate-500 font-mono text-[11px]";
+            routeLine.innerText = `[GATEWAY ROUTE]: ${isStrategy ? 'HIGH-END STRATEGY' : 'AGENT AUTOMATION'} -> ${model}`;
+            logs.appendChild(routeLine);
+
+            const pending = document.createElement('div');
+            pending.className = "text-amber-400 font-mono mt-1 animate-pulse";
+            pending.innerText = "[TAC Core Agent]: routing request through OpenRouter gateway...";
+            logs.appendChild(pending);
+            logs.scrollTop = logs.scrollHeight;
+
+            input.value = '';
+            if (button) { button.disabled = true; button.classList.add('opacity-50', 'cursor-not-allowed'); }
+
             // OpenRouter Fetch Bridge API Request
             try {
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const payload = {
+                    model,
+                    messages: [{ role: "user", content: query }]
+                };
+                // Background Token Saving Mode caps spend on every routed request.
+                if (TOKEN_SAVING_MODE.enabled) {
+                    payload.max_tokens = TOKEN_SAVING_MODE.maxTokens;
+                    payload.temperature = TOKEN_SAVING_MODE.temperature;
+                }
+
+                const response = await fetch(OPENROUTER_ENDPOINT, {
                     method: "POST",
                     headers: {
                         "Authorization": `Bearer ${API_KEY}`,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.origin || "https://faosv.local",
+                        "X-Title": "FAOSV 5.0 Central ERP Workstation"
                     },
-                    body: JSON.stringify({
-                        "model": query.includes('/strategy') ? "anthropic/claude-3.5-sonnet" : "nousresearch/hermes-3-llama-3.1-405b",
-                        "messages": [{ "role": "user", "content": query }]
-                    })
+                    body: JSON.stringify(payload)
                 });
-                const data = await response.json();
-                const reply = data.choices[0].message.content;
 
+                if (!response.ok) {
+                    let detail = `Gateway responded ${response.status}`;
+                    try {
+                        const errData = await response.json();
+                        if (errData?.error?.message) detail = errData.error.message;
+                    } catch (_) { /* non-JSON error body */ }
+                    throw new Error(detail);
+                }
+
+                const data = await response.json();
+                const reply = data?.choices?.[0]?.message?.content?.trim();
+                if (!reply) throw new Error("Empty gateway payload received.");
+
+                pending.remove();
                 const systemLine = document.createElement('div');
-                systemLine.className = "text-emerald-400 font-mono mt-1";
+                systemLine.className = "text-emerald-400 font-mono mt-1 whitespace-pre-wrap";
                 systemLine.innerText = `[TAC Core Agent]: ${reply}`;
                 logs.appendChild(systemLine);
+
+                if (data.usage) {
+                    const usageLine = document.createElement('div');
+                    usageLine.className = "text-slate-600 font-mono text-[10px]";
+                    usageLine.innerText = `[TOKEN TELEMETRY]: prompt ${data.usage.prompt_tokens ?? '?'} | completion ${data.usage.completion_tokens ?? '?'} | total ${data.usage.total_tokens ?? '?'}`;
+                    logs.appendChild(usageLine);
+                }
             } catch (err) {
+                pending.remove();
                 const errLine = document.createElement('div');
                 errLine.className = "text-red-400 font-mono mt-1";
-                errLine.innerText = `[ROUTING ERROR]: Balance verification or gateway connection failed.`;
+                errLine.innerText = `[ROUTING ERROR]: ${err.message || 'Balance verification or gateway connection failed.'}`;
                 logs.appendChild(errLine);
+            } finally {
+                if (button) { button.disabled = false; button.classList.remove('opacity-50', 'cursor-not-allowed'); }
+                logs.scrollTop = logs.scrollHeight;
             }
-            
-            input.value = '';
-            logs.scrollTop = logs.scrollHeight;
         }
 
         // Dynamic Learning Hub Data Controls
-        document.addEventListener("DOMContentLoaded", renderHub);
+        document.addEventListener("DOMContentLoaded", () => {
+            renderHub();
+            const cmd = document.getElementById('cmd-field');
+            if (cmd) {
+                cmd.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); fireCommand(); }
+                });
+            }
+        });
         function pushResource() {
             const title = document.getElementById('resourceTitle').value;
             const link = document.getElementById('resourceLink').value;
