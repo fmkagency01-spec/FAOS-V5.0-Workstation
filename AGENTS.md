@@ -3,39 +3,32 @@
 ## Cursor Cloud specific instructions
 
 This repository is a **Next.js 15 App Router** app for the
-"FAOS v5.0 — Central Operating Dashboard". UI lives under `app/`.
-The previous static HTML dashboard is archived in `legacy/` (not deployed).
+"FAOS v5.0 — Central Operating Dashboard".
+
+- UI: `app/page.tsx`
+- Backend: `app/api/*/route.ts` (deployed with the same Vercel project)
+- OpenRouter helper: `lib/openrouter.ts` (server-only)
+
+There is **no separate Render backend**. `faos-backend.onrender.com` is dead/missing.
 
 ### Run it (development)
 
 ```bash
+cp .env.example .env.local
+# set OPENROUTER_API_KEY in .env.local (gitignored)
 npm install
 npm run dev
-# then open http://localhost:3000
 ```
 
-Production check:
+### Secrets policy
 
-```bash
-npm run build
-npm start
-```
+- Never hardcode `sk-or-v1-...` in source, HTML, or committed `.env*` files.
+- Only `.env.example` (empty values) may be committed.
+- Production key must live in **Vercel Environment Variables** as `OPENROUTER_API_KEY`.
+- Client code must call `/api/chat` / `/api/health` only — never OpenRouter directly.
 
-### Deploy (Vercel)
+### Deploy
 
-- Framework: Next.js (`vercel.json`)
-- Install: `npm ci`
-- Build: `npm run build`
-- Pushing to `main` triggers a Vercel production deploy
-- GitHub Actions CI (`.github/workflows/ci.yml`) also runs `npm ci` + `npm run build`
-
-Set secrets in the Vercel project (not in git):
-
-- `OPENROUTER_API_KEY` (server-only)
-- `NEXT_PUBLIC_API_URL` (optional public backend URL)
-
-### Notes
-
-- Pin dependency versions via `package-lock.json`. Do not use floating `"latest"`.
-- Do not re-add Azure / Jekyll / SLSA starter workflows — they do not match this app.
-- Do not commit `.env`, `.env.local`, or `.env.production` with real keys.
+- `vercel.json` → `npm ci` + `npm run build`
+- CI: `.github/workflows/ci.yml`
+- Push/merge to `main` triggers Vercel production deploy

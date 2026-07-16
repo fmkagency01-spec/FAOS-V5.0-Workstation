@@ -1,58 +1,70 @@
 # FAOS v5.0 — Central Operating Dashboard
 
-Next.js dashboard for the FAOS ERP workstation. Deployed on Vercel:
+Next.js dashboard + secure API backend for the FAOS ERP workstation.
 
 **Live:** https://faos-v5-0-workstation.vercel.app
 
 ## Stack
 
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS
+- Next.js 15 (App Router) — UI + API routes
+- React 19 + TypeScript + Tailwind CSS
+- OpenRouter via **server-only** `/api/chat` proxy
+
+## Backend API
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/health` | GET | Health + whether OpenRouter key is configured |
+| `/api/chat` | POST | Secure OpenRouter proxy (`{ "message": "..." }`) |
+
+The browser never receives `OPENROUTER_API_KEY`. Only the Next.js server uses it.
+
+> Note: `https://faos-backend.onrender.com` is **not** used (that host has no server). This app’s backend is the Vercel API routes above.
 
 ## Local development
 
 ```bash
+cp .env.example .env.local
+# put your OpenRouter key in .env.local as OPENROUTER_API_KEY=...
+
 npm install
 npm run dev
 ```
 
 Open http://localhost:3000
 
-## Production build
+## Production secrets (required)
+
+**Do not commit `.env` or real keys to GitHub.**
+
+Set in **Vercel → Project Settings → Environment Variables** (Production + Preview):
+
+| Name | Value |
+|---|---|
+| `OPENROUTER_API_KEY` | your OpenRouter secret key |
+| `NEXT_PUBLIC_SITE_URL` | `https://faos-v5-0-workstation.vercel.app` |
+
+Then redeploy.
+
+### Rotate compromised keys
+
+If a key was ever pasted into `index.html` or any public commit, **revoke/rotate it in the OpenRouter dashboard immediately**. Old commits may still contain it until history rewrite + rotation.
+
+## Redeploy
 
 ```bash
-npm run build
-npm start
+git push origin main   # or merge the PR
 ```
 
-## Environment variables
-
-Copy `.env.example` to `.env.local` and fill in values:
-
-| Variable | Where | Purpose |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | Client | Optional backend API base URL |
-| `OPENROUTER_API_KEY` | Server / Vercel secrets | OpenRouter key (never commit) |
-
-In Vercel: **Project → Settings → Environment Variables**.
-
-## Redeploy on Vercel
-
-1. Push to `main` (or merge a PR into `main`).
-2. Vercel auto-builds with `npm ci` + `npm run build`.
-3. Confirm the production URL above after the deploy succeeds.
-
-Manual redeploy from the Vercel dashboard: **Deployments → … → Redeploy**.
+Vercel auto-builds with `npm ci` + `npm run build`.
 
 ## Project layout
 
 ```
-app/                 # Next.js App Router UI
-  layout.tsx
-  page.tsx
-  globals.css
-legacy/              # Previous static HTML dashboard (reference only)
-vercel.json          # Vercel framework + install/build commands
+app/
+  page.tsx            # Dashboard UI
+  api/health/route.ts # Health backend
+  api/chat/route.ts   # Secure OpenRouter proxy
+lib/openrouter.ts     # Server-side gateway helper
+.env.example          # Empty placeholders only
 ```

@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
+type BackendStatus = 'checking' | 'online' | 'degraded' | 'offline';
 
 export default function FaosDashboard() {
   const [activeTab, setActiveTab] = useState('tab1');
@@ -8,38 +10,126 @@ export default function FaosDashboard() {
   const [cctvLog, setCctvLog] = useState('');
   const [creativeInput, setCreativeInput] = useState('');
   const [creativeOutput, setCreativeOutput] = useState('');
+  const [creativeLoading, setCreativeLoading] = useState(false);
   const [channelNum, setChannelNum] = useState(1);
   const [mediaLog, setMediaLog] = useState('');
   const [tagName, setTagName] = useState('');
   const [tagLog, setTagLog] = useState('');
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
+  const [gatewayState, setGatewayState] = useState('unknown');
+  const [cmdInput, setCmdInput] = useState('');
+  const [cmdLog, setCmdLog] = useState<string[]>([
+    '[SYSTEM INIT]: FAOS API gateway ready. Keys stay server-side only.',
+  ]);
+  const [cmdLoading, setCmdLoading] = useState(false);
 
-  // Load saved brain data on mount
   useEffect(() => {
     const savedCreative = localStorage.getItem('faos_creative_output');
     if (savedCreative) setCreativeOutput(savedCreative);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`health ${res.status}`);
+        const data = (await res.json()) as {
+          ok?: boolean;
+          gateway?: { openrouter?: string };
+        };
+        if (cancelled) return;
+        const openrouter = data.gateway?.openrouter || 'unknown';
+        setGatewayState(openrouter);
+        setBackendStatus(openrouter === 'configured' ? 'online' : 'degraded');
+      } catch {
+        if (!cancelled) {
+          setBackendStatus('offline');
+          setGatewayState('unreachable');
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // 1. Core CCTV Protocol
   const handleCCTV = () => {
-    setCctvLog(`🟢 FAOS SECURITY GATEWAY ACTIVE\n[CONNECTED ZONE]: ${cctvZone.toUpperCase()}\n[STATUS]: Secure Stream Synchronized.\n[EXECUTION]: Core parental protocols are running under Fahim Mahmud Khan's command.`);
+    setCctvLog(
+      `🟢 FAOS SECURITY GATEWAY ACTIVE\n[CONNECTED ZONE]: ${cctvZone.toUpperCase()}\n[STATUS]: Secure Stream Synchronized.\n[BACKEND]: ${backendStatus.toUpperCase()} | OpenRouter: ${gatewayState}\n[EXECUTION]: Core parental protocols are running under Fahim Mahmud Khan's command.`
+    );
   };
 
-  // 2. Creative Brain Matrix (Saves data locally without MongoDB error)
-  const handleCreative = () => {
-    if (!creativeInput) return;
-    const outputText = `🎨 FAOS CREATIVE MATRIX ENGINE v5.0\n[RAW IDEA]: "${creativeInput}"\n\n🎯 [AI GENERATED HOOKS & STRATEGY]:\n1. "১ থেকে ১০০টি চ্যানেল, কিন্তু আলটিমেট কন্ট্রোল মাত্র একটি ড্যাশবোর্ডে।" \n2. "যখন আপনার ক্রিয়েটিভিটি কথা বলে অটোমেটেড অ্যালগরিদমে, ব্র্যান্ড তখন আনস্টপেবল।" \n\n[STATUS]: Successfully saved and pushed to BulletsEye Agency Team Hub.`;
-    setCreativeOutput(outputText);
-    localStorage.setItem('faos_creative_output', outputText);
+  const handleCreative = async () => {
+    if (!creativeInput.trim() || creativeLoading) return;
+    setCreativeLoading(true);
+    setCreativeOutput('Processing through secure FAOS API...');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Create 2 short marketing hooks in Bangla+English mix for this campaign idea: ${creativeInput.trim()}`,
+        }),
+      });
+      const data = (await res.json()) as { reply?: string; error?: string; model?: string };
+      if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
+
+      const outputText = `🎨 FAOS CREATIVE MATRIX ENGINE v5.0\n[RAW IDEA]: "${creativeInput.trim()}"\n[MODEL]: ${data.model || 'routed'}\n\n🎯 [AI GENERATED HOOKS & STRATEGY]:\n${data.reply}\n\n[STATUS]: Saved locally. API key never left the server.`;
+      setCreativeOutput(outputText);
+      localStorage.setItem('faos_creative_output', outputText);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Creative gateway failed.';
+      setCreativeOutput(`❌ CREATIVE GATEWAY ERROR\n${message}\n\nTip: set OPENROUTER_API_KEY in Vercel Environment Variables, then redeploy.`);
+    } finally {
+      setCreativeLoading(false);
+    }
   };
 
-  // 3. Socialistic Media Router
   const handleMediaAudit = () => {
-    setMediaLog(`📺 SOCIALISTIC MEDIA NETWORK (Channel #${channelNum})\n[ROUTING STATUS]: Operational & Encrypted\n[AGENT ACTIVITY]: Live Monitoring Syncing\n[DATA STREAM]: AI agents are deployment-ready for automated hook posting.`);
+    setMediaLog(
+      `📺 SOCIALISTIC MEDIA NETWORK (Channel #${channelNum})\n[ROUTING STATUS]: Operational & Encrypted\n[BACKEND API]: /api/health = ${backendStatus}\n[DATA STREAM]: AI agents are deployment-ready for automated hook posting.`
+    );
   };
 
-  // 4. Custom AI Tag Logic Selector
   const handleTagValidator = () => {
-    setTagLog(`⚡ FAOS ALGORITHM MAPPING SUCCESS\n[VALIDATED TAG]: ${tagName || 'GTM-FAOS-ULTIMATE'}\n[MEMORY STORAGE]: Local Browser Sandbox Encrypted.\n[SYNC STATUS]: Past 48-hour data fully integrated.`);
+    setTagLog(
+      `⚡ FAOS ALGORITHM MAPPING SUCCESS\n[VALIDATED TAG]: ${tagName || 'GTM-FAOS-ULTIMATE'}\n[MEMORY STORAGE]: Local Browser Sandbox Encrypted.\n[SYNC STATUS]: Past 48-hour data fully integrated.`
+    );
+  };
+
+  const fireCommand = async () => {
+    const query = cmdInput.trim();
+    if (!query || cmdLoading) return;
+    setCmdLoading(true);
+    setCmdLog((prev) => [...prev, `CEO_FAHIM> ${query}`, '[TAC]: routing via /api/chat (server-side key)...']);
+    setCmdInput('');
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: query }),
+      });
+      const data = (await res.json()) as {
+        reply?: string;
+        error?: string;
+        model?: string;
+        usage?: { total_tokens?: number };
+      };
+      if (!res.ok) throw new Error(data.error || `API error ${res.status}`);
+      setCmdLog((prev) => [
+        ...prev,
+        `[GATEWAY ROUTE]: ${data.model || 'unknown'}`,
+        `[TAC Core Agent]: ${data.reply}`,
+        data.usage?.total_tokens != null
+          ? `[TOKEN TELEMETRY]: total ${data.usage.total_tokens}`
+          : '[TOKEN TELEMETRY]: n/a',
+      ]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Gateway connection failed.';
+      setCmdLog((prev) => [...prev, `[ROUTING ERROR]: ${message}`]);
+    } finally {
+      setCmdLoading(false);
+    }
   };
 
   const menuItems = [
@@ -52,11 +142,20 @@ export default function FaosDashboard() {
     { id: 'tab7', label: '📺 ৭. সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)', title: 'সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)' },
     { id: 'tab8', label: '🎓 ৮. লার্নিং হাব ও নলেজ বেইজ', title: 'লার্নিং হাব ও নলেজ বেইজ' },
     { id: 'tab9', label: '👥 ৯. বুলেটসআই টিম ওয়ার্কস্টেশন', title: 'বুলেটসআই টিম ওয়ার্কস্টেশন' },
+    { id: 'tab10', label: '⚙️ ১০. কমান্ড সেন্টার (API)', title: 'কমান্ড সেন্টার (API)' },
   ];
+
+  const statusColor =
+    backendStatus === 'online'
+      ? 'text-emerald-400'
+      : backendStatus === 'degraded'
+        ? 'text-amber-400'
+        : backendStatus === 'checking'
+          ? 'text-slate-400'
+          : 'text-red-400';
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#060b19] text-[#e2e8f0]">
-      {/* PREMIUM UI SIDEBAR */}
       <aside className="w-sidebar shrink-0 bg-gradient-to-b from-[#0f172a] to-[#1e293b] p-6 flex flex-col justify-between border-r border-[#1e293b] shadow-2xl">
         <div>
           <h2 className="text-2xl font-extrabold text-[#00f5d4] mb-6 border-b-2 border-[#00f5d4] pb-3 text-center tracking-wider">⚡ FAOS v5.0</h2>
@@ -76,23 +175,26 @@ export default function FaosDashboard() {
             ))}
           </nav>
         </div>
-        <div className="text-xs text-[#00f5d4] text-center font-bold tracking-widest bg-[#060b19] py-2 rounded border border-[#00f5d4]/20">
-          FAOS SECURITY: SECURE SYSTEM 🔒
+        <div className="space-y-2">
+          <div className={`text-[11px] text-center font-mono ${statusColor}`}>
+            API: {backendStatus.toUpperCase()} · OR: {gatewayState}
+          </div>
+          <div className="text-xs text-[#00f5d4] text-center font-bold tracking-widest bg-[#060b19] py-2 rounded border border-[#00f5d4]/20">
+            FAOS SECURITY: SECURE SYSTEM
+          </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT WORKSPACE */}
       <main className="flex-1 flex flex-col overflow-y-auto bg-[#060b19]">
         <header className="bg-[#0f172a] px-8 py-5 flex justify-between items-center border-b border-[#1e293b]">
           <h1 className="text-xl font-bold text-[#00f5d4] tracking-wide">
             {menuItems.find((m) => m.id === activeTab)?.title || 'Workspace'}
           </h1>
           <div className="font-semibold text-[#060b19] bg-[#00f5d4] px-5 py-2 rounded-full text-sm shadow-[0_0_15px_rgba(0,245,212,0.4)]">
-            👑 Executive Alpha: Fahim Mahmud Khan
+            Executive Alpha: Fahim Mahmud Khan
           </div>
         </header>
 
-        {/* DYNAMIC TAB CONTROLLERS */}
         <div className="p-8">
           {activeTab === 'tab1' && (
             <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-[#00f5d4]">
@@ -119,7 +221,7 @@ export default function FaosDashboard() {
             <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-[#9b5de5]">
               <span className="text-xs bg-[#9b5de5]/10 text-[#9b5de5] px-2.5 py-1 rounded font-bold mb-3 inline-block">Creative Brain Matrix</span>
               <h3 className="text-lg font-bold text-white mb-2">🎨 আর্ট অফ ক্রিয়েটিভিটি এবং ভিজ্যুয়াল হুক ইঞ্জিন</h3>
-              <p className="text-sm text-[#94a3b8] mb-4">আপনার নিজস্ব ক্রিয়েটিভ আইডিয়া ল্যাব। যেকোনো ক্যাম্পেইনের হুক বা রিলস থিম ইনপুট দিন।</p>
+              <p className="text-sm text-[#94a3b8] mb-4">Secure server-side OpenRouter call via `/api/chat`. No API key in the browser.</p>
               <textarea
                 value={creativeInput}
                 onChange={(e) => setCreativeInput(e.target.value)}
@@ -127,8 +229,12 @@ export default function FaosDashboard() {
                 placeholder="আপনার ক্রিয়েটিভ আইডিয়া বা ক্যাম্পেইনের থিমটি এখানে লিখুন..."
                 className="w-full p-3 bg-[#060b19] border border-[#334155] rounded-lg text-white mb-4 text-sm"
               />
-              <button onClick={handleCreative} className="w-full bg-[#9b5de5] text-white font-bold py-3 rounded-lg hover:bg-[#00bbf9] transition-all duration-300 text-sm">
-                ক্রিয়েটিভ ব্রেইন প্রসেস করুন
+              <button
+                onClick={handleCreative}
+                disabled={creativeLoading}
+                className="w-full bg-[#9b5de5] text-white font-bold py-3 rounded-lg hover:bg-[#00bbf9] transition-all duration-300 text-sm disabled:opacity-50"
+              >
+                {creativeLoading ? 'প্রসেসিং...' : 'ক্রিয়েটিভ ব্রেইন প্রসেস করুন'}
               </button>
               {creativeOutput && <pre className="mt-4 p-4 bg-[#060b19] border border-dashed border-[#334155] rounded-lg text-xs font-mono text-[#cbd5e1] whitespace-pre-line">{creativeOutput}</pre>}
             </div>
@@ -173,10 +279,49 @@ export default function FaosDashboard() {
             </div>
           )}
 
-          {!['tab1', 'tab2', 'tab3', 'tab7'].includes(activeTab) && (
+          {activeTab === 'tab10' && (
+            <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl space-y-4">
+              <span className="text-xs bg-amber-500/10 text-amber-300 px-2.5 py-1 rounded font-bold inline-block">Secure Command Center</span>
+              <h3 className="text-lg font-bold text-white">TAC Global Agent Core</h3>
+              <p className="text-sm text-[#94a3b8]">
+                Browser calls only `/api/chat`. The OpenRouter key stays in server env (`OPENROUTER_API_KEY`).
+              </p>
+              <div className="bg-[#070a12] border border-[#1e293b] rounded-md h-56 overflow-y-auto p-4 text-xs font-mono space-y-2 text-slate-300">
+                {cmdLog.map((line, idx) => (
+                  <div key={`${idx}-${line.slice(0, 12)}`}>{line}</div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={cmdInput}
+                  onChange={(e) => setCmdInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      void fireCommand();
+                    }
+                  }}
+                  placeholder="Target command (e.g. /strategy expand BulletsEye)"
+                  className="flex-1 bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                />
+                <button
+                  onClick={() => void fireCommand()}
+                  disabled={cmdLoading}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-2 rounded text-xs font-semibold font-mono"
+                >
+                  {cmdLoading ? '...' : 'Execute'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!['tab1', 'tab2', 'tab3', 'tab7', 'tab10'].includes(activeTab) && (
             <div className="max-w-4xl bg-[#0f172a] rounded-xl p-6 border border-[#1e293b] shadow-xl">
               <h3 className="text-lg font-bold text-white mb-2">⚙️ মডিউল স্ট্যাটাস: অপারেশনাল</h3>
-              <p className="text-sm text-[#94a3b8]">FAOS v5.0 কোর ইকোসিস্টেম ডেটাবেস সফলভাবে সিনক্রোনাইজড। ব্যাকএন্ড ক্লাউড নোড সচল আছে।</p>
+              <p className="text-sm text-[#94a3b8]">
+                FAOS v5.0 backend API status: <span className={statusColor}>{backendStatus}</span> · OpenRouter: {gatewayState}
+              </p>
             </div>
           )}
         </div>
