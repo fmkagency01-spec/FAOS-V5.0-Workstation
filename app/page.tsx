@@ -43,21 +43,21 @@ export default function FaosDashboard() {
   };
 
   const menuItems = [
-    { id: 'tab1', label: '🌐 ১. প্যারেন্টাল সিসিটিভি ও কোর সার্ভিস' },
-    { id: 'tab2', label: '🎨 ২. আর্ট অফ ক্রিয়েটিভিটি (ব্রেইন)' },
-    { id: 'tab3', label: '🧠 ৩. এআই ও কোর অ্যালগরিদম গেট' },
-    { id: 'tab4', label: '📊 ৪. কনসিউমার টেক ফ্রেমওয়ার্ক' },
-    { id: 'tab5', label: '🛍️ ৫. গ্লোবাল সোর্সিং ও ই-কমার্স' },
-    { id: 'tab6', label: '🌍 六. ইন্টারন্যাশনাল লজিস্টিকস (Wig)' },
-    { id: 'tab7', label: '📺 ৭. সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)' },
-    { id: 'tab8', label: '🎓 ৮. লার্নিং হাব ও নলেজ বেইজ' },
-    { id: 'tab9', label: '👥 ৯. বুলেটসআই টিম ওয়ার্কস্টেশন' },
+    { id: 'tab1', label: '🌐 ১. প্যারেন্টাল সিসিটিভি ও কোর সার্ভিস', title: 'প্যারেন্টাল সিসিটিভি ও কোর সার্ভিস' },
+    { id: 'tab2', label: '🎨 ২. আর্ট অফ ক্রিয়েটিভিটি (ব্রেইন)', title: 'আর্ট অফ ক্রিয়েটিভিটি (ব্রেইন)' },
+    { id: 'tab3', label: '🧠 ৩. এআই ও কোর অ্যালগরিদম গেট', title: 'এআই ও কোর অ্যালগরিদম গেট' },
+    { id: 'tab4', label: '📊 ৪. কনসিউমার টেক ফ্রেমওয়ার্ক', title: 'কনসিউমার টেক ফ্রেমওয়ার্ক' },
+    { id: 'tab5', label: '🛍️ ৫. গ্লোবাল সোর্সিং ও ই-কমার্স', title: 'গ্লোবাল সোর্সিং ও ই-কমার্স' },
+    { id: 'tab6', label: '🌍 六. ইন্টারন্যাশনাল লজিস্টিকস (Wig)', title: 'ইন্টারন্যাশনাল লজিস্টিকস (Wig)' },
+    { id: 'tab7', label: '📺 ৭. সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)', title: 'সোশিয়ালিস্টিক মিডিয়া (১-১০০ চ্যান)' },
+    { id: 'tab8', label: '🎓 ৮. লার্নিং হাব ও নলেজ বেইজ', title: 'লার্নিং হাব ও নলেজ বেইজ' },
+    { id: 'tab9', label: '👥 ৯. বুলেটসআই টিম ওয়ার্কস্টেশন', title: 'বুলেটসআই টিম ওয়ার্কস্টেশন' },
   ];
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#060b19] text-[#e2e8f0]">
       {/* PREMIUM UI SIDEBAR */}
-      <aside className="w-85 bg-gradient-to-b from-[#0f172a] to-[#1e293b] p-6 flex flex-col justify-between border-r border-[#1e293b] shadow-2xl">
+      <aside className="w-sidebar shrink-0 bg-gradient-to-b from-[#0f172a] to-[#1e293b] p-6 flex flex-col justify-between border-r border-[#1e293b] shadow-2xl">
         <div>
           <h2 className="text-2xl font-extrabold text-[#00f5d4] mb-6 border-b-2 border-[#00f5d4] pb-3 text-center tracking-wider">⚡ FAOS v5.0</h2>
           <nav className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
@@ -85,7 +85,7 @@ export default function FaosDashboard() {
       <main className="flex-1 flex flex-col overflow-y-auto bg-[#060b19]">
         <header className="bg-[#0f172a] px-8 py-5 flex justify-between items-center border-b border-[#1e293b]">
           <h1 className="text-xl font-bold text-[#00f5d4] tracking-wide">
-            {menuItems.find((m) => m.id === activeTab)?.label.substring(4) || 'Workspace'}
+            {menuItems.find((m) => m.id === activeTab)?.title || 'Workspace'}
           </h1>
           <div className="font-semibold text-[#060b19] bg-[#00f5d4] px-5 py-2 rounded-full text-sm shadow-[0_0_15px_rgba(0,245,212,0.4)]">
             👑 Executive Alpha: Fahim Mahmud Khan
