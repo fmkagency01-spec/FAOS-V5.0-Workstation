@@ -5,11 +5,14 @@
 This repository is a **Next.js 15 App Router** app for the
 "FAOS v5.0 — Central Operating Dashboard".
 
-- UI: `app/page.tsx`
+- UI: `app/page.tsx`, Create Pillar console at `app/dashboard/create-pillar/page.tsx`
 - Backend: `app/api/*/route.ts` (deployed with the same Vercel project)
 - OpenRouter helper: `lib/openrouter.ts` (server-only)
+- Create Pillar: `lib/create-pillar.ts`, namespace `data/fmk_create_pillar_retail_core.json`,
+  Python router reference at `backend/router/create_pillar_routing.py`
 
 There is **no separate Render backend**. `faos-backend.onrender.com` is dead/missing.
+Live Create Pillar orchestration runs through `/api/create-pillar` on Vercel.
 
 ### Run it (development)
 

@@ -14,10 +14,21 @@ Next.js dashboard + secure API backend for the FAOS ERP workstation.
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/api/health` | GET | Health + whether OpenRouter key is configured |
+| `/api/health` | GET | Health + OpenRouter + Create Pillar mount status |
 | `/api/chat` | POST | Secure OpenRouter proxy (`{ "message": "..." }`) |
+| `/api/create-pillar` | GET | Create Pillar namespace + entity memory map |
+| `/api/create-pillar` | POST | `action=process\|gatekeeper` retail orchestration |
 
 The browser never receives `OPENROUTER_API_KEY`. Only the Next.js server uses it.
+
+### Create Pillar
+
+- UI: `/dashboard/create-pillar`
+- Namespace DB: `data/fmk_create_pillar_retail_core.json`
+- Python execution module: `backend/router/create_pillar_routing.py`
+- Live Vercel orchestrator: `lib/create-pillar.ts` + `/api/create-pillar`
+
+Entity memory lanes are isolated (MK Clothing / MK Kitchen / FMK Shoes never share runtime arrays).
 
 > Note: `https://faos-backend.onrender.com` is **not** used (that host has no server). This app’s backend is the Vercel API routes above.
 
