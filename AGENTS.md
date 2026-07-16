@@ -15,8 +15,14 @@ This repository is a **Next.js 15 App Router** app for the
 **FMK WIG lock:** `fmk_wig_prosthetic_hair_agent` / brand `FMK WIG` only.
 Never use `fmk_week`, `fmcg_wish`, or `fmk_fmcg_week_supply_agent`.
 
-When `NEXT_PUBLIC_FAOS_BACKEND_URL` is set, Next `/api/create-pillar` proxies to
-Render `/api/v5/create-pillar`. Otherwise it uses the local TS orchestrator.
+Backend URL env (no trailing slash): `NEXT_PUBLIC_BACKEND_URL` or
+`NEXT_PUBLIC_FAOS_BACKEND_URL`.
+
+When set, Next `/api/create-pillar` and `/api/agent-trigger` proxy to Render
+`/api/v5/*`. If Render is asleep/missing (free tier), they fall back to the
+local TS orchestrator so the dashboard stays online.
+
+Repo-root `render.yaml` is the GitHub→Render Blueprint (rootDir: `backend`).
 
 ### Run it (development)
 

@@ -6,50 +6,43 @@ import {
   triggerGatekeeperProtocol,
   type CreatePillarPayload,
 } from "@/lib/create-pillar";
-import { getFaosBackendBaseUrl } from "@/lib/backend";
+import { joinBackendUrl, getFaosBackendBaseUrl } from "@/lib/backend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function proxyToRender(request: NextRequest, method: "GET" | "POST") {
+const RENDER_TIMEOUT_MS = 25000;
+
+async function fetchRender(path: string, init?: RequestInit): Promise<Response | null> {
   const base = getFaosBackendBaseUrl();
   if (!base) return null;
 
-  const target = `${base}/api/v5/create-pillar`;
-  const init: RequestInit = {
-    method,
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-  };
-  if (method === "POST") {
-    init.body = await request.text();
-  }
+  const target = joinBackendUrl(path);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), RENDER_TIMEOUT_MS);
 
-  const upstream = await fetch(target, init);
-  const text = await upstream.text();
-  return new NextResponse(text, {
-    status: upstream.status,
-    headers: {
-      "Content-Type": upstream.headers.get("Content-Type") || "application/json",
-    },
-  });
+  try {
+    return await fetch(target, {
+      ...init,
+      signal: controller.signal,
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers || {}),
+      },
+    });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const proxied = await proxyToRender(request, "GET");
-    if (proxied) return proxied;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Render proxy failed";
-    return NextResponse.json(
-      { error: `Backend proxy error: ${message}` },
-      { status: 502 }
-    );
-  }
-
+function localCreatePillarGet() {
   const pillar = getCreatePillarNamespace();
   return NextResponse.json({
     ok: true,
+    source: "vercel-local",
     namespace: "fmk_create_pillar_retail_core",
     parent_hub: pillar.parent_hub,
     holding_umbrella: pillar.holding_umbrella,
@@ -61,39 +54,45 @@ export async function GET(request: NextRequest) {
   });
 }
 
+export async function GET() {
+  const upstream = await fetchRender("api/v5/create-pillar", { method: "GET" });
+  if (upstream && upstream.ok) {
+    const text = await upstream.text();
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("Content-Type") || "application/json",
+        "X-FAOS-Upstream": "render",
+      },
+    });
+  }
+
+  // Render free-tier may be asleep / not provisioned yet — keep dashboard online.
+  return localCreatePillarGet();
+}
+
 export async function POST(request: NextRequest) {
-  // Clone-safe: read body once for local processing if proxy unavailable.
   const raw = await request.text();
 
-  const base = getFaosBackendBaseUrl();
-  if (base) {
-    try {
-      const upstream = await fetch(`${base}/api/v5/create-pillar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: raw,
-        cache: "no-store",
-      });
-      const text = await upstream.text();
-      return new NextResponse(text, {
-        status: upstream.status,
-        headers: {
-          "Content-Type":
-            upstream.headers.get("Content-Type") || "application/json",
-        },
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Render proxy failed";
-      return NextResponse.json(
-        { error: `Backend proxy error: ${message}` },
-        { status: 502 }
-      );
-    }
+  const upstream = await fetchRender("api/v5/create-pillar", {
+    method: "POST",
+    body: raw,
+  });
+
+  if (upstream && upstream.ok) {
+    const text = await upstream.text();
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("Content-Type") || "application/json",
+        "X-FAOS-Upstream": "render",
+      },
+    });
   }
 
   let body: CreatePillarPayload & { action?: string };
   try {
-    body = JSON.parse(raw) as CreatePillarPayload & { action?: string };
+    body = JSON.parse(raw || "{}") as CreatePillarPayload & { action?: string };
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
@@ -102,12 +101,12 @@ export async function POST(request: NextRequest) {
 
   if (action === "gatekeeper") {
     const result = triggerGatekeeperProtocol(body);
-    return NextResponse.json({ ok: true, action, ...result });
+    return NextResponse.json({ ok: true, source: "vercel-local", action, ...result });
   }
 
   if (action === "process") {
     const result = processSupplyCommand(body);
-    return NextResponse.json({ ok: true, action, ...result });
+    return NextResponse.json({ ok: true, source: "vercel-local", action, ...result });
   }
 
   return NextResponse.json(

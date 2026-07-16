@@ -1,4 +1,4 @@
-# Kept in sync with /render.yaml (repo-root Blueprint is preferred by Render GitHub).
+# Render Blueprint — auto-detected from GitHub repo root (no dashboard shell needed).
 services:
   - type: web
     name: faos-backend

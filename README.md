@@ -46,7 +46,16 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 # GET /api/v5/create-pillar/fmk-wig → FMK WIG lock payload
 ```
 
-Set on Vercel: `NEXT_PUBLIC_FAOS_BACKEND_URL=https://<your-render-service>.onrender.com`
+Set on Vercel (**no trailing slash**):
+
+```
+NEXT_PUBLIC_BACKEND_URL=https://faos-backend.onrender.com
+```
+
+(`NEXT_PUBLIC_FAOS_BACKEND_URL` is accepted as an alias.)
+
+Render Blueprint is defined at repo-root `render.yaml` for GitHub auto-deploy.
+After Render provisions the service, `GET https://<service>.onrender.com/` must return JSON `{ "status": "active", ... }`.
 
 ## Local development
 
