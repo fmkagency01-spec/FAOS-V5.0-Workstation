@@ -3,6 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # next.js
 .next/
 out/
@@ -13,6 +19,7 @@ dist/
 .env
 .env.*
 !.env.example
+!frontend/.env.production.example
 
 # debug / logs
 npm-debug.log*

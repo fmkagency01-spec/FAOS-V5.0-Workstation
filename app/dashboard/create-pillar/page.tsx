@@ -15,9 +15,9 @@ type ProcessResult = Record<string, unknown>;
 
 export default function ManufacturingConsole() {
   const [entities, setEntities] = useState<EntityOption[]>([]);
-  const [selectedBrand, setSelectedBrand] = useState('fmk_fmcg_week_supply_agent');
+  const [selectedBrand, setSelectedBrand] = useState('fmk_wig_prosthetic_hair_agent');
   const [requestType, setRequestType] = useState('Production_Request');
-  const [skuInput, setSkuInput] = useState('{"sku":"FMK-CORE-01","units":100}');
+  const [skuInput, setSkuInput] = useState('{"sku":"WIG-PRO-01","units":40}');
   const [isApproved, setIsApproved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [telemetry, setTelemetry] = useState<string>('Awaiting Create Pillar sync...');
@@ -30,15 +30,26 @@ export default function ManufacturingConsole() {
       try {
         const res = await fetch('/api/create-pillar', { cache: 'no-store' });
         const data = (await res.json()) as {
-          entities?: EntityOption[];
+          entities?: EntityOption[] | Record<string, Omit<EntityOption, 'id'>>;
           parent_hub?: string;
           error?: string;
         };
         if (!res.ok) throw new Error(data.error || `API ${res.status}`);
         if (cancelled) return;
-        setEntities(data.entities || []);
+
+        const normalized: EntityOption[] = Array.isArray(data.entities)
+          ? data.entities
+          : Object.entries(data.entities || {}).map(([id, meta]) => ({
+              id,
+              brand_name: meta.brand_name,
+              route_key: meta.route_key,
+              scope: meta.scope,
+              sub_categories: meta.sub_categories,
+            }));
+
+        setEntities(normalized);
         setTelemetry(
-          `Namespace locked: fmk_create_pillar_retail_core · Parent hub: ${data.parent_hub || 'FMK'}`
+          `Namespace locked: fmk_create_pillar_retail_core · FMK WIG = fmk_wig_prosthetic_hair_agent · Parent hub: ${data.parent_hub || 'FMK'}`
         );
       } catch (err) {
         if (!cancelled) {
@@ -163,7 +174,7 @@ export default function ManufacturingConsole() {
             }}
             className="w-full p-3 bg-[#060b19] border border-[#334155] rounded-lg text-white mb-4 text-sm"
           >
-            <option value="fmk_fmcg_week_supply_agent">FMK Week — Supply / FMCG Agent</option>
+            <option value="fmk_wig_prosthetic_hair_agent">FMK WIG — Prosthetic Hair Agent</option>
             <option value="fmk_mk_clothing_lifestyle_agent">MK Clothing & Lifestyle Core</option>
             <option value="fmk_mk_kitchen_cloud_food_agent">MK Kitchen Cloud Food Router</option>
             <option value="fmk_shoes_footwear_wing">FMK Shoes (Kadam / Pothik / The Posh Pa)</option>
@@ -212,7 +223,8 @@ export default function ManufacturingConsole() {
           <div className="p-3 rounded-lg border-l-4 border-[#00bbf9] bg-[#060b19] text-xs text-slate-300 mb-5">
             <strong className="text-[#00bbf9]">System Status:</strong> Cross-Pillar Synchronization connected to{' '}
             <code className="text-amber-300">fmk_media</code> and <code className="text-amber-300">fmk_editing_hub</code>.
-            Audio from footwear / hair arrays queues into <code className="text-amber-300">fmk_records_audio_empire_pipeline</code>.
+            Audio from footwear / FMK WIG hair arrays queues into{' '}
+            <code className="text-amber-300">fmk_records_audio_empire_pipeline</code>.
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -264,7 +276,7 @@ export default function ManufacturingConsole() {
             ))}
           </div>
           <p className="text-[11px] text-slate-500 mt-4">
-            Isolated execution: MK Clothing, MK Kitchen, and FMK Shoes runtime arrays never share context lanes (token-bubble mitigation).
+            Isolated execution: FMK WIG, MK Clothing, MK Kitchen, and FMK Shoes runtime arrays never share context lanes (token-bubble mitigation).
           </p>
         </div>
       </main>
