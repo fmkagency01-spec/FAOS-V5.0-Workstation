@@ -11,11 +11,12 @@ from __future__ import annotations
 import os
 from typing import Any, Dict, List
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from router.create_pillar_routing import orchestrator
+from router.workflow_routing import workflow
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
 FMK_WIG_BRAND = "FMK WIG"
@@ -211,6 +212,44 @@ async def get_entity_context(entity_id: str) -> Dict[str, Any]:
     }
 
 
+# --- CRM / Projects / Agent Workflow (Odoo-style business suite) ---
+
+
+@app.get("/api/v5/clients")
+async def list_clients() -> Dict[str, Any]:
+    return {"ok": True, "clients": workflow.list_clients()}
+
+
+@app.post("/api/v5/clients")
+async def create_client(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = workflow.create_client(payload)
+    return {"ok": True, "client": record}
+
+
+@app.get("/api/v5/projects")
+async def list_projects(client_id: str | None = Query(default=None)) -> Dict[str, Any]:
+    return {"ok": True, "projects": workflow.list_projects(client_id)}
+
+
+@app.post("/api/v5/projects")
+async def create_project(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = workflow.create_project(payload)
+    return {"ok": True, "project": record}
+
+
+@app.get("/api/v5/agent-workflow/tasks")
+async def list_agent_tasks(project_id: str | None = Query(default=None)) -> Dict[str, Any]:
+    return {"ok": True, "tasks": workflow.list_tasks(project_id)}
+
+
+@app.post("/api/v5/agent-workflow/assign")
+async def assign_agent_workflow(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return workflow.assign_workflow(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: Any):
     return JSONResponse(
@@ -219,7 +258,7 @@ async def not_found_handler(request: Request, exc: Any):
             "ok": False,
             "error": "Route not found",
             "path": request.url.path,
-            "hint": "Use /, /health, /api/v5/create-pillar, /api/v5/agent-trigger",
+            "hint": "Use /, /health, /api/v5/clients, /api/v5/projects, /api/v5/agent-workflow/assign",
         },
     )
 

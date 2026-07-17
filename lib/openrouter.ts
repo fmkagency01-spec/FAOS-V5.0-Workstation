@@ -1,4 +1,10 @@
 import {
+  getTokenSavingDefaults,
+  isTokenSavingMode,
+  trimMessagesForTokenSaving,
+  TOKEN_SAVING_SYSTEM_HINT,
+} from "@/lib/token-saving";
+import {
   assertHealthyCompletionTokens,
   assertOpenRouterRequestAllowed,
   OpenRouterGuardError,
@@ -68,7 +74,13 @@ async function callOpenRouterApi(
     );
   }
 
-  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const saving = getTokenSavingDefaults();
+  let prepared = trimMessagesForTokenSaving(messages);
+  if (isTokenSavingMode() && !prepared.some((m) => m.role === "system")) {
+    prepared = [{ role: "system", content: TOKEN_SAVING_SYSTEM_HINT }, ...prepared];
+  }
+
+  const lastUser = [...prepared].reverse().find((m) => m.role === "user");
   const model = options?.model || resolveModel(lastUser?.content || "");
 
   const response = await fetch(OPENROUTER_ENDPOINT, {
@@ -83,9 +95,9 @@ async function callOpenRouterApi(
     },
     body: JSON.stringify({
       model,
-      messages,
-      max_tokens: options?.maxTokens ?? 700,
-      temperature: options?.temperature ?? 0.4,
+      messages: prepared,
+      max_tokens: options?.maxTokens ?? saving.maxTokens,
+      temperature: options?.temperature ?? saving.temperature,
     }),
   });
 

@@ -1,0 +1,86 @@
+{
+  "platform": "FAOS v5.0 Business Suite",
+  "tagline": "One-stop modular ERP — upgrade sections on demand",
+  "modules": [
+    {
+      "id": "home",
+      "name": "Home",
+      "icon": "🏠",
+      "route": "/",
+      "category": "core",
+      "tier": "core",
+      "enabled": true,
+      "description": "Apps launcher and executive overview"
+    },
+    {
+      "id": "crm",
+      "name": "CRM & Clients",
+      "icon": "👥",
+      "route": "/clients",
+      "category": "sales",
+      "tier": "core",
+      "enabled": true,
+      "description": "Client profiles, assignments, and contact command center"
+    },
+    {
+      "id": "projects",
+      "name": "Projects",
+      "icon": "📋",
+      "route": "/projects",
+      "category": "operations",
+      "tier": "core",
+      "enabled": true,
+      "description": "Project boards, milestones, and agent task routing"
+    },
+    {
+      "id": "agents",
+      "name": "Agent Workflow",
+      "icon": "🤖",
+      "route": "/agents",
+      "category": "automation",
+      "tier": "pro",
+      "enabled": true,
+      "description": "Assign commands to agents — token-saving mode enforced"
+    },
+    {
+      "id": "create-pillar",
+      "name": "Create Pillar",
+      "icon": "🏭",
+      "route": "/dashboard/create-pillar",
+      "category": "manufacturing",
+      "tier": "core",
+      "enabled": true,
+      "description": "FMK retail manufacturing & supply orchestration"
+    },
+    {
+      "id": "command",
+      "name": "Command Center",
+      "icon": "⚡",
+      "route": "/operations",
+      "category": "core",
+      "tier": "core",
+      "enabled": true,
+      "description": "Secure AI command terminal (server-side keys only)"
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "icon": "⚙️",
+      "route": "/settings",
+      "category": "system",
+      "tier": "core",
+      "enabled": true,
+      "description": "Enable/disable modules and token-saving policies"
+    },
+    {
+      "id": "status",
+      "name": "System Health",
+      "icon": "💚",
+      "route": "/status",
+      "category": "system",
+      "tier": "core",
+      "enabled": true,
+      "description": "One-click infrastructure status check"
+    }
+  ]
+}
