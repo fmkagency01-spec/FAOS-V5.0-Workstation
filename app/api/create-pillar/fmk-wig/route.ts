@@ -10,7 +10,7 @@ export async function GET() {
   const base = getFaosBackendBaseUrl();
   if (base) {
     try {
-      const upstream = await fetch(joinBackendUrl("api/v5/create-pillar/fmk-wig"), {
+      const upstream = await fetch(joinBackendUrl("create-pillar/fmk-wig"), {
         cache: "no-store",
       });
       if (upstream.ok) {

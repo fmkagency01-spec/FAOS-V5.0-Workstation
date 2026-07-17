@@ -40,7 +40,7 @@ async function fetchRender(
 export async function GET() {
   const base = getFaosBackendBaseUrl();
   if (base) {
-    const upstream = await fetchRender("api/v5/agent-trigger", { method: "GET" });
+    const upstream = await fetchRender("agent-trigger", { method: "GET" });
     if (upstream?.ok) {
       return new NextResponse(await upstream.text(), {
         status: upstream.status,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
   const base = getFaosBackendBaseUrl();
 
   if (base) {
-    const upstream = await fetchRender("api/v5/agent-trigger", {
+    const upstream = await fetchRender("agent-trigger", {
       method: "POST",
       body: raw,
     });

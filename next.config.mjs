@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
-const backend = (process.env.NEXT_PUBLIC_BACKEND_URL ||
+const rawBackend = (process.env.NEXT_PUBLIC_BACKEND_URL ||
   process.env.NEXT_PUBLIC_FAOS_BACKEND_URL ||
   "")
   .trim()
   .replace(/\/+$/, "");
+
+const backendV5 = rawBackend
+  ? rawBackend.endsWith("/api/v5")
+    ? rawBackend
+    : `${rawBackend}/api/v5`
+  : "";
 
 const nextConfig = {
   reactStrictMode: true,
@@ -21,10 +27,10 @@ const nextConfig = {
       },
     ];
 
-    if (backend) {
+    if (backendV5) {
       rules.push({
         source: "/render-api/:path*",
-        destination: `${backend}/api/:path*`,
+        destination: `${backendV5}/:path*`,
       });
     }
 

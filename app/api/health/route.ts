@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCreatePillarNamespace } from "@/lib/create-pillar";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
-import { getBackendRootUrl, getFaosBackendBaseUrl } from "@/lib/backend";
+import { getBackendRootUrl, getFaosBackendBaseUrl, getBackendDocsUrl } from "@/lib/backend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,7 +30,7 @@ async function probeRenderBackend(): Promise<{
         configured: true,
         status: "offline",
         message: `Render responded ${res.status}`,
-        docs_url: `${base}/docs`,
+        docs_url: getBackendDocsUrl() || undefined,
       };
     }
     const data = (await res.json()) as { status?: string; message?: string };
@@ -38,14 +38,14 @@ async function probeRenderBackend(): Promise<{
       configured: true,
       status: data.status === "active" ? "online" : "offline",
       message: data.message,
-      docs_url: `${base}/docs`,
+      docs_url: getBackendDocsUrl() || undefined,
     };
   } catch (err) {
     return {
       configured: true,
       status: "offline",
       message: err instanceof Error ? err.message : "Render unreachable",
-      docs_url: `${base}/docs`,
+      docs_url: getBackendDocsUrl() || undefined,
     };
   } finally {
     clearTimeout(timer);

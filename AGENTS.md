@@ -16,7 +16,8 @@ This repository is a **Next.js 15 App Router** app for the
 Never use `fmk_week`, `fmcg_wish`, or `fmk_fmcg_week_supply_agent`.
 
 Backend URL env (no trailing slash): `NEXT_PUBLIC_BACKEND_URL` or
-`NEXT_PUBLIC_FAOS_BACKEND_URL`.
+`NEXT_PUBLIC_FAOS_BACKEND_URL` — use the v5 API base, e.g.
+`https://faos-backend.onrender.com/api/v5`. Host-only URLs are auto-normalized.
 
 When set, Next `/api/create-pillar` and `/api/agent-trigger` proxy to Render
 `/api/v5/*`. If Render is asleep/missing (free tier), they fall back to the

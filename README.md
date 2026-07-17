@@ -49,7 +49,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 Set on Vercel (**no trailing slash**):
 
 ```
-NEXT_PUBLIC_BACKEND_URL=https://faos-backend.onrender.com
+NEXT_PUBLIC_BACKEND_URL=https://faos-backend.onrender.com/api/v5
 ```
 
 (`NEXT_PUBLIC_FAOS_BACKEND_URL` is accepted as an alias.)

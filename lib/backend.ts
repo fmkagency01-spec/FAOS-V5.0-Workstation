@@ -1,26 +1,49 @@
 /**
  * FAOS frontend → Render Python backend URL calibration.
  *
- * Supports both:
- *   NEXT_PUBLIC_BACKEND_URL
- *   NEXT_PUBLIC_FAOS_BACKEND_URL
+ * Production base URL (include /api/v5):
+ *   NEXT_PUBLIC_BACKEND_URL=https://faos-backend.onrender.com/api/v5
  *
- * CRITICAL: trailing slashes are always stripped to prevent
- * `https://host.onrender.com//api/...` 404 mismatches.
+ * Host-only URLs are still accepted and normalized to .../api/v5.
+ * CRITICAL: trailing slashes are always stripped.
  */
+
+const API_V5_SUFFIX = "/api/v5";
 
 function stripTrailingSlashes(url: string): string {
   return url.trim().replace(/\/+$/, "");
 }
 
-export function getFaosBackendBaseUrl(): string {
-  const configured =
+function readConfiguredBackendUrl(): string {
+  return (
     process.env.NEXT_PUBLIC_BACKEND_URL?.trim() ||
     process.env.NEXT_PUBLIC_FAOS_BACKEND_URL?.trim() ||
-    "";
+    ""
+  );
+}
 
+/** Normalize env value to the v5 API base: https://host.onrender.com/api/v5 */
+function normalizeToV5Base(url: string): string {
+  const stripped = stripTrailingSlashes(url);
+  if (!stripped) return "";
+  if (stripped.endsWith(API_V5_SUFFIX)) return stripped;
+  return `${stripped}${API_V5_SUFFIX}`;
+}
+
+/** v5 API base used for all production network requests */
+export function getFaosBackendBaseUrl(): string {
+  const configured = readConfiguredBackendUrl();
   if (!configured) return "";
-  return stripTrailingSlashes(configured);
+  return normalizeToV5Base(configured);
+}
+
+/** Render service origin (health, docs) — without /api/v5 */
+export function getFaosBackendOriginUrl(): string {
+  const base = getFaosBackendBaseUrl();
+  if (!base) return "";
+  return base.endsWith(API_V5_SUFFIX)
+    ? base.slice(0, -API_V5_SUFFIX.length)
+    : stripTrailingSlashes(base);
 }
 
 export function joinBackendUrl(...parts: string[]): string {
@@ -42,23 +65,28 @@ export function getCreatePillarApiUrl(path = ""): string {
 
   if (base) {
     return normalized
-      ? joinBackendUrl("api/v5/create-pillar", normalized)
-      : joinBackendUrl("api/v5/create-pillar");
+      ? joinBackendUrl("create-pillar", normalized)
+      : joinBackendUrl("create-pillar");
   }
 
-  // Same-origin Next.js fallback when Render URL is not configured.
   return normalized ? `/api/create-pillar/${normalized}` : "/api/create-pillar";
 }
 
 export function getAgentTriggerApiUrl(): string {
   const base = getFaosBackendBaseUrl();
-  if (base) return joinBackendUrl("api/v5/agent-trigger");
+  if (base) return joinBackendUrl("agent-trigger");
   return "/api/agent-trigger";
 }
 
+/** Root health probe — lives at service origin `/`, not under /api/v5 */
 export function getBackendRootUrl(): string {
-  const base = getFaosBackendBaseUrl();
-  return base || "/api/health";
+  const origin = getFaosBackendOriginUrl();
+  return origin ? `${origin}/` : "/api/health";
+}
+
+export function getBackendDocsUrl(): string {
+  const origin = getFaosBackendOriginUrl();
+  return origin ? `${origin}/docs` : "";
 }
 
 export function getApiVersion(): string {

@@ -55,7 +55,7 @@ function localCreatePillarGet() {
 }
 
 export async function GET() {
-  const upstream = await fetchRender("api/v5/create-pillar", { method: "GET" });
+  const upstream = await fetchRender("create-pillar", { method: "GET" });
   if (upstream && upstream.ok) {
     const text = await upstream.text();
     return new NextResponse(text, {
@@ -74,7 +74,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const raw = await request.text();
 
-  const upstream = await fetchRender("api/v5/create-pillar", {
+  const upstream = await fetchRender("create-pillar", {
     method: "POST",
     body: raw,
   });
