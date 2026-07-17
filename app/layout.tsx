@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FAOS v5.0 — Business Suite",
+  title: "FAOS v5.1 — JARVIS Business Suite",
   description:
-    "Modular Odoo-style ERP workstation — CRM, projects, agent workflows, token-saving AI",
+    "JARVIS AI orchestrator — voice & chat, 25 shell agents, ERP (CRM, invoicing, inventory, HR), creative & video studio",
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>",
   },

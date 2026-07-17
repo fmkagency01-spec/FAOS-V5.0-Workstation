@@ -1,0 +1,231 @@
+{
+  "version": "5.1.0",
+  "orchestrator": "jarvis_core",
+  "agents": [
+    {
+      "id": "jarvis_core",
+      "name": "JARVIS Core",
+      "icon": "🧠",
+      "domain": "orchestration",
+      "keywords": ["jarvis", "command", "orchestrate", "delegate", "coordinate"],
+      "model_hint": "strategy",
+      "description": "Central orchestrator — routes commands to specialist shell agents"
+    },
+    {
+      "id": "fmk_wig_prosthetic_hair_agent",
+      "name": "FMK WIG Agent",
+      "icon": "💇",
+      "domain": "brand",
+      "keywords": ["wig", "hair", "prosthetic", "toupee", "hair system"],
+      "model_hint": "automation",
+      "description": "Prosthetic hair systems, inventory, supply chain"
+    },
+    {
+      "id": "fmk_shoes_footwear_wing",
+      "name": "FMK Shoes Agent",
+      "icon": "👟",
+      "domain": "brand",
+      "keywords": ["shoe", "footwear", "sneaker", "boot", "sandal"],
+      "model_hint": "automation",
+      "description": "Footwear retail and wholesale operations"
+    },
+    {
+      "id": "fmk_mk_kitchen_cloud_food_agent",
+      "name": "MK Kitchen Agent",
+      "icon": "🍳",
+      "domain": "brand",
+      "keywords": ["kitchen", "food", "recipe", "cloud food", "catering"],
+      "model_hint": "automation",
+      "description": "MK Kitchen Cloud Food brand operations"
+    },
+    {
+      "id": "fmk_mk_clothing_lifestyle_agent",
+      "name": "MK Clothing Agent",
+      "icon": "👔",
+      "domain": "brand",
+      "keywords": ["clothing", "apparel", "fashion", "lifestyle", "garment"],
+      "model_hint": "automation",
+      "description": "MK Clothing & lifestyle retail"
+    },
+    {
+      "id": "crm_client_agent",
+      "name": "CRM Agent",
+      "icon": "👥",
+      "domain": "sales",
+      "keywords": ["client", "customer", "crm", "lead", "contact", "prospect"],
+      "model_hint": "analysis",
+      "description": "Client profiles, leads, relationship management"
+    },
+    {
+      "id": "sales_pipeline_agent",
+      "name": "Sales Pipeline Agent",
+      "icon": "📈",
+      "domain": "sales",
+      "keywords": ["sales", "deal", "pipeline", "quote", "proposal", "close"],
+      "model_hint": "strategy",
+      "description": "Sales pipeline, quotes, and deal closing"
+    },
+    {
+      "id": "invoicing_finance_agent",
+      "name": "Invoicing Agent",
+      "icon": "🧾",
+      "domain": "finance",
+      "keywords": ["invoice", "bill", "payment", "receipt", "billing", "due"],
+      "model_hint": "analysis",
+      "description": "Invoices, billing, payment tracking"
+    },
+    {
+      "id": "accounting_agent",
+      "name": "Accounting Agent",
+      "icon": "📊",
+      "domain": "finance",
+      "keywords": ["accounting", "ledger", "tax", "expense", "profit", "balance"],
+      "model_hint": "analysis",
+      "description": "Financial records, expenses, tax prep"
+    },
+    {
+      "id": "inventory_supply_agent",
+      "name": "Inventory Agent",
+      "icon": "📦",
+      "domain": "operations",
+      "keywords": ["inventory", "stock", "sku", "warehouse", "quantity", "reorder"],
+      "model_hint": "analysis",
+      "description": "Stock levels, SKU management, reorder alerts"
+    },
+    {
+      "id": "logistics_agent",
+      "name": "Logistics Agent",
+      "icon": "🚚",
+      "domain": "operations",
+      "keywords": ["shipping", "delivery", "logistics", "freight", "courier", "tracking"],
+      "model_hint": "automation",
+      "description": "Shipping, delivery, supply chain logistics"
+    },
+    {
+      "id": "hr_people_agent",
+      "name": "HR Agent",
+      "icon": "🧑‍💼",
+      "domain": "hr",
+      "keywords": ["hr", "employee", "hire", "payroll", "leave", "staff", "team"],
+      "model_hint": "analysis",
+      "description": "HR records, hiring, payroll, leave management"
+    },
+    {
+      "id": "recruitment_agent",
+      "name": "Recruitment Agent",
+      "icon": "🎯",
+      "domain": "hr",
+      "keywords": ["recruit", "interview", "candidate", "job", "hiring", "resume"],
+      "model_hint": "strategy",
+      "description": "Job posts, candidate screening, interviews"
+    },
+    {
+      "id": "creative_design_agent",
+      "name": "Creative Design Agent",
+      "icon": "🎨",
+      "domain": "marketing",
+      "keywords": ["design", "graphic", "logo", "banner", "brand", "visual", "creative"],
+      "model_hint": "creative",
+      "description": "Graphics, branding, visual assets"
+    },
+    {
+      "id": "video_production_agent",
+      "name": "Video Production Agent",
+      "icon": "🎬",
+      "domain": "marketing",
+      "keywords": ["video", "edit", "reel", "youtube", "tiktok", "storyboard", "capcut"],
+      "model_hint": "video",
+      "description": "Video scripts, edit plans, storyboards"
+    },
+    {
+      "id": "social_media_agent",
+      "name": "Social Media Agent",
+      "icon": "📱",
+      "domain": "marketing",
+      "keywords": ["social", "instagram", "facebook", "post", "hashtag", "engagement"],
+      "model_hint": "creative",
+      "description": "Social content, scheduling, engagement"
+    },
+    {
+      "id": "marketing_strategy_agent",
+      "name": "Marketing Strategy Agent",
+      "icon": "📣",
+      "domain": "marketing",
+      "keywords": ["marketing", "campaign", "ads", "promotion", "launch", "audience"],
+      "model_hint": "strategy",
+      "description": "Campaign strategy, ads, go-to-market"
+    },
+    {
+      "id": "project_ops_agent",
+      "name": "Project Ops Agent",
+      "icon": "📋",
+      "domain": "operations",
+      "keywords": ["project", "milestone", "task", "deadline", "sprint", "kanban"],
+      "model_hint": "automation",
+      "description": "Project boards, milestones, task routing"
+    },
+    {
+      "id": "support_service_agent",
+      "name": "Support Agent",
+      "icon": "🎧",
+      "domain": "support",
+      "keywords": ["support", "ticket", "complaint", "help", "refund", "warranty"],
+      "model_hint": "chat",
+      "description": "Customer support tickets and resolutions"
+    },
+    {
+      "id": "legal_compliance_agent",
+      "name": "Legal Agent",
+      "icon": "⚖️",
+      "domain": "legal",
+      "keywords": ["legal", "contract", "compliance", "terms", "policy", "regulation"],
+      "model_hint": "strategy",
+      "description": "Contracts, compliance, policy review"
+    },
+    {
+      "id": "it_devops_agent",
+      "name": "IT DevOps Agent",
+      "icon": "🖥️",
+      "domain": "tech",
+      "keywords": ["deploy", "server", "api", "devops", "infrastructure", "vercel", "render"],
+      "model_hint": "code",
+      "description": "Infrastructure, deployments, API health"
+    },
+    {
+      "id": "code_engineering_agent",
+      "name": "Code Engineering Agent",
+      "icon": "💻",
+      "domain": "tech",
+      "keywords": ["code", "debug", "typescript", "python", "bug", "feature", "build"],
+      "model_hint": "code",
+      "description": "Software development and debugging"
+    },
+    {
+      "id": "research_analytics_agent",
+      "name": "Research Agent",
+      "icon": "🔬",
+      "domain": "analytics",
+      "keywords": ["research", "market", "competitor", "trend", "data", "report"],
+      "model_hint": "analysis",
+      "description": "Market research, competitor analysis, reports"
+    },
+    {
+      "id": "executive_strategy_agent",
+      "name": "Executive Strategy Agent",
+      "icon": "👑",
+      "domain": "executive",
+      "keywords": ["strategy", "vision", "roadmap", "kpi", "okr", "executive", "ceo"],
+      "model_hint": "strategy",
+      "description": "Executive planning, KPIs, 10x growth strategy"
+    },
+    {
+      "id": "bengali_localization_agent",
+      "name": "Bengali Agent",
+      "icon": "🇧🇩",
+      "domain": "localization",
+      "keywords": ["bangla", "bengali", "বাংলা", "translate", "local"],
+      "model_hint": "bengali",
+      "description": "Bengali language support and localization"
+    }
+  ]
+}

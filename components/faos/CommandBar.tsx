@@ -21,7 +21,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
   const [history, setHistory] = useState<ChatEntry[]>([
     {
       role: 'system',
-      text: 'FAOS AI Gateway — ask anything. Best model (Claude/GPT/Gemini) auto-selected. Token-saving ON.',
+      text: 'JARVIS Gateway — ask anything. 25 agents · best AI auto-routed. Token-saving ON.',
     },
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,10 +38,10 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
     setInput('');
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/jarvis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: q }),
+        body: JSON.stringify({ command: q }),
       });
       const data = (await res.json()) as {
         reply?: string;
@@ -49,14 +49,15 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
         model?: string;
         intent?: string;
         route_label?: string;
-        provider?: string;
-        task_type?: string;
+        primary_agent?: { icon?: string; name?: string };
+        action_taken?: string;
         usage?: { total_tokens?: number };
       };
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
 
       const meta = [
-        data.route_label || data.model,
+        data.primary_agent ? `${data.primary_agent.icon} ${data.primary_agent.name}` : data.route_label,
+        data.action_taken,
         data.intent ? `intent: ${data.intent}` : '',
         data.usage?.total_tokens != null ? `${data.usage.total_tokens} tokens` : '',
       ]
@@ -119,7 +120,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') void send();
             }}
-            placeholder="Ask anything — AI picks best model (⌘K)"
+            placeholder="Ask JARVIS — voice via 🧠 button (⌘K)"
             className="w-full h-8 px-3 rounded-md bg-[#0c1222] border border-[#2a3548] text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-[#00f5d4]/50"
           />
           <button

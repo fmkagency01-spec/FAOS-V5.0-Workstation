@@ -1,6 +1,6 @@
 {
-  "platform": "FAOS v5.0 Business Suite",
-  "tagline": "One-stop modular ERP — upgrade sections on demand",
+  "platform": "FAOS v5.1 Business Suite",
+  "tagline": "JARVIS orchestrator — chat, voice, 25 agents, full ERP",
   "modules": [
     {
       "id": "home",
@@ -11,6 +11,16 @@
       "tier": "core",
       "enabled": true,
       "description": "Apps launcher and executive overview"
+    },
+    {
+      "id": "jarvis",
+      "name": "JARVIS AI",
+      "icon": "🧠",
+      "route": "/jarvis",
+      "category": "core",
+      "tier": "core",
+      "enabled": true,
+      "description": "Voice & chat command center — 25 shell agents orchestrated"
     },
     {
       "id": "crm",
@@ -31,6 +41,36 @@
       "tier": "core",
       "enabled": true,
       "description": "Project boards, milestones, and agent task routing"
+    },
+    {
+      "id": "invoicing",
+      "name": "Invoicing",
+      "icon": "🧾",
+      "route": "/invoicing",
+      "category": "finance",
+      "tier": "core",
+      "enabled": true,
+      "description": "Billing, invoices, and payment tracking"
+    },
+    {
+      "id": "inventory",
+      "name": "Inventory",
+      "icon": "📦",
+      "route": "/inventory",
+      "category": "operations",
+      "tier": "core",
+      "enabled": true,
+      "description": "SKU stock levels, warehouses, reorder alerts"
+    },
+    {
+      "id": "hr",
+      "name": "HR & People",
+      "icon": "🧑‍💼",
+      "route": "/hr",
+      "category": "hr",
+      "tier": "core",
+      "enabled": true,
+      "description": "Employee records, hiring, departments"
     },
     {
       "id": "agents",
@@ -60,7 +100,7 @@
       "category": "marketing",
       "tier": "pro",
       "enabled": true,
-      "description": "Graphics & video tasks — best AI model auto-selected and delivered"
+      "description": "Image gen, graphics & video — best AI model auto-selected"
     },
     {
       "id": "command",

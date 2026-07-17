@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from router.create_pillar_routing import orchestrator
+from router.erp_routing import erp
 from router.workflow_routing import workflow
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
@@ -50,7 +51,7 @@ def _cors_origins() -> List[str]:
 
 app = FastAPI(
     title="FAOS Backend Core",
-    version="5.0",
+    version="5.1",
     # Avoid silent 307 redirects that break POST when clients add a trailing slash.
     redirect_slashes=False,
 )
@@ -81,8 +82,8 @@ async def root_health() -> Dict[str, Any]:
     """Default root health handler for Render uptime / browser probes."""
     return {
         "status": "active",
-        "message": "FAOS v5.0 Backend serving on Render cluster",
-        "system": "FAOS v5.0 Central Framework",
+        "message": "FAOS v5.1 Backend serving on Render cluster",
+        "system": "FAOS v5.1 Central Framework",
         "engine": "Aigorithm System Core Active",
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
@@ -250,6 +251,52 @@ async def assign_agent_workflow(payload: Dict[str, Any]) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+# --- ERP: Invoicing, Inventory, HR (Phase 3) ---
+
+
+@app.get("/api/v5/invoices")
+async def list_invoices() -> Dict[str, Any]:
+    return {"ok": True, "invoices": erp.list_invoices()}
+
+
+@app.post("/api/v5/invoices")
+async def create_invoice(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = erp.create_invoice(payload)
+    return {"ok": True, "invoice": record}
+
+
+@app.get("/api/v5/inventory")
+async def list_inventory() -> Dict[str, Any]:
+    return {"ok": True, "inventory": erp.list_inventory()}
+
+
+@app.post("/api/v5/inventory")
+async def create_inventory_item(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = erp.create_inventory(payload)
+    return {"ok": True, "item": record}
+
+
+@app.patch("/api/v5/inventory/{item_id}")
+async def adjust_inventory(item_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        delta = int(payload.get("delta") or 0)
+        item = erp.adjust_stock(item_id, delta)
+        return {"ok": True, "item": item}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/employees")
+async def list_employees() -> Dict[str, Any]:
+    return {"ok": True, "employees": erp.list_employees()}
+
+
+@app.post("/api/v5/employees")
+async def create_employee(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = erp.create_employee(payload)
+    return {"ok": True, "employee": record}
+
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: Any):
     return JSONResponse(
@@ -258,7 +305,7 @@ async def not_found_handler(request: Request, exc: Any):
             "ok": False,
             "error": "Route not found",
             "path": request.url.path,
-            "hint": "Use /, /health, /api/v5/clients, /api/v5/projects, /api/v5/agent-workflow/assign",
+            "hint": "Use /, /health, /api/v5/clients, /api/v5/invoices, /api/v5/inventory, /api/v5/employees",
         },
     )
 

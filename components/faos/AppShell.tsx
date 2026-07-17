@@ -10,6 +10,7 @@ import {
   type FaosModule,
 } from '@/lib/modules-registry';
 import { CommandBar } from '@/components/faos/CommandBar';
+import { JarvisPanel } from '@/components/faos/JarvisPanel';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -78,7 +79,7 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </nav>
         <div className="p-3 border-t border-[#2a3548] text-[10px] text-slate-500">
-          Token-saving mode ON · No auto-loops
+          JARVIS v5.1 · 25 agents · Token-save ON
         </div>
       </aside>
 
@@ -94,8 +95,9 @@ export function AppShell({ children }: AppShellProps) {
             ☰
           </button>
           <CommandBar variant="bar" />
-          <span className="hidden lg:inline text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded shrink-0">
-            AI GATEWAY
+          <JarvisPanel compact />
+          <span className="hidden xl:inline text-[10px] font-mono text-[#00f5d4] bg-[#00f5d4]/10 px-2 py-1 rounded shrink-0">
+            v5.1
           </span>
           <Link href="/status" className="text-xs text-slate-400 hover:text-[#00f5d4]">
             Health
