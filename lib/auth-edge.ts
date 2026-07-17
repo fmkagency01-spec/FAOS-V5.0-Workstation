@@ -17,6 +17,7 @@ export async function getSessionFromCookieHeader(
 
 const ROUTE_MODULES: Record<string, string> = {
   "/": "home",
+  "/tac": "tac",
   "/jarvis": "jarvis",
   "/clients": "crm",
   "/projects": "projects",
@@ -35,7 +36,7 @@ const ROUTE_MODULES: Record<string, string> = {
 const ROLE_MODULES: Record<string, string[]> = {
   owner: ["*"],
   manager: [
-    "home", "jarvis", "crm", "projects", "agents", "inventory",
+    "home", "tac", "jarvis", "crm", "projects", "agents", "inventory",
     "command", "creative", "create-pillar", "status",
   ],
   sales: ["home", "crm", "projects", "command", "status"],
@@ -58,7 +59,7 @@ export function isProtectedPage(pathname: string): boolean {
   if (pathname === "/login") return false;
   if (pathname === "/") return true;
   return [
-    "/jarvis", "/clients", "/projects", "/invoicing", "/inventory", "/hr",
+    "/jarvis", "/tac", "/clients", "/projects", "/invoicing", "/inventory", "/hr",
     "/agents", "/creative", "/operations", "/settings", "/team", "/status", "/dashboard",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
@@ -67,7 +68,7 @@ export function isProtectedApiEdge(pathname: string): boolean {
   if (pathname.startsWith("/api/auth")) return false;
   if (pathname === "/api/health") return false;
   return [
-    "/api/jarvis", "/api/chat", "/api/agent-workflow", "/api/clients", "/api/projects",
+    "/api/tac", "/api/jarvis", "/api/chat", "/api/agent-workflow", "/api/clients", "/api/projects",
     "/api/invoices", "/api/inventory", "/api/hr", "/api/media", "/api/harvest",
     "/api/create-pillar", "/api/agent-trigger",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));

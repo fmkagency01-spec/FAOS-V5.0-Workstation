@@ -1,28 +1,28 @@
 {
-  "version": "5.2.0",
+  "version": "5.3.0",
   "policy": "FMK Group FAOS — role-based access. Owner sees all; teammates see assigned modules only.",
   "roles": {
     "owner": {
       "label": "Executive / Owner",
-      "description": "Full access — JARVIS, finance, HR, settings, all private data",
+      "description": "Full access — TAC, JARVIS, finance, HR, all private data",
       "modules": ["*"],
       "can_manage_team": true
     },
     "manager": {
       "label": "Operations Manager",
-      "description": "Projects, agents, CRM, inventory — no executive finance/HR",
-      "modules": ["home", "jarvis", "crm", "projects", "agents", "inventory", "command", "creative", "create-pillar", "status"],
+      "description": "TAC, projects, agents, CRM, inventory — no executive finance/HR",
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "command", "creative", "create-pillar", "status"],
       "can_manage_team": false
     },
     "sales": {
       "label": "Sales Team",
-      "description": "Clients and projects only — no invoices, HR, or owner settings",
+      "description": "Clients and projects only — no invoices, HR, or TAC executive",
       "modules": ["home", "crm", "projects", "command", "status"],
       "can_manage_team": false
     },
     "finance": {
       "label": "Finance Team",
-      "description": "Invoicing and inventory — no HR personal records or JARVIS executive commands",
+      "description": "Invoicing and inventory — no HR personal records or JARVIS",
       "modules": ["home", "invoicing", "inventory", "status"],
       "can_manage_team": false
     },
@@ -47,6 +47,7 @@
   },
   "route_module_map": {
     "/": "home",
+    "/tac": "tac",
     "/jarvis": "jarvis",
     "/clients": "crm",
     "/projects": "projects",

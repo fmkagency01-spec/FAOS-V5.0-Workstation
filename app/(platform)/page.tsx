@@ -35,7 +35,7 @@ function HomeContent() {
 
       <div className="mb-8">
         <h1 className="text-xl md:text-3xl font-bold text-white">
-          FAOS <span className="text-[#00f5d4]">v5.2</span>
+          FAOS <span className="text-[#00f5d4]">v5.3</span> TAC Masterpiece
           {userName && (
             <span className="block text-sm font-normal text-slate-400 mt-1">
               Welcome, {userName}
@@ -43,8 +43,16 @@ function HomeContent() {
           )}
         </h1>
         <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-          Secure workstation — your role sees only assigned modules. Desktop & iPhone ready.
+          Secure TAC workstation — 3 pillars synced with JARVIS & backend agents.
         </p>
+        {modules.some((m) => m.id === 'tac') && (
+          <Link
+            href="/tac"
+            className="inline-flex mt-4 items-center gap-2 px-4 py-3 rounded-lg bg-[#00f5d4]/10 border border-[#00f5d4]/30 text-[#00f5d4] text-sm font-bold hover:bg-[#00f5d4]/20 min-h-[48px] touch-manipulation mr-2"
+          >
+            🧬 TAC Command Center
+          </Link>
+        )}
         {modules.some((m) => m.id === 'jarvis') && (
           <Link
             href="/jarvis"

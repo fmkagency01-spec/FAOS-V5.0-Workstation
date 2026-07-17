@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FAOS v5.2 — JARVIS Business Suite",
+  title: "FAOS v5.3 — TAC Masterpiece Workstation",
   description:
-    "Secure JARVIS workstation — role-based login, mobile-ready, 25 shell agents, full ERP",
+    "TAC Central Brain — 3 pillars, JARVIS voice AI, 25 agents, secure ERP, mobile-ready",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

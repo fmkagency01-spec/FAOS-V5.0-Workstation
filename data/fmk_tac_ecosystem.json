@@ -1,0 +1,97 @@
+{
+  "version": "5.3.0",
+  "parent_company": {
+    "id": "fmk_group_ltd",
+    "name": "FMK Group LTD.",
+    "tac_brain": "TAC Central Command",
+    "aigorithm_engine": "Aigorithm System Core",
+    "hub": "FMK (Manufacturing & Construction Hub)",
+    "gatekeeper_protocol": [
+      "Generation Request",
+      "Aigorithm Technical Permit",
+      "TAC Creative Brand Approval",
+      "Live API Deployment"
+    ],
+    "tac_approval_url": "https://tac.fmk-ecosystem.internal/approve"
+  },
+  "pillars": [
+    {
+      "id": "create",
+      "name": "Create Pillar",
+      "icon": "🏭",
+      "subtitle": "Manufacturing & Retail",
+      "route": "/dashboard/create-pillar",
+      "namespace": "fmk_create_pillar_retail_core",
+      "modules": ["create-pillar", "inventory", "agents"],
+      "agents": [
+        "fmk_wig_prosthetic_hair_agent",
+        "fmk_mk_clothing_lifestyle_agent",
+        "fmk_mk_kitchen_cloud_food_agent",
+        "fmk_shoes_footwear_wing",
+        "inventory_supply_agent",
+        "logistics_agent"
+      ],
+      "work_sections": [
+        { "id": "supply", "label": "Supply & Production", "agent": "inventory_supply_agent" },
+        { "id": "brands", "label": "Brand Operations", "agent": "fmk_wig_prosthetic_hair_agent" },
+        { "id": "logistics", "label": "Global Logistics", "agent": "logistics_agent" }
+      ]
+    },
+    {
+      "id": "connect",
+      "name": "Connect Pillar",
+      "icon": "📡",
+      "subtitle": "Media, CRM & Commerce Flow",
+      "route": "/clients",
+      "namespace": "fmk_connect_commerce_core",
+      "modules": ["crm", "projects", "creative", "agents", "command"],
+      "agents": [
+        "crm_client_agent",
+        "sales_pipeline_agent",
+        "creative_design_agent",
+        "video_production_agent",
+        "social_media_agent",
+        "marketing_strategy_agent",
+        "project_ops_agent"
+      ],
+      "work_sections": [
+        { "id": "crm", "label": "CRM & Clients", "agent": "crm_client_agent" },
+        { "id": "creative", "label": "Creative Studio", "agent": "creative_design_agent" },
+        { "id": "media", "label": "Media & Video", "agent": "video_production_agent" }
+      ],
+      "synergy_routes": {
+        "media_pipeline": "fmk_media_empire_pipeline ➡️ fmk_editing_hub",
+        "audio_engine": "Suno_ElevenLabs_Generative_Stack",
+        "audio_queue": "fmk_records_audio_empire_pipeline"
+      }
+    },
+    {
+      "id": "capital",
+      "name": "Capital Pillar",
+      "icon": "🏛️",
+      "subtitle": "Finance, HR & Executive Control",
+      "route": "/invoicing",
+      "namespace": "fmk_capital_operations_core",
+      "modules": ["invoicing", "hr", "settings", "team"],
+      "agents": [
+        "invoicing_finance_agent",
+        "accounting_agent",
+        "hr_people_agent",
+        "recruitment_agent",
+        "executive_strategy_agent",
+        "legal_compliance_agent"
+      ],
+      "work_sections": [
+        { "id": "finance", "label": "Invoicing & Billing", "agent": "invoicing_finance_agent" },
+        { "id": "hr", "label": "HR & People", "agent": "hr_people_agent" },
+        { "id": "strategy", "label": "Executive Strategy", "agent": "executive_strategy_agent" }
+      ]
+    }
+  ],
+  "jarvis_orchestrator": {
+    "id": "jarvis_core",
+    "route": "/jarvis",
+    "shell_agents_total": 25,
+    "sync_backend": "https://faos-backend.onrender.com/api/v5"
+  }
+}

@@ -12,6 +12,7 @@ export function MobileBottomNav({ modules }: MobileBottomNavProps) {
 
   const primary = [
     modules.find((m) => m.id === 'home'),
+    modules.find((m) => m.id === 'tac'),
     modules.find((m) => m.id === 'jarvis'),
     modules.find((m) => m.id === 'crm' || m.id === 'clients'),
     modules.find((m) => m.id === 'command' || m.route === '/operations'),

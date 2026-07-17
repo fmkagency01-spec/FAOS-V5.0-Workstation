@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 
 from router.create_pillar_routing import orchestrator
 from router.erp_routing import erp
+from router.tac_routing import tac
 from router.workflow_routing import workflow
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
@@ -51,7 +52,7 @@ def _cors_origins() -> List[str]:
 
 app = FastAPI(
     title="FAOS Backend Core",
-    version="5.1",
+    version="5.3",
     # Avoid silent 307 redirects that break POST when clients add a trailing slash.
     redirect_slashes=False,
 )
@@ -82,8 +83,8 @@ async def root_health() -> Dict[str, Any]:
     """Default root health handler for Render uptime / browser probes."""
     return {
         "status": "active",
-        "message": "FAOS v5.1 Backend serving on Render cluster",
-        "system": "FAOS v5.1 Central Framework",
+        "message": "FAOS v5.3 Backend serving on Render cluster",
+        "system": "FAOS v5.3 TAC Central Framework",
         "engine": "Aigorithm System Core Active",
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
@@ -297,6 +298,32 @@ async def create_employee(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"ok": True, "employee": record}
 
 
+# --- TAC Central Brain (3 Pillars + Parent Company) ---
+
+
+@app.get("/api/v5/tac/status")
+async def tac_status() -> Dict[str, Any]:
+    return tac.get_status()
+
+
+@app.post("/api/v5/tac/sync")
+async def tac_sync() -> Dict[str, Any]:
+    return tac.sync_pillars()
+
+
+@app.post("/api/v5/tac/dispatch")
+async def tac_dispatch(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return tac.dispatch_command(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/tac/commands")
+async def tac_commands() -> Dict[str, Any]:
+    return {"ok": True, "commands": tac.list_commands()}
+
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: Any):
     return JSONResponse(
@@ -305,7 +332,7 @@ async def not_found_handler(request: Request, exc: Any):
             "ok": False,
             "error": "Route not found",
             "path": request.url.path,
-            "hint": "Use /, /health, /api/v5/clients, /api/v5/invoices, /api/v5/inventory, /api/v5/employees",
+            "hint": "Use /, /health, /api/v5/tac/status, /api/v5/clients, /api/v5/invoices",
         },
     )
 

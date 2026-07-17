@@ -1,6 +1,6 @@
 {
-  "platform": "FAOS v5.2 Business Suite",
-  "tagline": "Secure JARVIS workstation — login, roles, mobile-ready",
+  "platform": "FAOS v5.3 TAC Masterpiece",
+  "tagline": "TAC Central Brain — 3 Pillars · JARVIS · 25 Agents · Secure ERP",
   "modules": [
     {
       "id": "home",
@@ -11,6 +11,16 @@
       "tier": "core",
       "enabled": true,
       "description": "Apps launcher and executive overview"
+    },
+    {
+      "id": "tac",
+      "name": "TAC Command",
+      "icon": "🧬",
+      "route": "/tac",
+      "category": "core",
+      "tier": "enterprise",
+      "enabled": true,
+      "description": "TAC Central Brain — 3 pillars, Aigorithm gatekeeper, parent company sync"
     },
     {
       "id": "jarvis",

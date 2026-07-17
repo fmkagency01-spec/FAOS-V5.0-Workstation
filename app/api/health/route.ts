@@ -65,9 +65,10 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     service: "faos-v5-workstation-api",
-    version: "5.2.0",
+    version: "5.3.0",
     status: "operational",
     timestamp: new Date().toISOString(),
+    tac: { pillars: 3, brain: "TAC Central Command", jarvis_agents: 25 },
     jarvis: { shell_agents: 25, voice: true, erp_modules: ["invoicing", "inventory", "hr"] },
     gateway: {
       openrouter: hasOpenRouterKey ? "configured" : "missing_key",
