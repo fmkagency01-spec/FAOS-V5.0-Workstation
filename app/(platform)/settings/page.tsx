@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   getAllModules,
@@ -64,6 +65,19 @@ export default function SettingsPage() {
           <li>ERP: Invoicing, Inventory, HR — voice-create via JARVIS</li>
           <li>Creative Studio: Flux image gen + video plans (Phase 4)</li>
         </ul>
+      </div>
+
+      <div className="rounded-xl border border-[#00f5d4]/30 bg-[#00f5d4]/5 p-5 text-sm text-[#00f5d4]">
+        <p className="font-bold">FAOS v5.2 — Secure login & roles</p>
+        <ul className="mt-2 text-xs space-y-1 text-[#00f5d4]/80 list-disc pl-4">
+          <li>Password login — httpOnly session cookie (7 days)</li>
+          <li>Teammates see only assigned modules — no data leak</li>
+          <li>Owner: Team & Security page for role policies</li>
+          <li>iPhone & desktop optimized — bottom nav on mobile</li>
+        </ul>
+        <Link href="/team" className="inline-block mt-3 text-xs text-[#00bbf9] hover:underline">
+          Team & Security policy →
+        </Link>
       </div>
 
       <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-5 text-sm text-emerald-100">

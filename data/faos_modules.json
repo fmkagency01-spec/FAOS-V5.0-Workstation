@@ -1,6 +1,6 @@
 {
-  "platform": "FAOS v5.1 Business Suite",
-  "tagline": "JARVIS orchestrator — chat, voice, 25 agents, full ERP",
+  "platform": "FAOS v5.2 Business Suite",
+  "tagline": "Secure JARVIS workstation — login, roles, mobile-ready",
   "modules": [
     {
       "id": "home",
@@ -111,6 +111,16 @@
       "tier": "core",
       "enabled": true,
       "description": "Secure AI command terminal (server-side keys only)"
+    },
+    {
+      "id": "team",
+      "name": "Team & Security",
+      "icon": "🔐",
+      "route": "/team",
+      "category": "system",
+      "tier": "enterprise",
+      "enabled": true,
+      "description": "Role policies and teammate access setup (owner)"
     },
     {
       "id": "settings",

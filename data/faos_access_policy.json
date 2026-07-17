@@ -1,0 +1,64 @@
+{
+  "version": "5.2.0",
+  "policy": "FMK Group FAOS — role-based access. Owner sees all; teammates see assigned modules only.",
+  "roles": {
+    "owner": {
+      "label": "Executive / Owner",
+      "description": "Full access — JARVIS, finance, HR, settings, all private data",
+      "modules": ["*"],
+      "can_manage_team": true
+    },
+    "manager": {
+      "label": "Operations Manager",
+      "description": "Projects, agents, CRM, inventory — no executive finance/HR",
+      "modules": ["home", "jarvis", "crm", "projects", "agents", "inventory", "command", "creative", "create-pillar", "status"],
+      "can_manage_team": false
+    },
+    "sales": {
+      "label": "Sales Team",
+      "description": "Clients and projects only — no invoices, HR, or owner settings",
+      "modules": ["home", "crm", "projects", "command", "status"],
+      "can_manage_team": false
+    },
+    "finance": {
+      "label": "Finance Team",
+      "description": "Invoicing and inventory — no HR personal records or JARVIS executive commands",
+      "modules": ["home", "invoicing", "inventory", "status"],
+      "can_manage_team": false
+    },
+    "hr": {
+      "label": "HR Team",
+      "description": "HR module only — isolated people data",
+      "modules": ["home", "hr", "status"],
+      "can_manage_team": false
+    },
+    "creative": {
+      "label": "Creative Team",
+      "description": "Creative studio and agent workflow — no client financial data",
+      "modules": ["home", "creative", "agents", "command", "status"],
+      "can_manage_team": false
+    },
+    "viewer": {
+      "label": "Read-only Viewer",
+      "description": "Home and system health only",
+      "modules": ["home", "status"],
+      "can_manage_team": false
+    }
+  },
+  "route_module_map": {
+    "/": "home",
+    "/jarvis": "jarvis",
+    "/clients": "crm",
+    "/projects": "projects",
+    "/invoicing": "invoicing",
+    "/inventory": "inventory",
+    "/hr": "hr",
+    "/agents": "agents",
+    "/dashboard/create-pillar": "create-pillar",
+    "/creative": "creative",
+    "/operations": "command",
+    "/settings": "settings",
+    "/team": "team",
+    "/status": "status"
+  }
+}
