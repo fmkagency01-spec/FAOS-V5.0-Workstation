@@ -26,6 +26,17 @@ const ROLES = policyData.roles as Record<
   { label: string; description: string; modules: string[]; can_manage_team: boolean }
 >;
 
+/** Resolve owner password from Vercel env — supports common typo FAOS_OWNER_PASSWRD. */
+export function resolveOwnerPassword(): string | null {
+  const correct = process.env.FAOS_OWNER_PASSWORD?.trim();
+  if (correct) return correct;
+
+  const typo = process.env.FAOS_OWNER_PASSWRD?.trim();
+  if (typo) return typo;
+
+  return null;
+}
+
 export function loadAuthUsers(): StoredUser[] {
   const raw = process.env.FAOS_AUTH_USERS?.trim();
   if (raw) {
@@ -37,7 +48,7 @@ export function loadAuthUsers(): StoredUser[] {
     }
   }
 
-  const ownerPass = process.env.FAOS_OWNER_PASSWORD?.trim();
+  const ownerPass = resolveOwnerPassword();
   if (ownerPass) {
     return [
       {

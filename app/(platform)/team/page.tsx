@@ -49,7 +49,13 @@ FAOS_AUTH_USERS=[
   {"username":"finance1","password":"TEAM_PASSWORD","name":"Finance","role":"finance"}
 ]`}
         </pre>
-        <p className="mt-2 text-slate-400">Or set FAOS_OWNER_PASSWORD for single-owner mode.</p>
+        <p className="mt-2 text-slate-400">
+          Or set <code className="text-[#00f5d4]">FAOS_OWNER_PASSWORD</code> for single-owner mode
+          (exact spelling — not PASSWRD).
+        </p>
+        <p className="mt-1 text-slate-500">
+          After changing the password in Vercel, redeploy the project for login to update.
+        </p>
       </div>
 
       <div className="space-y-3">
