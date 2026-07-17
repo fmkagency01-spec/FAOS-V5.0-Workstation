@@ -41,23 +41,21 @@ function toMessages(body: HarvestBody): ChatMessage[] {
 }
 
 export async function GET() {
-  return NextResponse.json(
-    {
-      ok: false,
-      endpoint: "/api/harvest",
-      error: "Method not allowed. POST once — do not poll or loop this endpoint.",
-      limits: {
-        max_daily_requests: OPENROUTER_GUARD_CONFIG.maxDailyRequests,
-        max_per_minute: OPENROUTER_GUARD_CONFIG.maxPerMinute,
-        max_per_hour: OPENROUTER_GUARD_CONFIG.maxPerHour,
-        abort_completion_tokens_at_or_below:
-          OPENROUTER_GUARD_CONFIG.abortCompletionTokensAtOrBelow,
-        low_token_strike_limit: OPENROUTER_GUARD_CONFIG.lowTokenStrikeLimit,
-      },
-      hint: "Use POST with { \"prompt\": \"...\" }. If you receive CIRCUIT_BREAKER, stop automation immediately.",
+  return NextResponse.json({
+    ok: true,
+    endpoint: "/api/harvest",
+    mode: "status",
+    message: "Read-only status. Use POST once with a prompt — do not poll or loop.",
+    limits: {
+      max_daily_requests: OPENROUTER_GUARD_CONFIG.maxDailyRequests,
+      max_per_minute: OPENROUTER_GUARD_CONFIG.maxPerMinute,
+      max_per_hour: OPENROUTER_GUARD_CONFIG.maxPerHour,
+      abort_completion_tokens_at_or_below:
+        OPENROUTER_GUARD_CONFIG.abortCompletionTokensAtOrBelow,
+      low_token_strike_limit: OPENROUTER_GUARD_CONFIG.lowTokenStrikeLimit,
     },
-    { status: 405 }
-  );
+    hint: "POST { \"prompt\": \"...\" } for a single AI call. CIRCUIT_BREAKER means stop automation immediately.",
+  });
 }
 
 export async function POST(request: NextRequest) {

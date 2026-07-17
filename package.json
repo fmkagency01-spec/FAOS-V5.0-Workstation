@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --max-warnings 0",
     "harvest:safe": "npx tsx scripts/safe-harvest.ts"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "typescript": "^5.7.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": "20.x",
+    "npm": ">=10.0.0"
   }
 }

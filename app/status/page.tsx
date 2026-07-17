@@ -34,6 +34,7 @@ export default function SystemStatusPage() {
             render?: { status?: string; message?: string; docs_url?: string };
           };
           pillars?: { create?: { entities?: number; status?: string } };
+          safety?: { status?: string; max_daily_requests?: number };
         };
 
         next.push({
@@ -67,29 +68,24 @@ export default function SystemStatusPage() {
           status: health.pillars?.create?.status === 'mounted' ? 'ok' : 'warn',
           detail: `${health.pillars?.create?.entities ?? 0} retail entities loaded (FMK WIG, MK Clothing, etc.)`,
         });
+
+        next.push({
+          label: 'Token Safety Guard',
+          status:
+            health.safety?.status === 'active' &&
+            health.safety?.max_daily_requests === 100
+              ? 'ok'
+              : 'warn',
+          detail: 'Max 100 AI calls/day · stops loops if response is too small (≤5 tokens)',
+        });
       } catch {
         next.push(
           { label: 'FAOS Dashboard', status: 'fail', detail: 'Could not reach dashboard API' },
           { label: 'Render Backend', status: 'fail', detail: 'Check failed' },
           { label: 'OpenRouter AI', status: 'fail', detail: 'Check failed' },
-          { label: 'Create Pillar', status: 'fail', detail: 'Check failed' }
+          { label: 'Create Pillar', status: 'fail', detail: 'Check failed' },
+          { label: 'Token Safety Guard', status: 'fail', detail: 'Check failed' }
         );
-      }
-
-      try {
-        const guardRes = await fetch('/api/harvest', { cache: 'no-store' });
-        const guard = (await guardRes.json()) as { limits?: { max_daily_requests?: number } };
-        next.push({
-          label: 'Token Safety Guard',
-          status: guard.limits?.max_daily_requests === 100 ? 'ok' : 'warn',
-          detail: 'Max 100 AI calls/day · stops loops if response is too small (≤5 tokens)',
-        });
-      } catch {
-        next.push({
-          label: 'Token Safety Guard',
-          status: 'warn',
-          detail: 'Could not verify safety limits',
-        });
       }
 
       if (!cancelled) {

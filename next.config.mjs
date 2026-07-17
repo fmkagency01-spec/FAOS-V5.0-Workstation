@@ -14,6 +14,9 @@ const backendV5 = rawBackend
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  eslint: {
+    dirs: ["app", "lib", "scripts"],
+  },
   // Rewrite helpers — internal route avoids build-time env dependency.
   async rewrites() {
     const rules = [

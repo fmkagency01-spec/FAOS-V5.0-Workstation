@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCreatePillarNamespace } from "@/lib/create-pillar";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
-import { getBackendRootUrl, getFaosBackendBaseUrl, getBackendDocsUrl } from "@/lib/backend";
+import {
+  getBackendRootUrl,
+  getFaosBackendBaseUrl,
+  getBackendDocsUrl,
+} from "@/lib/backend";
+import { OPENROUTER_GUARD_CONFIG } from "@/lib/openrouter-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,6 +81,13 @@ export async function GET() {
         entities: Object.keys(createPillar.entities).length,
         status: "mounted",
       },
+    },
+    safety: {
+      status: "active",
+      max_daily_requests: OPENROUTER_GUARD_CONFIG.maxDailyRequests,
+      max_per_minute: OPENROUTER_GUARD_CONFIG.maxPerMinute,
+      abort_completion_tokens_at_or_below:
+        OPENROUTER_GUARD_CONFIG.abortCompletionTokensAtOrBelow,
     },
   });
 }
