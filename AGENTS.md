@@ -33,6 +33,24 @@ npm install
 npm run dev
 ```
 
+### Local run notes (verified)
+
+- Two services: the **Next.js dev server** (`npm run dev`, port 3000 — the main
+  product, includes all `/api/*` routes) and an **optional Python FastAPI
+  backend** (`backend/`).
+- The dashboard runs fully standalone: with no Python backend and no
+  `OPENROUTER_API_KEY`, everything works in "degraded" mode (health shows
+  `openrouter: missing_key`; only live LLM replies via `/api/chat` return 503).
+  Create Pillar / agent-trigger fall back to the local TS orchestrator.
+- Run the FastAPI backend from a venv (the repo installs it at `backend/.venv`;
+  requires the `python3-venv` system package):
+  `backend/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000`.
+- To route the Next `/api/create-pillar` + `/api/agent-trigger` proxies to the
+  local backend, set `NEXT_PUBLIC_BACKEND_URL=http://localhost:8000` in
+  `.env.local`. A successful proxied response carries the
+  `x-faos-upstream: render` header; otherwise it silently uses the local
+  fallback.
+
 ### Secrets policy
 
 - Never hardcode `sk-or-v1-...` in source, HTML, or committed `.env*` files.
