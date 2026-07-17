@@ -3,6 +3,7 @@ import { chatWithOpenRouter, type ChatMessage } from "@/lib/openrouter";
 import {
   OpenRouterGuardError,
   OPENROUTER_GUARD_CONFIG,
+  getDailyRequestCount,
   resolveClientKeyFromHeaders,
 } from "@/lib/openrouter-guard";
 
@@ -46,10 +47,11 @@ export async function GET() {
       endpoint: "/api/harvest",
       error: "Method not allowed. POST once — do not poll or loop this endpoint.",
       limits: {
+        max_daily_requests: OPENROUTER_GUARD_CONFIG.maxDailyRequests,
         max_per_minute: OPENROUTER_GUARD_CONFIG.maxPerMinute,
         max_per_hour: OPENROUTER_GUARD_CONFIG.maxPerHour,
-        max_total: OPENROUTER_GUARD_CONFIG.maxTotalPerClient,
-        min_completion_tokens: OPENROUTER_GUARD_CONFIG.minCompletionTokens,
+        abort_completion_tokens_at_or_below:
+          OPENROUTER_GUARD_CONFIG.abortCompletionTokensAtOrBelow,
         low_token_strike_limit: OPENROUTER_GUARD_CONFIG.lowTokenStrikeLimit,
       },
       hint: "Use POST with { \"prompt\": \"...\" }. If you receive CIRCUIT_BREAKER, stop automation immediately.",
@@ -82,32 +84,20 @@ export async function POST(request: NextRequest) {
       maxTokens: body.max_tokens ?? 700,
     });
 
-    const completionTokens = result.usage?.completion_tokens ?? 0;
-    if (completionTokens < OPENROUTER_GUARD_CONFIG.minCompletionTokens) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `Low-token response (${completionTokens} completion tokens). Do not retry in a loop.`,
-          code: "LOW_TOKEN_WARNING",
-          usage: result.usage ?? null,
-          hint: "Further low-token responses will trip the circuit breaker and block all OpenRouter calls.",
-        },
-        { status: 422 }
-      );
-    }
-
     return NextResponse.json({
       ok: true,
       endpoint: "/api/harvest",
       reply: result.reply,
       model: result.model,
       usage: result.usage ?? null,
-      warning: "Single-shot only. Polling this endpoint will hit rate limits and trip the circuit breaker.",
+      requests_today: getDailyRequestCount(clientKey),
+      warning:
+        "Single-shot only. Polling this endpoint will hit the daily cap (100) and trip the circuit breaker.",
     });
   } catch (err) {
     if (err instanceof OpenRouterGuardError) {
       const status =
-        err.code === "RATE_LIMIT"
+        err.code === "DAILY_CAP" || err.code === "RATE_LIMIT"
           ? 429
           : err.code === "CIRCUIT_BREAKER"
             ? 503
@@ -118,7 +108,8 @@ export async function POST(request: NextRequest) {
           error: err.message,
           code: err.code,
           abort: true,
-          hint: "Stop the automation script immediately. Do not retry until the cooldown expires.",
+          requests_today: getDailyRequestCount(clientKey),
+          hint: "Stop the automation script immediately. Do not retry until reset/cooldown.",
         },
         { status }
       );

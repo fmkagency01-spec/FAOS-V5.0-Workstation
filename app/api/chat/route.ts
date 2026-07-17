@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     if (err instanceof OpenRouterGuardError) {
       const status =
-        err.code === "RATE_LIMIT"
+        err.code === "DAILY_CAP" || err.code === "RATE_LIMIT"
           ? 429
           : err.code === "CIRCUIT_BREAKER"
             ? 503

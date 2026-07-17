@@ -1,6 +1,8 @@
 import {
+  assertHealthyCompletionTokens,
   assertOpenRouterRequestAllowed,
-  recordOpenRouterResponse,
+  OpenRouterGuardError,
+  recordOpenRouterRequest,
 } from "@/lib/openrouter-guard";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
@@ -50,18 +52,15 @@ export function getOpenRouterApiKey(): string | null {
   return key ? key : null;
 }
 
-export async function chatWithOpenRouter(
+/** Raw OpenRouter HTTP call — use safeOpenRouterCall() for automation/harvest paths */
+async function callOpenRouterApi(
   messages: ChatMessage[],
   options?: {
     model?: string;
     maxTokens?: number;
     temperature?: number;
-    clientKey?: string;
   }
 ): Promise<OpenRouterResult> {
-  const clientKey = options?.clientKey || "global";
-  assertOpenRouterRequestAllowed(clientKey);
-
   const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
     throw new Error(
@@ -78,7 +77,8 @@ export async function chatWithOpenRouter(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
       "HTTP-Referer":
-        process.env.NEXT_PUBLIC_SITE_URL || "https://faos-v5-0-workstation.vercel.app",
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        "https://faos-v5-0-workstation.vercel.app",
       "X-Title": "FAOSV 5.0 Central ERP Workstation",
     },
     body: JSON.stringify({
@@ -110,7 +110,49 @@ export async function chatWithOpenRouter(
   const reply = data?.choices?.[0]?.message?.content?.trim();
   if (!reply) throw new Error("Empty gateway payload received.");
 
-  recordOpenRouterResponse(data.usage, clientKey);
-
   return { reply, model, usage: data.usage };
 }
+
+/**
+ * Safety wrapper for automation / harvest — daily cap + low-token loop breaker.
+ * Server routes must NOT call process.exit(); local scripts should catch and exit.
+ */
+export async function safeOpenRouterCall(
+  messages: ChatMessage[],
+  options?: {
+    model?: string;
+    maxTokens?: number;
+    temperature?: number;
+    clientKey?: string;
+  }
+): Promise<OpenRouterResult> {
+  const clientKey = options?.clientKey || "global";
+
+  assertOpenRouterRequestAllowed(clientKey);
+
+  try {
+    const result = await callOpenRouterApi(messages, options);
+    recordOpenRouterRequest(clientKey);
+    assertHealthyCompletionTokens(result.usage, clientKey);
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown OpenRouter error";
+    console.error("API Error caught in safety wrapper:", message);
+    throw error;
+  }
+}
+
+/** Backward-compatible alias — all chat/harvest traffic uses the safety wrapper */
+export async function chatWithOpenRouter(
+  messages: ChatMessage[],
+  options?: {
+    model?: string;
+    maxTokens?: number;
+    temperature?: number;
+    clientKey?: string;
+  }
+): Promise<OpenRouterResult> {
+  return safeOpenRouterCall(messages, options);
+}
+
+export { OpenRouterGuardError };
