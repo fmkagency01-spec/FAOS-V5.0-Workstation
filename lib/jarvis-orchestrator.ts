@@ -1,5 +1,7 @@
 import { routeQuery, type AiIntent } from "@/lib/ai-router";
+import { jarvisOfflineReply } from "@/lib/jarvis-fallback";
 import { chatWithOpenRouter, type ChatMessage } from "@/lib/openrouter";
+import { isOpenRouterAuthError } from "@/lib/openrouter-errors";
 import {
   getOrchestratorId,
   getShellAgent,
@@ -106,7 +108,7 @@ export function planJarvisCommand(command: string): JarvisPlan {
   const agentList = [primary, ...supporting].map((a) => `${a.icon} ${a.name} (${a.domain})`).join(", ");
 
   const system_context = [
-    "You are JARVIS — FMK Group FAOS v5.1 executive AI orchestrator.",
+    "You are JARVIS — FMK Group FAOS v5.3 executive AI orchestrator.",
     `Primary shell agent: ${primary.name} — ${primary.description}`,
     supporting.length ? `Supporting agents: ${supporting.map((a) => a.name).join(", ")}` : "",
     `Dispatched team: ${agentList}`,
@@ -145,21 +147,41 @@ export async function executeJarvisPlan(
     },
   ];
 
-  const ai = await chatWithOpenRouter(messages, {
-    clientKey,
-    model: plan.route.model,
-    maxTokens: plan.route.maxTokens,
-    intent: plan.route.intent,
-  });
+  try {
+    const ai = await chatWithOpenRouter(messages, {
+      clientKey,
+      model: plan.route.model,
+      maxTokens: plan.route.maxTokens,
+      intent: plan.route.intent,
+    });
 
-  return {
-    reply: ai.reply,
-    model: ai.model,
-    intent: ai.intent,
-    primary_agent: plan.primary_agent,
-    agents_dispatched: [plan.primary_agent.id, ...plan.supporting_agents.map((a) => a.id)],
-    action_taken: actionTaken,
-    action_result: actionResult,
-    usage: ai.usage,
-  };
+    return {
+      reply: ai.reply,
+      model: ai.model,
+      intent: ai.intent,
+      primary_agent: plan.primary_agent,
+      agents_dispatched: [plan.primary_agent.id, ...plan.supporting_agents.map((a) => a.id)],
+      action_taken: actionTaken,
+      action_result: actionResult,
+      usage: ai.usage,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "JARVIS gateway failed";
+    const offline = jarvisOfflineReply(plan, message);
+    if (offline) {
+      return {
+        reply: offline,
+        model: "jarvis-offline",
+        intent: plan.route.intent,
+        primary_agent: plan.primary_agent,
+        agents_dispatched: [plan.primary_agent.id, ...plan.supporting_agents.map((a) => a.id)],
+        action_taken: actionTaken,
+        action_result: actionResult,
+      };
+    }
+    if (isOpenRouterAuthError(message)) {
+      throw new Error(message);
+    }
+    throw err;
+  }
 }

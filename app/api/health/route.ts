@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCreatePillarNamespace } from "@/lib/create-pillar";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
+import { probeOpenRouterKey } from "@/lib/openrouter-probe";
 import {
   getBackendRootUrl,
   getFaosBackendBaseUrl,
@@ -59,6 +60,7 @@ async function probeRenderBackend(): Promise<{
 
 export async function GET() {
   const hasOpenRouterKey = Boolean(getOpenRouterApiKey());
+  const openrouterProbe = await probeOpenRouterKey();
   const createPillar = getCreatePillarNamespace();
   const render = await probeRenderBackend();
 
@@ -72,6 +74,8 @@ export async function GET() {
     jarvis: { shell_agents: 25, voice: true, erp_modules: ["invoicing", "inventory", "hr"] },
     gateway: {
       openrouter: hasOpenRouterKey ? "configured" : "missing_key",
+      openrouter_status: openrouterProbe.status,
+      openrouter_message: openrouterProbe.message ?? null,
     },
     backend: {
       url: getFaosBackendBaseUrl() || null,

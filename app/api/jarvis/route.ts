@@ -62,7 +62,7 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    version: "5.1.0",
+    version: "5.3.0",
     name: "JARVIS Orchestrator",
     shell_agents: getAllShellAgents().length,
     agents: getAllShellAgents().map((a) => ({ id: a.id, name: a.name, domain: a.domain, icon: a.icon })),
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const result = await executeJarvisPlan(plan, clientKey, executeJarvisAction);
     return NextResponse.json({
       ok: true,
-      version: "5.1.0",
+      version: "5.3.0",
       reply: result.reply,
       model: result.model,
       intent: result.intent,

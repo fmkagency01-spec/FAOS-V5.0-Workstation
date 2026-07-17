@@ -15,7 +15,7 @@ export default function JarvisPage() {
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-white">
-          JARVIS <span className="text-[#00f5d4]">v5.1</span>
+          JARVIS <span className="text-[#00f5d4]">v5.3</span>
         </h1>
         <p className="text-sm text-slate-400 mt-2 max-w-2xl">
           Executive AI orchestrator — chat or voice command. JARVIS routes to 25 specialist shell

@@ -16,6 +16,7 @@ import {
   OpenRouterGuardError,
   recordOpenRouterRequest,
 } from "@/lib/openrouter-guard";
+import { formatOpenRouterError } from "@/lib/openrouter-errors";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -111,7 +112,7 @@ async function callOpenRouterApi(
     } catch {
       /* ignore non-JSON */
     }
-    throw new Error(detail);
+    throw new Error(formatOpenRouterError(detail, response.status));
   }
 
   const data = (await response.json()) as {

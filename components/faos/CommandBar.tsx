@@ -41,6 +41,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
       const res = await fetch('/api/jarvis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ command: q }),
       });
       const data = (await res.json()) as {
