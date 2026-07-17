@@ -3,6 +3,10 @@ import {
   chatWithOpenRouter,
   type ChatMessage,
 } from "@/lib/openrouter";
+import {
+  OpenRouterGuardError,
+  resolveClientKeyFromHeaders,
+} from "@/lib/openrouter-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,7 +50,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await chatWithOpenRouter(messages);
+    const clientKey = resolveClientKeyFromHeaders(request.headers);
+    const result = await chatWithOpenRouter(messages, { clientKey });
     return NextResponse.json({
       ok: true,
       reply: result.reply,
@@ -54,6 +59,23 @@ export async function POST(request: NextRequest) {
       usage: result.usage ?? null,
     });
   } catch (err) {
+    if (err instanceof OpenRouterGuardError) {
+      const status =
+        err.code === "RATE_LIMIT"
+          ? 429
+          : err.code === "CIRCUIT_BREAKER"
+            ? 503
+            : 429;
+      return NextResponse.json(
+        {
+          error: err.message,
+          code: err.code,
+          hint: "Automation loops are blocked. Do not poll /api/chat or /api/harvest in a retry loop.",
+        },
+        { status }
+      );
+    }
+
     const message =
       err instanceof Error ? err.message : "Gateway request failed.";
     const status = message.includes("not configured") ? 503 : 502;

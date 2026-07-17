@@ -15,6 +15,10 @@ const nextConfig = {
         source: "/render-health",
         destination: "/api/render-health",
       },
+      {
+        source: "/harvest",
+        destination: "/api/harvest",
+      },
     ];
 
     if (backend) {

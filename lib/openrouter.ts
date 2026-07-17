@@ -1,3 +1,8 @@
+import {
+  assertOpenRouterRequestAllowed,
+  recordOpenRouterResponse,
+} from "@/lib/openrouter-guard";
+
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
 export type ChatRole = "system" | "user" | "assistant";
@@ -47,8 +52,16 @@ export function getOpenRouterApiKey(): string | null {
 
 export async function chatWithOpenRouter(
   messages: ChatMessage[],
-  options?: { model?: string; maxTokens?: number; temperature?: number }
+  options?: {
+    model?: string;
+    maxTokens?: number;
+    temperature?: number;
+    clientKey?: string;
+  }
 ): Promise<OpenRouterResult> {
+  const clientKey = options?.clientKey || "global";
+  assertOpenRouterRequestAllowed(clientKey);
+
   const apiKey = getOpenRouterApiKey();
   if (!apiKey) {
     throw new Error(
@@ -96,6 +109,8 @@ export async function chatWithOpenRouter(
 
   const reply = data?.choices?.[0]?.message?.content?.trim();
   if (!reply) throw new Error("Empty gateway payload received.");
+
+  recordOpenRouterResponse(data.usage, clientKey);
 
   return { reply, model, usage: data.usage };
 }
