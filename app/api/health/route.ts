@@ -10,19 +10,27 @@ async function probeRenderBackend(): Promise<{
   configured: boolean;
   status: "online" | "offline" | "not_configured";
   message?: string;
+  docs_url?: string;
 }> {
   const base = getFaosBackendBaseUrl();
   if (!base) {
     return { configured: false, status: "not_configured" };
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 60000);
+
   try {
-    const res = await fetch(getBackendRootUrl(), { cache: "no-store" });
+    const res = await fetch(getBackendRootUrl(), {
+      cache: "no-store",
+      signal: controller.signal,
+    });
     if (!res.ok) {
       return {
         configured: true,
         status: "offline",
         message: `Render responded ${res.status}`,
+        docs_url: `${base}/docs`,
       };
     }
     const data = (await res.json()) as { status?: string; message?: string };
@@ -30,13 +38,17 @@ async function probeRenderBackend(): Promise<{
       configured: true,
       status: data.status === "active" ? "online" : "offline",
       message: data.message,
+      docs_url: `${base}/docs`,
     };
   } catch (err) {
     return {
       configured: true,
       status: "offline",
       message: err instanceof Error ? err.message : "Render unreachable",
+      docs_url: `${base}/docs`,
     };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

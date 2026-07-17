@@ -8,24 +8,48 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const RENDER_TIMEOUT_MS = 60000;
+
+async function fetchRender(
+  path: string,
+  init?: RequestInit
+): Promise<Response | null> {
+  const base = getFaosBackendBaseUrl();
+  if (!base) return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), RENDER_TIMEOUT_MS);
+
+  try {
+    return await fetch(joinBackendUrl(path), {
+      ...init,
+      cache: "no-store",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers || {}),
+      },
+    });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function GET() {
   const base = getFaosBackendBaseUrl();
   if (base) {
-    try {
-      const upstream = await fetch(joinBackendUrl("api/v5/agent-trigger"), {
-        cache: "no-store",
+    const upstream = await fetchRender("api/v5/agent-trigger", { method: "GET" });
+    if (upstream?.ok) {
+      return new NextResponse(await upstream.text(), {
+        status: upstream.status,
+        headers: {
+          "Content-Type":
+            upstream.headers.get("Content-Type") || "application/json",
+          "X-FAOS-Upstream": "render",
+        },
       });
-      if (upstream.ok) {
-        return new NextResponse(await upstream.text(), {
-          status: upstream.status,
-          headers: {
-            "Content-Type":
-              upstream.headers.get("Content-Type") || "application/json",
-          },
-        });
-      }
-    } catch {
-      /* fall through */
     }
   }
 
@@ -43,24 +67,19 @@ export async function POST(request: NextRequest) {
   const base = getFaosBackendBaseUrl();
 
   if (base) {
-    try {
-      const upstream = await fetch(joinBackendUrl("api/v5/agent-trigger"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: raw,
-        cache: "no-store",
+    const upstream = await fetchRender("api/v5/agent-trigger", {
+      method: "POST",
+      body: raw,
+    });
+    if (upstream?.ok) {
+      return new NextResponse(await upstream.text(), {
+        status: upstream.status,
+        headers: {
+          "Content-Type":
+            upstream.headers.get("Content-Type") || "application/json",
+          "X-FAOS-Upstream": "render",
+        },
       });
-      if (upstream.ok) {
-        return new NextResponse(await upstream.text(), {
-          status: upstream.status,
-          headers: {
-            "Content-Type":
-              upstream.headers.get("Content-Type") || "application/json",
-          },
-        });
-      }
-    } catch {
-      /* fall through to local */
     }
   }
 

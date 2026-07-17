@@ -18,6 +18,8 @@ export default function FaosDashboard() {
   const [tagLog, setTagLog] = useState('');
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
   const [gatewayState, setGatewayState] = useState('unknown');
+  const [renderState, setRenderState] = useState('checking');
+  const [renderDocsUrl, setRenderDocsUrl] = useState('');
   const [cmdInput, setCmdInput] = useState('');
   const [cmdLog, setCmdLog] = useState<string[]>([
     '[SYSTEM INIT]: FAOS API gateway ready. Keys stay server-side only.',
@@ -36,11 +38,26 @@ export default function FaosDashboard() {
         const data = (await res.json()) as {
           ok?: boolean;
           gateway?: { openrouter?: string };
+          backend?: {
+            url?: string | null;
+            render?: { status?: string; message?: string; docs_url?: string };
+          };
         };
         if (cancelled) return;
         const openrouter = data.gateway?.openrouter || 'unknown';
+        const render = data.backend?.render?.status || 'unknown';
         setGatewayState(openrouter);
-        setBackendStatus(openrouter === 'configured' ? 'online' : 'degraded');
+        setRenderState(render);
+        setRenderDocsUrl(data.backend?.render?.docs_url || data.backend?.url || '');
+        const renderOnline = render === 'online';
+        const openrouterOk = openrouter === 'configured';
+        setBackendStatus(
+          renderOnline && openrouterOk
+            ? 'online'
+            : renderOnline || openrouterOk
+              ? 'degraded'
+              : 'offline'
+        );
       } catch {
         if (!cancelled) {
           setBackendStatus('offline');
@@ -56,7 +73,7 @@ export default function FaosDashboard() {
 
   const handleCCTV = () => {
     setCctvLog(
-      `🟢 FAOS SECURITY GATEWAY ACTIVE\n[CONNECTED ZONE]: ${cctvZone.toUpperCase()}\n[STATUS]: Secure Stream Synchronized.\n[BACKEND]: ${backendStatus.toUpperCase()} | OpenRouter: ${gatewayState}\n[EXECUTION]: Core parental protocols are running under Fahim Mahmud Khan's command.`
+      `🟢 FAOS SECURITY GATEWAY ACTIVE\n[CONNECTED ZONE]: ${cctvZone.toUpperCase()}\n[STATUS]: Secure Stream Synchronized.\n[BACKEND]: ${backendStatus.toUpperCase()} | Render: ${renderState.toUpperCase()} | OpenRouter: ${gatewayState}\n[EXECUTION]: Core parental protocols are running under Fahim Mahmud Khan's command.`
     );
   };
 
@@ -178,8 +195,18 @@ export default function FaosDashboard() {
         </div>
         <div className="space-y-2">
           <div className={`text-[11px] text-center font-mono ${statusColor}`}>
-            API: {backendStatus.toUpperCase()} · OR: {gatewayState}
+            API: {backendStatus.toUpperCase()} · Render: {renderState} · OR: {gatewayState}
           </div>
+          {renderDocsUrl && (
+            <a
+              href={renderDocsUrl.endsWith('/docs') ? renderDocsUrl : `${renderDocsUrl}/docs`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-[10px] text-center text-[#00bbf9] hover:underline font-mono truncate px-1"
+            >
+              Render API docs ↗
+            </a>
+          )}
           <div className="text-xs text-[#00f5d4] text-center font-bold tracking-widest bg-[#060b19] py-2 rounded border border-[#00f5d4]/20">
             FAOS SECURITY: SECURE SYSTEM
           </div>

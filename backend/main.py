@@ -86,6 +86,8 @@ async def root_health() -> Dict[str, Any]:
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
         "api_prefix": "/api/v5",
+        "docs_url": "/docs",
+        "openapi_url": "/openapi.json",
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),

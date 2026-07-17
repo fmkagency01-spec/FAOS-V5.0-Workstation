@@ -8,19 +8,23 @@ const backend = (process.env.NEXT_PUBLIC_BACKEND_URL ||
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Optional edge rewrite helpers when a Render base URL is configured.
+  // Rewrite helpers — internal route avoids build-time env dependency.
   async rewrites() {
-    if (!backend) return [];
-    return [
+    const rules = [
       {
         source: "/render-health",
-        destination: `${backend}/`,
-      },
-      {
-        source: "/render-api/:path*",
-        destination: `${backend}/api/:path*`,
+        destination: "/api/render-health",
       },
     ];
+
+    if (backend) {
+      rules.push({
+        source: "/render-api/:path*",
+        destination: `${backend}/api/:path*`,
+      });
+    }
+
+    return rules;
   },
 };
 

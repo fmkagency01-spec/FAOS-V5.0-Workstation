@@ -11,7 +11,7 @@ import { joinBackendUrl, getFaosBackendBaseUrl } from "@/lib/backend";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const RENDER_TIMEOUT_MS = 25000;
+const RENDER_TIMEOUT_MS = 60000;
 
 async function fetchRender(path: string, init?: RequestInit): Promise<Response | null> {
   const base = getFaosBackendBaseUrl();

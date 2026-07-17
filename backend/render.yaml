@@ -19,4 +19,4 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: TAC_CENTRAL_CORE_URL
-        sync: false
+        value: https://tac.fmk-ecosystem.internal/approve
