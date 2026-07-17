@@ -306,12 +306,18 @@ export default function FaosDashboard() {
               <p className="text-xs text-slate-500 font-mono">
                 Gatekeeper: Generation Request → Aigorithm Technical Permit → TAC Creative Brand Approval → Live API Deployment
               </p>
-              <Link
-                href="/dashboard/create-pillar"
-                className="inline-flex w-full items-center justify-center bg-[#00f5d4] text-[#060b19] font-bold py-3 rounded-lg hover:bg-[#00bbf9] hover:text-white transition-all duration-300 text-sm"
-              >
-                Open One-Click Manufacturing & Sales Console →
-              </Link>
+          <Link
+            href="/dashboard/create-pillar"
+            className="inline-flex w-full items-center justify-center bg-[#00f5d4] text-[#060b19] font-bold py-3 rounded-lg hover:bg-[#00bbf9] hover:text-white transition-all duration-300 text-sm"
+          >
+            Open One-Click Manufacturing & Sales Console →
+          </Link>
+          <Link
+            href="/status"
+            className="inline-flex w-full items-center justify-center border border-[#334155] text-slate-300 font-semibold py-2 rounded-lg hover:border-[#00f5d4]/40 hover:text-[#00f5d4] transition-all duration-300 text-xs"
+          >
+            System Status Check (one click, no tech steps) →
+          </Link>
             </div>
           )}
 
