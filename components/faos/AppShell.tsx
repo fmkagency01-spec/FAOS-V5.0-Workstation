@@ -9,6 +9,7 @@ import {
   loadModulePreferences,
   type FaosModule,
 } from '@/lib/modules-registry';
+import { CommandBar } from '@/components/faos/CommandBar';
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -92,15 +93,9 @@ export function AppShell({ children }: AppShellProps) {
           >
             ☰
           </button>
-          <div className="flex-1 max-w-md">
-            <input
-              type="search"
-              placeholder="Search clients, projects, commands…"
-              className="w-full h-8 px-3 rounded-md bg-[#0c1222] border border-[#2a3548] text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-[#00f5d4]/50"
-            />
-          </div>
-          <span className="hidden sm:inline text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
-            TOKEN-SAVE
+          <CommandBar variant="bar" />
+          <span className="hidden lg:inline text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded shrink-0">
+            AI GATEWAY
           </span>
           <Link href="/status" className="text-xs text-slate-400 hover:text-[#00f5d4]">
             Health

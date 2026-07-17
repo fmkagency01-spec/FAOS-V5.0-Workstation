@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   chatWithOpenRouter,
+  routeQuery,
   type ChatMessage,
 } from "@/lib/openrouter";
 import {
   OpenRouterGuardError,
   resolveClientKeyFromHeaders,
 } from "@/lib/openrouter-guard";
+import type { AiIntent } from "@/lib/ai-router";
+import { isTokenSavingMode } from "@/lib/token-saving";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +17,8 @@ export const dynamic = "force-dynamic";
 type ChatBody = {
   message?: string;
   messages?: ChatMessage[];
+  /** Force intent override (optional) */
+  intent?: string;
 };
 
 function isChatMessage(value: unknown): value is ChatMessage {
@@ -49,13 +54,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const previewRoute = routeQuery(lastUser?.content || "", isTokenSavingMode());
+
   try {
     const clientKey = resolveClientKeyFromHeaders(request.headers);
-    const result = await chatWithOpenRouter(messages, { clientKey });
+    const result = await chatWithOpenRouter(messages, {
+      clientKey,
+      intent: body.intent as AiIntent | undefined,
+    });
+
     return NextResponse.json({
       ok: true,
       reply: result.reply,
       model: result.model,
+      intent: result.intent,
+      task_type: result.route.taskType,
+      provider: result.route.provider,
+      route_label: result.route.label,
+      route_reason: result.route.reason,
+      token_saving_mode: isTokenSavingMode(),
       usage: result.usage ?? null,
     });
   } catch (err) {
@@ -70,7 +88,9 @@ export async function POST(request: NextRequest) {
         {
           error: err.message,
           code: err.code,
-          hint: "Automation loops are blocked. Do not poll /api/chat or /api/harvest in a retry loop.",
+          intent: previewRoute.intent,
+          route_label: previewRoute.label,
+          hint: "Automation loops are blocked. Do not poll /api/chat in a retry loop.",
         },
         { status }
       );
@@ -81,4 +101,23 @@ export async function POST(request: NextRequest) {
     const status = message.includes("not configured") ? 503 : 502;
     return NextResponse.json({ error: message }, { status });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    endpoint: "/api/chat",
+    description: "Unified FAOS AI gateway — auto-routes to Claude, GPT, or Gemini",
+    token_saving_mode: isTokenSavingMode(),
+    intents: [
+      "strategy → Claude Sonnet",
+      "code → GPT-4o",
+      "creative → Claude Sonnet",
+      "video → Gemini Flash",
+      "analysis → GPT-4o Mini",
+      "bengali → Gemini Flash",
+      "chat → Gemini Flash",
+      "automation → Hermes 405B",
+    ],
+  });
 }

@@ -57,6 +57,15 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-5 text-sm text-emerald-100">
+        <p className="font-bold">AI Gateway (unified router)</p>
+        <ul className="mt-2 text-xs space-y-1 text-emerald-200/80 list-disc pl-4">
+          <li>Top bar + Command Center — one place for all questions</li>
+          <li>Auto-routes: Claude (strategy/creative), GPT (code/analysis), Gemini (video/বাংলা)</li>
+          <li>Creative Studio delivers graphics & video briefs via best model</li>
+        </ul>
+      </div>
+
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100">
         <p className="font-bold">Token-saving policy (always on)</p>
         <ul className="mt-2 text-xs space-y-1 text-amber-200/80 list-disc pl-4">

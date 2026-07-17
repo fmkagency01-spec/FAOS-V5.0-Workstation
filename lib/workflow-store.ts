@@ -3,7 +3,9 @@ import type {
   AssignWorkflowPayload,
   ClientRecord,
   ProjectRecord,
+  TaskType,
 } from "@/lib/workflow-types";
+import { routeQuery, suggestBrandAgent } from "@/lib/ai-router";
 
 /** Vercel-local fallback store when Render is unavailable (resets on cold start) */
 const clients = new Map<string, ClientRecord>();
@@ -71,10 +73,17 @@ export function listTasksLocal(projectId?: string): AgentTask[] {
   );
 }
 
+export function updateTaskLocal(task: AgentTask): AgentTask {
+  tasks.set(task.id, task);
+  return task;
+}
+
 export function assignWorkflowLocal(payload: AssignWorkflowPayload): {
   project: ProjectRecord;
   tasks: AgentTask[];
 } {
+  const route = routeQuery(payload.command, true);
+  const taskType: TaskType = payload.task_type || route.taskType;
   let clientId = payload.client_id;
   if (!clientId) {
     const c = createClientLocal({ name: "Auto Client", assigned_agent: payload.agent_ids?.[0] });
@@ -99,7 +108,7 @@ export function assignWorkflowLocal(payload: AssignWorkflowPayload): {
 
   const agentIds = payload.agent_ids?.length
     ? payload.agent_ids
-    : ["fmk_wig_prosthetic_hair_agent"];
+    : [suggestBrandAgent(payload.command)];
 
   const createdTasks: AgentTask[] = agentIds.map((agent_id) => {
     const ts = now();
@@ -111,6 +120,9 @@ export function assignWorkflowLocal(payload: AssignWorkflowPayload): {
       command: payload.command,
       status: "queued",
       token_saving_mode: true,
+      task_type: taskType,
+      selected_model: route.model,
+      route_label: route.label,
       created_at: ts,
       updated_at: ts,
     };

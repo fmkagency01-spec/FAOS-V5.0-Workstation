@@ -3,12 +3,22 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "faos_workflow_db.json"
+
+CREATIVE_TERMS = ("design", "graphic", "logo", "banner", "creative", "visual", "figma", "canva")
+VIDEO_TERMS = ("video", "edit", "reel", "youtube", "tiktok", "capcut", "storyboard", "subtitle")
+BRAND_AGENTS = (
+    (r"wig|hair|prosthetic", "fmk_wig_prosthetic_hair_agent"),
+    (r"shoe|footwear|sneaker", "fmk_shoes_footwear_wing"),
+    (r"kitchen|food|recipe", "fmk_mk_kitchen_cloud_food_agent"),
+    (r"cloth|apparel|fashion", "fmk_mk_clothing_lifestyle_agent"),
+)
 
 
 def _now() -> str:
@@ -17,6 +27,23 @@ def _now() -> str:
 
 def _uid(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
+
+
+def _detect_task_type(command: str) -> str:
+    lower = command.lower()
+    if any(t in lower for t in VIDEO_TERMS):
+        return "video"
+    if any(t in lower for t in CREATIVE_TERMS):
+        return "creative"
+    return "general"
+
+
+def _suggest_agent(command: str) -> str:
+    lower = command.lower()
+    for pattern, agent_id in BRAND_AGENTS:
+        if re.search(pattern, lower):
+            return agent_id
+    return "fmk_wig_prosthetic_hair_agent"
 
 
 def _load() -> Dict[str, Any]:
@@ -122,7 +149,8 @@ class WorkflowOrchestrator:
             }
             data["projects"].append(project)
 
-        agent_ids = payload.get("agent_ids") or ["fmk_wig_prosthetic_hair_agent"]
+        agent_ids = payload.get("agent_ids") or [_suggest_agent(command)]
+        task_type = payload.get("task_type") or _detect_task_type(command)
         created_tasks = []
         for agent_id in agent_ids:
             task = {
@@ -133,6 +161,7 @@ class WorkflowOrchestrator:
                 "command": command,
                 "status": "queued",
                 "token_saving_mode": True,
+                "task_type": task_type,
                 "created_at": ts,
                 "updated_at": ts,
             }

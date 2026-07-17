@@ -1,8 +1,14 @@
 import {
+  classifyIntent,
+  routeQuery,
+  systemPromptForIntent,
+  type AiIntent,
+  type AiRoute,
+} from "@/lib/ai-router";
+import {
   getTokenSavingDefaults,
   isTokenSavingMode,
   trimMessagesForTokenSaving,
-  TOKEN_SAVING_SYSTEM_HINT,
 } from "@/lib/token-saving";
 import {
   assertHealthyCompletionTokens,
@@ -23,6 +29,8 @@ export type ChatMessage = {
 export type OpenRouterResult = {
   reply: string;
   model: string;
+  intent: AiIntent;
+  route: AiRoute;
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
@@ -30,27 +38,12 @@ export type OpenRouterResult = {
   };
 };
 
-const STRATEGY_TRIGGERS = [
-  "/strategy",
-  "/plan",
-  "/analyze",
-  "strategy",
-  "roadmap",
-  "forecast",
-  "vision",
-  "acquisition",
-];
+export { classifyIntent, routeQuery, systemPromptForIntent };
+export type { AiIntent, AiRoute };
 
-const MODEL_ROUTES = {
-  automation: "nousresearch/hermes-3-llama-3.1-405b",
-  strategy: "anthropic/claude-sonnet-4.5",
-} as const;
-
+/** @deprecated Use routeQuery() — kept for backward compatibility */
 export function resolveModel(query: string): string {
-  const q = query.toLowerCase();
-  return STRATEGY_TRIGGERS.some((t) => q.includes(t))
-    ? MODEL_ROUTES.strategy
-    : MODEL_ROUTES.automation;
+  return routeQuery(query, isTokenSavingMode()).model;
 }
 
 export function getOpenRouterApiKey(): string | null {
@@ -65,6 +58,7 @@ async function callOpenRouterApi(
     model?: string;
     maxTokens?: number;
     temperature?: number;
+    intent?: AiIntent;
   }
 ): Promise<OpenRouterResult> {
   const apiKey = getOpenRouterApiKey();
@@ -76,12 +70,18 @@ async function callOpenRouterApi(
 
   const saving = getTokenSavingDefaults();
   let prepared = trimMessagesForTokenSaving(messages);
-  if (isTokenSavingMode() && !prepared.some((m) => m.role === "system")) {
-    prepared = [{ role: "system", content: TOKEN_SAVING_SYSTEM_HINT }, ...prepared];
-  }
 
   const lastUser = [...prepared].reverse().find((m) => m.role === "user");
-  const model = options?.model || resolveModel(lastUser?.content || "");
+  const queryText = lastUser?.content || "";
+  const route = routeQuery(queryText, saving.tokenSavingMode);
+  const intent = options?.intent || route.intent;
+
+  if (!prepared.some((m) => m.role === "system")) {
+    prepared = [{ role: "system", content: systemPromptForIntent(intent) }, ...prepared];
+  }
+
+  const model = options?.model || route.model;
+  const maxTokens = options?.maxTokens ?? route.maxTokens ?? saving.maxTokens;
 
   const response = await fetch(OPENROUTER_ENDPOINT, {
     method: "POST",
@@ -96,7 +96,7 @@ async function callOpenRouterApi(
     body: JSON.stringify({
       model,
       messages: prepared,
-      max_tokens: options?.maxTokens ?? saving.maxTokens,
+      max_tokens: maxTokens,
       temperature: options?.temperature ?? saving.temperature,
     }),
   });
@@ -122,12 +122,17 @@ async function callOpenRouterApi(
   const reply = data?.choices?.[0]?.message?.content?.trim();
   if (!reply) throw new Error("Empty gateway payload received.");
 
-  return { reply, model, usage: data.usage };
+  return {
+    reply,
+    model,
+    intent,
+    route: { ...route, model },
+    usage: data.usage,
+  };
 }
 
 /**
  * Safety wrapper for automation / harvest — daily cap + low-token loop breaker.
- * Server routes must NOT call process.exit(); local scripts should catch and exit.
  */
 export async function safeOpenRouterCall(
   messages: ChatMessage[],
@@ -136,6 +141,7 @@ export async function safeOpenRouterCall(
     maxTokens?: number;
     temperature?: number;
     clientKey?: string;
+    intent?: AiIntent;
   }
 ): Promise<OpenRouterResult> {
   const clientKey = options?.clientKey || "global";
@@ -154,7 +160,6 @@ export async function safeOpenRouterCall(
   }
 }
 
-/** Backward-compatible alias — all chat/harvest traffic uses the safety wrapper */
 export async function chatWithOpenRouter(
   messages: ChatMessage[],
   options?: {
@@ -162,6 +167,7 @@ export async function chatWithOpenRouter(
     maxTokens?: number;
     temperature?: number;
     clientKey?: string;
+    intent?: AiIntent;
   }
 ): Promise<OpenRouterResult> {
   return safeOpenRouterCall(messages, options);

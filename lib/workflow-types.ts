@@ -21,6 +21,8 @@ export type ProjectRecord = {
   updated_at: string;
 };
 
+export type TaskType = "general" | "creative" | "video";
+
 export type AgentTask = {
   id: string;
   project_id: string;
@@ -29,7 +31,11 @@ export type AgentTask = {
   command: string;
   status: "queued" | "running" | "done" | "failed" | "blocked";
   token_saving_mode: boolean;
+  task_type?: TaskType;
+  selected_model?: string;
+  route_label?: string;
   result_summary?: string;
+  deliverable?: string;
   created_at: string;
   updated_at: string;
 };
@@ -40,4 +46,6 @@ export type AssignWorkflowPayload = {
   command: string;
   agent_ids?: string[];
   priority?: ProjectRecord["priority"];
+  task_type?: TaskType;
+  auto_execute?: boolean;
 };

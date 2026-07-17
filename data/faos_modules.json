@@ -53,6 +53,16 @@
       "description": "FMK retail manufacturing & supply orchestration"
     },
     {
+      "id": "creative",
+      "name": "Creative Studio",
+      "icon": "🎨",
+      "route": "/creative",
+      "category": "marketing",
+      "tier": "pro",
+      "enabled": true,
+      "description": "Graphics & video tasks — best AI model auto-selected and delivered"
+    },
+    {
       "id": "command",
       "name": "Command Center",
       "icon": "⚡",
