@@ -45,6 +45,7 @@ _FORBIDDEN_ALIASES = {
     "fmcg_wish",
     "FMK Week",
     "FMCG Wish",
+    "supply",
 }
 
 
@@ -183,11 +184,8 @@ class CreatePillarOrchestrator:
             "brand_name": self.namespace_db["fmk_create_pillar_retail_core"][
                 "entities"
             ][target_node]["brand_name"],
-            "flow": [
-                "Generation Request",
-                "Aigorithm Technical Permit",
-                "TAC Creative Brand Approval",
-                "Live API Deployment",
+            "flow": self.namespace_db["fmk_create_pillar_retail_core"][
+                "gatekeeper_protocol"
             ],
             "technical_permit": technical_permit,
             "tac_creative_brand_approval": tac_creative_brand_approval,
