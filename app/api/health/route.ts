@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCreatePillarNamespace } from "@/lib/create-pillar";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
 import { probeOpenRouterKey } from "@/lib/openrouter-probe";
+import { resolveOwnerPassword } from "@/lib/auth";
 import {
   getBackendRootUrl,
   getFaosBackendBaseUrl,
@@ -61,6 +62,7 @@ async function probeRenderBackend(): Promise<{
 export async function GET() {
   const hasOpenRouterKey = Boolean(getOpenRouterApiKey());
   const openrouterProbe = await probeOpenRouterKey();
+  const ownerPassword = resolveOwnerPassword();
   const createPillar = getCreatePillarNamespace();
   const render = await probeRenderBackend();
 
@@ -76,6 +78,14 @@ export async function GET() {
       openrouter: hasOpenRouterKey ? "configured" : "missing_key",
       openrouter_status: openrouterProbe.status,
       openrouter_message: openrouterProbe.message ?? null,
+    },
+    auth: {
+      owner_password_configured: Boolean(ownerPassword),
+      owner_password_env: process.env.FAOS_OWNER_PASSWORD?.trim()
+        ? "FAOS_OWNER_PASSWORD"
+        : process.env.FAOS_OWNER_PASSWRD?.trim()
+          ? "FAOS_OWNER_PASSWRD"
+          : null,
     },
     backend: {
       url: getFaosBackendBaseUrl() || null,

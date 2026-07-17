@@ -12,7 +12,6 @@
     "OPENROUTER_MAX_DAILY_REQUESTS": "100",
     "TAC_CENTRAL_CORE_URL": "https://tac.fmk-ecosystem.internal/approve",
     "FAOS_IMAGE_MODEL": "black-forest-labs/flux-1.1-pro",
-    "FAOS_AUTH_SECRET": "vhSKwQJsKV0Zp_vcyTIBpQ-_TduLj81d7ApV1xnpn1o",
-    "FAOS_OWNER_PASSWORD": "FMK-FAOS-30D193C9"
+    "FAOS_AUTH_SECRET": "vhSKwQJsKV0Zp_vcyTIBpQ-_TduLj81d7ApV1xnpn1o"
   }
 }
