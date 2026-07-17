@@ -45,6 +45,7 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
         const res = await fetch('/api/jarvis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ command: q, voice: fromVoice }),
         });
         const data = (await res.json()) as {
@@ -187,7 +188,7 @@ function JarvisPanelInner({
     <div className="flex flex-col max-h-[80vh]">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a3548] bg-[#111827]">
         <div>
-          <p className="text-sm font-bold text-[#00f5d4]">JARVIS v5.1</p>
+          <p className="text-sm font-bold text-[#00f5d4]">JARVIS v5.3</p>
           <p className="text-[10px] text-slate-500">25 shell agents · voice + chat</p>
         </div>
         {onClose && (
