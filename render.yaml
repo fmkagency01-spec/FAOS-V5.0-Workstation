@@ -19,5 +19,13 @@ services:
         value: https://faos-v5-0-workstation.vercel.app
       - key: OPENROUTER_API_KEY
         sync: false
+      - key: FAOS_BACKEND_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: FAOS_NOTIFY_FROM
+        sync: false
+      - key: FAOS_NOTIFY_DEFAULT_TO
+        sync: false
       - key: TAC_CENTRAL_CORE_URL
         value: https://tac.fmk-ecosystem.internal/approve

@@ -1,29 +1,46 @@
-import { withApiRoute } from '@/lib/api-handler';
-import { ApiError } from '@/lib/api-errors';
-import { jsonOk } from '@/lib/api-response';
-import { fetchWorkflow } from '@/lib/workflow-api';
-import { getClientLocal, listClientsLocal } from '@/lib/workflow-store';
-import type { ClientRecord } from '@/lib/workflow-types';
+import { withApiRoute } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-errors";
+import {
+  handleCrudDelete,
+  handleCrudGet,
+  handleCrudUpdate,
+} from "@/lib/crud-route";
+import {
+  createClientLocal,
+  deleteClientLocal,
+  getClientLocal,
+  listClientsLocal,
+  updateClientLocal,
+} from "@/lib/workflow-store";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-async function resolveClient(id: string): Promise<{ client: ClientRecord; source: string }> {
-  const { data } = await fetchWorkflow<{ clients: ClientRecord[] }>('clients');
-  const fromRender = data?.clients?.find((c) => c.id === id);
-  if (fromRender) return { client: fromRender, source: 'render' };
-
-  const local = getClientLocal(id);
-  if (local) return { client: local, source: 'vercel-local' };
-
-  const fromList = listClientsLocal().find((c) => c.id === id);
-  if (fromList) return { client: fromList, source: 'vercel-local' };
-
-  throw ApiError.notFound('Client not found.');
-}
+const config = {
+  upstreamPath: "clients",
+  listKey: "clients",
+  itemKey: "client",
+  listLocal: listClientsLocal,
+  createLocal: createClientLocal,
+  getLocal: getClientLocal,
+  updateLocal: updateClientLocal,
+  deleteLocal: deleteClientLocal,
+};
 
 export const GET = withApiRoute(async (_req, ctx) => {
   const id = ctx.params.id;
-  const { client, source } = await resolveClient(id);
-  return jsonOk({ source, client });
+  if (!id) throw ApiError.badRequest("Client id is required.");
+  return handleCrudGet(id, config);
+});
+
+export const PATCH = withApiRoute(async (request, ctx) => {
+  const id = ctx.params.id;
+  if (!id) throw ApiError.badRequest("Client id is required.");
+  return handleCrudUpdate(id, request, config);
+});
+
+export const DELETE = withApiRoute(async (_req, ctx) => {
+  const id = ctx.params.id;
+  if (!id) throw ApiError.badRequest("Client id is required.");
+  return handleCrudDelete(id, config);
 });

@@ -28,6 +28,18 @@ export function getClientLocal(id: string): ClientRecord | null {
   return clients.get(id) || null;
 }
 
+export function updateClientLocal(id: string, input: Partial<ClientRecord>): ClientRecord | null {
+  const row = clients.get(id);
+  if (!row) return null;
+  Object.assign(row, input, { id, updated_at: now() });
+  clients.set(id, row);
+  return row;
+}
+
+export function deleteClientLocal(id: string): boolean {
+  return clients.delete(id);
+}
+
 export function createClientLocal(input: Partial<ClientRecord>): ClientRecord {
   const ts = now();
   const record: ClientRecord = {
@@ -53,6 +65,18 @@ export function listProjectsLocal(clientId?: string): ProjectRecord[] {
 
 export function getProjectLocal(id: string): ProjectRecord | null {
   return projects.get(id) || null;
+}
+
+export function updateProjectLocal(id: string, input: Partial<ProjectRecord>): ProjectRecord | null {
+  const row = projects.get(id);
+  if (!row) return null;
+  Object.assign(row, input, { id, updated_at: now() });
+  projects.set(id, row);
+  return row;
+}
+
+export function deleteProjectLocal(id: string): boolean {
+  return projects.delete(id);
 }
 
 export function createProjectLocal(input: Partial<ProjectRecord>): ProjectRecord {

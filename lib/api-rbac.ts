@@ -11,6 +11,7 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/orders": "orders",
   "/api/products": "products",
   "/api/users": "team",
+  "/api/notifications": "command",
   "/api/agent-workflow": "agents",
   "/api/media": "creative",
   "/api/harvest": "command",

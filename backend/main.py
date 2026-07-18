@@ -13,15 +13,29 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from router.create_pillar_routing import orchestrator
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
 from middleware.auth import BackendAuthMiddleware
-from middleware.errors import register_exception_handlers
+from middleware.errors import RequestIdMiddleware, register_exception_handlers
 from middleware.rate_limit import RateLimitMiddleware
+from schemas.erp import (
+    EmployeeCreate,
+    EmployeeUpdate,
+    InventoryCreate,
+    InventoryUpdate,
+    InvoiceCreate,
+    InvoiceUpdate,
+    OrderCreate,
+    OrderUpdate,
+    ProductCreate,
+    ProductUpdate,
+)
+from schemas.notifications import NotifyRequest
+from schemas.workflow import AgentAssign, ClientCreate, ClientUpdate, ProjectCreate, ProjectUpdate
+from services.notifications import notify_order_created, send_notification
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
 FMK_WIG_BRAND = "FMK WIG"
@@ -72,6 +86,7 @@ app.add_middleware(
 )
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(BackendAuthMiddleware)
+app.add_middleware(RequestIdMiddleware)
 register_exception_handlers(app)
 
 
@@ -229,9 +244,39 @@ async def list_clients() -> Dict[str, Any]:
 
 
 @app.post("/api/v5/clients")
-async def create_client(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = workflow.create_client(payload)
+async def create_client(payload: ClientCreate) -> Dict[str, Any]:
+    record = workflow.create_client(payload.model_dump())
     return {"ok": True, "client": record}
+
+
+@app.get("/api/v5/clients/{record_id}")
+async def get_client(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "client": workflow.get_client(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/clients/{record_id}")
+async def update_client(record_id: str, payload: ClientUpdate) -> Dict[str, Any]:
+    try:
+        return {
+            "ok": True,
+            "client": workflow.update_client(
+                record_id, payload.model_dump(exclude_unset=True)
+            ),
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/clients/{record_id}")
+async def delete_client(record_id: str) -> Dict[str, Any]:
+    try:
+        workflow.delete_client(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/api/v5/projects")
@@ -240,9 +285,39 @@ async def list_projects(client_id: str | None = Query(default=None)) -> Dict[str
 
 
 @app.post("/api/v5/projects")
-async def create_project(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = workflow.create_project(payload)
+async def create_project(payload: ProjectCreate) -> Dict[str, Any]:
+    record = workflow.create_project(payload.model_dump())
     return {"ok": True, "project": record}
+
+
+@app.get("/api/v5/projects/{record_id}")
+async def get_project(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "project": workflow.get_project(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/projects/{record_id}")
+async def update_project(record_id: str, payload: ProjectUpdate) -> Dict[str, Any]:
+    try:
+        return {
+            "ok": True,
+            "project": workflow.update_project(
+                record_id, payload.model_dump(exclude_unset=True)
+            ),
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/projects/{record_id}")
+async def delete_project(record_id: str) -> Dict[str, Any]:
+    try:
+        workflow.delete_project(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/api/v5/agent-workflow/tasks")
@@ -251,9 +326,9 @@ async def list_agent_tasks(project_id: str | None = Query(default=None)) -> Dict
 
 
 @app.post("/api/v5/agent-workflow/assign")
-async def assign_agent_workflow(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def assign_agent_workflow(payload: AgentAssign) -> Dict[str, Any]:
     try:
-        return workflow.assign_workflow(payload)
+        return workflow.assign_workflow(payload.model_dump())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -267,8 +342,8 @@ async def list_invoices() -> Dict[str, Any]:
 
 
 @app.post("/api/v5/invoices")
-async def create_invoice(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = erp.create_invoice(payload)
+async def create_invoice(payload: InvoiceCreate) -> Dict[str, Any]:
+    record = erp.create_invoice(payload.model_dump())
     return {"ok": True, "invoice": record}
 
 
@@ -281,9 +356,10 @@ async def get_invoice(record_id: str) -> Dict[str, Any]:
 
 
 @app.patch("/api/v5/invoices/{record_id}")
-async def update_invoice(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+async def update_invoice(record_id: str, payload: InvoiceUpdate) -> Dict[str, Any]:
     try:
-        return {"ok": True, "invoice": erp.update_invoice(record_id, payload)}
+        record = erp.update_invoice(record_id, payload.model_dump(exclude_unset=True))
+        return {"ok": True, "invoice": record}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -303,8 +379,8 @@ async def list_inventory() -> Dict[str, Any]:
 
 
 @app.post("/api/v5/inventory")
-async def create_inventory_item(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = erp.create_inventory(payload)
+async def create_inventory_item(payload: InventoryCreate) -> Dict[str, Any]:
+    record = erp.create_inventory(payload.model_dump())
     return {"ok": True, "item": record}
 
 
@@ -317,16 +393,16 @@ async def get_inventory_item(item_id: str) -> Dict[str, Any]:
 
 
 @app.patch("/api/v5/inventory/{item_id}")
-async def adjust_inventory(item_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-    if "delta" in payload and len(payload) <= 2:
+async def adjust_inventory(item_id: str, payload: InventoryUpdate) -> Dict[str, Any]:
+    data = payload.model_dump(exclude_unset=True)
+    if "delta" in data and len(data) <= 2:
         try:
-            delta = int(payload.get("delta") or 0)
-            item = erp.adjust_stock(item_id, delta)
+            item = erp.adjust_stock(item_id, int(data.get("delta") or 0))
             return {"ok": True, "item": item}
         except ValueError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
     try:
-        return {"ok": True, "item": erp.update_inventory(item_id, payload)}
+        return {"ok": True, "item": erp.update_inventory(item_id, data)}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -346,8 +422,8 @@ async def list_employees() -> Dict[str, Any]:
 
 
 @app.post("/api/v5/employees")
-async def create_employee(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = erp.create_employee(payload)
+async def create_employee(payload: EmployeeCreate) -> Dict[str, Any]:
+    record = erp.create_employee(payload.model_dump())
     return {"ok": True, "employee": record}
 
 
@@ -360,9 +436,14 @@ async def get_employee(record_id: str) -> Dict[str, Any]:
 
 
 @app.patch("/api/v5/employees/{record_id}")
-async def update_employee(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+async def update_employee(record_id: str, payload: EmployeeUpdate) -> Dict[str, Any]:
     try:
-        return {"ok": True, "employee": erp.update_employee(record_id, payload)}
+        return {
+            "ok": True,
+            "employee": erp.update_employee(
+                record_id, payload.model_dump(exclude_unset=True)
+            ),
+        }
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -385,9 +466,13 @@ async def list_orders(status: str | None = Query(default=None)) -> Dict[str, Any
 
 
 @app.post("/api/v5/orders")
-async def create_order(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = erp.create_order(payload)
-    return {"ok": True, "order": record}
+async def create_order(payload: OrderCreate) -> Dict[str, Any]:
+    record = erp.create_order(payload.model_dump())
+    notify_to = os.getenv("FAOS_NOTIFY_DEFAULT_TO", "").strip()
+    notification = None
+    if notify_to:
+        notification = notify_order_created(record, [e.strip() for e in notify_to.split(",") if e.strip()])
+    return {"ok": True, "order": record, "notification": notification}
 
 
 @app.get("/api/v5/orders/{record_id}")
@@ -399,9 +484,12 @@ async def get_order(record_id: str) -> Dict[str, Any]:
 
 
 @app.patch("/api/v5/orders/{record_id}")
-async def update_order(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+async def update_order(record_id: str, payload: OrderUpdate) -> Dict[str, Any]:
     try:
-        return {"ok": True, "order": erp.update_order(record_id, payload)}
+        return {
+            "ok": True,
+            "order": erp.update_order(record_id, payload.model_dump(exclude_unset=True)),
+        }
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -421,8 +509,8 @@ async def list_products() -> Dict[str, Any]:
 
 
 @app.post("/api/v5/products")
-async def create_product(payload: Dict[str, Any]) -> Dict[str, Any]:
-    record = erp.create_product(payload)
+async def create_product(payload: ProductCreate) -> Dict[str, Any]:
+    record = erp.create_product(payload.model_dump())
     return {"ok": True, "product": record}
 
 
@@ -435,9 +523,14 @@ async def get_product(record_id: str) -> Dict[str, Any]:
 
 
 @app.patch("/api/v5/products/{record_id}")
-async def update_product(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+async def update_product(record_id: str, payload: ProductUpdate) -> Dict[str, Any]:
     try:
-        return {"ok": True, "product": erp.update_product(record_id, payload)}
+        return {
+            "ok": True,
+            "product": erp.update_product(
+                record_id, payload.model_dump(exclude_unset=True)
+            ),
+        }
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -449,6 +542,21 @@ async def delete_product(record_id: str) -> Dict[str, Any]:
         return {"ok": True, "deleted": record_id}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+# --- Notifications ---
+
+
+@app.post("/api/v5/notifications/send")
+async def send_notify(payload: NotifyRequest) -> Dict[str, Any]:
+    result = send_notification(
+        to=[str(e) for e in payload.to],
+        subject=payload.subject,
+        body=payload.body,
+        template=payload.template,
+        meta=payload.meta,
+    )
+    return {"ok": True, "notification": result}
 
 
 # --- TAC Central Brain (3 Pillars + Parent Company) ---
@@ -475,19 +583,6 @@ async def tac_dispatch(payload: Dict[str, Any]) -> Dict[str, Any]:
 @app.get("/api/v5/tac/commands")
 async def tac_commands() -> Dict[str, Any]:
     return {"ok": True, "commands": tac.list_commands()}
-
-
-@app.exception_handler(404)
-async def not_found_handler(request: Request, exc: Any):
-    return JSONResponse(
-        status_code=404,
-        content={
-            "ok": False,
-            "error": "Route not found",
-            "path": request.url.path,
-            "hint": "Use /, /health, /api/v5/tac/status, /api/v5/clients, /api/v5/invoices",
-        },
-    )
 
 
 if __name__ == "__main__":
