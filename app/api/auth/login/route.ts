@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import {
   authenticateUser,
   createSessionToken,
@@ -6,77 +6,52 @@ import {
   verifySessionToken,
   SESSION_COOKIE,
 } from "@/lib/auth";
+import { withApiRoute } from "@/lib/api-handler";
+import { ApiError } from "@/lib/api-errors";
+import { jsonOk } from "@/lib/api-response";
+import { parseJsonWithSchema } from "@/lib/validation/parse";
+import { loginSchema } from "@/lib/validation/schemas";
+import { assertApiRateLimit, resolveClientIp } from "@/lib/api-rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-const MAX_ATTEMPTS = 8;
-const WINDOW_MS = 15 * 60 * 1000;
+export const POST = withApiRoute(
+  async (request: NextRequest) => {
+    const ip = resolveClientIp(request.headers);
+    // Stricter login bucket — fail fast, no credential spray loops
+    assertApiRateLimit(`login:${ip}`, "auth/login");
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = loginAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= MAX_ATTEMPTS) return false;
-  entry.count++;
-  return true;
-}
+    const body = await parseJsonWithSchema(request, loginSchema);
+    const user = authenticateUser(body.username, body.password);
+    if (!user) {
+      throw ApiError.unauthorized("Invalid credentials");
+    }
 
-export async function POST(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: "Too many login attempts. Try again in 15 minutes." },
-      { status: 429 }
-    );
-  }
+    const token = await createSessionToken(user);
+    const response = jsonOk({
+      user: { username: user.username, name: user.name, role: user.role },
+    });
+    const opts = sessionCookieOptions(token);
+    response.cookies.set(opts.name, opts.value, {
+      httpOnly: opts.httpOnly,
+      secure: opts.secure,
+      sameSite: opts.sameSite,
+      path: opts.path,
+      maxAge: opts.maxAge,
+    });
+    return response;
+  },
+  { rateLimitKey: "auth/login" }
+);
 
-  let body: { username?: string; password?: string };
-  try {
-    body = (await request.json()) as { username?: string; password?: string };
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const username = body.username?.trim();
-  const password = body.password?.trim();
-  if (!username || !password) {
-    return NextResponse.json({ error: "Username and password required" }, { status: 400 });
-  }
-
-  const user = authenticateUser(username, password);
-  if (!user) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
-
-  const token = await createSessionToken(user);
-  const response = NextResponse.json({
-    ok: true,
-    user: { username: user.username, name: user.name, role: user.role },
-  });
-  const opts = sessionCookieOptions(token);
-  response.cookies.set(opts.name, opts.value, {
-    httpOnly: opts.httpOnly,
-    secure: opts.secure,
-    sameSite: opts.sameSite,
-    path: opts.path,
-    maxAge: opts.maxAge,
-  });
-  return response;
-}
-
-export async function GET(request: NextRequest) {
+export const GET = withApiRoute(async (request: NextRequest) => {
   const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
   if (!session) {
-    return NextResponse.json({ ok: false, authenticated: false }, { status: 401 });
+    throw ApiError.unauthorized("Not authenticated");
   }
-  return NextResponse.json({
-    ok: true,
+  return jsonOk({
     authenticated: true,
     user: { username: session.username, name: session.name, role: session.role },
   });
-}
+});

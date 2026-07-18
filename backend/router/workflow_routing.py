@@ -1,4 +1,4 @@
-"""FAOS v5.0 — CRM / Projects / Agent workflow store (Render persistence)."""
+"""FAOS v5.3 — CRM / Projects / Agent workflow store (Render persistence)."""
 
 from __future__ import annotations
 
@@ -50,7 +50,11 @@ def _load() -> Dict[str, Any]:
     if not DATA_PATH.exists():
         return {"clients": [], "projects": [], "tasks": []}
     with DATA_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    data.setdefault("clients", [])
+    data.setdefault("projects", [])
+    data.setdefault("tasks", [])
+    return data
 
 
 def _save(data: Dict[str, Any]) -> None:
@@ -59,9 +63,30 @@ def _save(data: Dict[str, Any]) -> None:
         json.dump(data, f, indent=2)
 
 
+def _find(collection: List[Dict[str, Any]], record_id: str) -> Optional[Dict[str, Any]]:
+    for row in collection:
+        if row.get("id") == record_id:
+            return row
+    return None
+
+
+def _remove(collection: List[Dict[str, Any]], record_id: str) -> bool:
+    for idx, row in enumerate(collection):
+        if row.get("id") == record_id:
+            collection.pop(idx)
+            return True
+    return False
+
+
 class WorkflowOrchestrator:
     def list_clients(self) -> List[Dict[str, Any]]:
         return sorted(_load()["clients"], key=lambda c: c.get("updated_at", ""), reverse=True)
+
+    def get_client(self, record_id: str) -> Dict[str, Any]:
+        row = _find(_load()["clients"], record_id)
+        if not row:
+            raise ValueError(f"Client not found: {record_id}")
+        return row
 
     def create_client(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         data = _load()
@@ -80,11 +105,36 @@ class WorkflowOrchestrator:
         _save(data)
         return record
 
+    def update_client(self, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        data = _load()
+        row = _find(data["clients"], record_id)
+        if not row:
+            raise ValueError(f"Client not found: {record_id}")
+        for field in ("name", "industry", "contact_email", "notes", "assigned_agent"):
+            if field in payload and payload[field] is not None:
+                row[field] = payload[field]
+        row["updated_at"] = _now()
+        _save(data)
+        return row
+
+    def delete_client(self, record_id: str) -> bool:
+        data = _load()
+        if not _remove(data["clients"], record_id):
+            raise ValueError(f"Client not found: {record_id}")
+        _save(data)
+        return True
+
     def list_projects(self, client_id: Optional[str] = None) -> List[Dict[str, Any]]:
         projects = _load()["projects"]
         if client_id:
             projects = [p for p in projects if p.get("client_id") == client_id]
         return sorted(projects, key=lambda p: p.get("updated_at", ""), reverse=True)
+
+    def get_project(self, record_id: str) -> Dict[str, Any]:
+        row = _find(_load()["projects"], record_id)
+        if not row:
+            raise ValueError(f"Project not found: {record_id}")
+        return row
 
     def create_project(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         data = _load()
@@ -104,6 +154,25 @@ class WorkflowOrchestrator:
         data["projects"].append(record)
         _save(data)
         return record
+
+    def update_project(self, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        data = _load()
+        row = _find(data["projects"], record_id)
+        if not row:
+            raise ValueError(f"Project not found: {record_id}")
+        for field in ("client_id", "name", "status", "priority", "command_brief", "assigned_agents"):
+            if field in payload and payload[field] is not None:
+                row[field] = payload[field]
+        row["updated_at"] = _now()
+        _save(data)
+        return row
+
+    def delete_project(self, record_id: str) -> bool:
+        data = _load()
+        if not _remove(data["projects"], record_id):
+            raise ValueError(f"Project not found: {record_id}")
+        _save(data)
+        return True
 
     def list_tasks(self, project_id: Optional[str] = None) -> List[Dict[str, Any]]:
         tasks = _load()["tasks"]
