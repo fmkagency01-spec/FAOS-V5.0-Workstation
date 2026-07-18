@@ -19,6 +19,9 @@ from router.create_pillar_routing import orchestrator
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
+from middleware.auth import BackendAuthMiddleware
+from middleware.errors import register_exception_handlers
+from middleware.rate_limit import RateLimitMiddleware
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
 FMK_WIG_BRAND = "FMK WIG"
@@ -67,6 +70,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(BackendAuthMiddleware)
+register_exception_handlers(app)
 
 
 @app.middleware("http")
@@ -266,6 +272,31 @@ async def create_invoice(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"ok": True, "invoice": record}
 
 
+@app.get("/api/v5/invoices/{record_id}")
+async def get_invoice(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "invoice": erp.get_invoice(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/invoices/{record_id}")
+async def update_invoice(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "invoice": erp.update_invoice(record_id, payload)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/invoices/{record_id}")
+async def delete_invoice(record_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_invoice(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.get("/api/v5/inventory")
 async def list_inventory() -> Dict[str, Any]:
     return {"ok": True, "inventory": erp.list_inventory()}
@@ -277,12 +308,34 @@ async def create_inventory_item(payload: Dict[str, Any]) -> Dict[str, Any]:
     return {"ok": True, "item": record}
 
 
+@app.get("/api/v5/inventory/{item_id}")
+async def get_inventory_item(item_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "item": erp.get_inventory(item_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.patch("/api/v5/inventory/{item_id}")
 async def adjust_inventory(item_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    if "delta" in payload and len(payload) <= 2:
+        try:
+            delta = int(payload.get("delta") or 0)
+            item = erp.adjust_stock(item_id, delta)
+            return {"ok": True, "item": item}
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
     try:
-        delta = int(payload.get("delta") or 0)
-        item = erp.adjust_stock(item_id, delta)
-        return {"ok": True, "item": item}
+        return {"ok": True, "item": erp.update_inventory(item_id, payload)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/inventory/{item_id}")
+async def delete_inventory(item_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_inventory(item_id)
+        return {"ok": True, "deleted": item_id}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -296,6 +349,106 @@ async def list_employees() -> Dict[str, Any]:
 async def create_employee(payload: Dict[str, Any]) -> Dict[str, Any]:
     record = erp.create_employee(payload)
     return {"ok": True, "employee": record}
+
+
+@app.get("/api/v5/employees/{record_id}")
+async def get_employee(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "employee": erp.get_employee(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/employees/{record_id}")
+async def update_employee(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "employee": erp.update_employee(record_id, payload)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/employees/{record_id}")
+async def delete_employee(record_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_employee(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+# --- Orders & Products (core CRUD) ---
+
+
+@app.get("/api/v5/orders")
+async def list_orders(status: str | None = Query(default=None)) -> Dict[str, Any]:
+    return {"ok": True, "orders": erp.list_orders(status)}
+
+
+@app.post("/api/v5/orders")
+async def create_order(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = erp.create_order(payload)
+    return {"ok": True, "order": record}
+
+
+@app.get("/api/v5/orders/{record_id}")
+async def get_order(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "order": erp.get_order(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/orders/{record_id}")
+async def update_order(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "order": erp.update_order(record_id, payload)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/orders/{record_id}")
+async def delete_order(record_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_order(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/products")
+async def list_products() -> Dict[str, Any]:
+    return {"ok": True, "products": erp.list_products()}
+
+
+@app.post("/api/v5/products")
+async def create_product(payload: Dict[str, Any]) -> Dict[str, Any]:
+    record = erp.create_product(payload)
+    return {"ok": True, "product": record}
+
+
+@app.get("/api/v5/products/{record_id}")
+async def get_product(record_id: str) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "product": erp.get_product(record_id)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/products/{record_id}")
+async def update_product(record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {"ok": True, "product": erp.update_product(record_id, payload)}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/products/{record_id}")
+async def delete_product(record_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_product(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 # --- TAC Central Brain (3 Pillars + Parent Company) ---

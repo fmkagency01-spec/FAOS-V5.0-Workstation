@@ -5,6 +5,7 @@ import {
   isProtectedPage,
   roleCanAccessRouteEdge,
 } from "@/lib/auth-edge";
+import { roleCanAccessApi } from "@/lib/api-rbac";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,6 +37,13 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Access denied for your role" }, { status: 403 });
     }
     return NextResponse.redirect(new URL("/?denied=1", request.url));
+  }
+
+  if (pathname.startsWith("/api/") && isProtectedApiEdge(pathname) && !roleCanAccessApi(session.role, pathname)) {
+    return NextResponse.json(
+      { ok: false, error: "Access denied for your role", code: "FORBIDDEN" },
+      { status: 403 }
+    );
   }
 
   const response = NextResponse.next();

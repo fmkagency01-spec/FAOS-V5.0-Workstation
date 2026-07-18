@@ -10,20 +10,20 @@
     },
     "manager": {
       "label": "Operations Manager",
-      "description": "TAC, projects, agents, CRM, inventory — no executive finance/HR",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "command", "creative", "create-pillar", "status"],
+      "description": "TAC, projects, agents, CRM, inventory, orders — no executive finance/HR",
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "status"],
       "can_manage_team": false
     },
     "sales": {
       "label": "Sales Team",
-      "description": "Clients and projects only — no invoices, HR, or TAC executive",
-      "modules": ["home", "crm", "projects", "command", "status"],
+      "description": "Clients, projects, and orders — no invoices, HR, or TAC executive",
+      "modules": ["home", "crm", "projects", "orders", "command", "status"],
       "can_manage_team": false
     },
     "finance": {
       "label": "Finance Team",
-      "description": "Invoicing and inventory — no HR personal records or JARVIS",
-      "modules": ["home", "invoicing", "inventory", "status"],
+      "description": "Invoicing, inventory, orders, and products — no HR personal records or JARVIS",
+      "modules": ["home", "invoicing", "inventory", "orders", "products", "status"],
       "can_manage_team": false
     },
     "hr": {
