@@ -53,6 +53,8 @@
     "/projects": "projects",
     "/invoicing": "invoicing",
     "/inventory": "inventory",
+    "/orders": "orders",
+    "/products": "products",
     "/hr": "hr",
     "/agents": "agents",
     "/dashboard/create-pillar": "create-pillar",

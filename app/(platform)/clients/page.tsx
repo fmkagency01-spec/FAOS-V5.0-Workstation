@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageShell, MsgBanner } from '@/components/faos/erp/PageShell';
+import { RecordLink } from '@/components/faos/erp/RecordLink';
 import type { ClientRecord } from '@/lib/workflow-types';
 
 export default function ClientsPage() {
@@ -42,11 +44,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">CRM & Clients</h1>
-        <p className="text-sm text-slate-400 mt-1">Manage clients — synced to Render backend when online.</p>
-      </div>
+    <PageShell title="CRM & Clients" subtitle="Manage clients — tap for profile, projects & order shortcuts.">
 
       <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-5 space-y-3">
         <h2 className="text-sm font-bold text-[#00f5d4]">New client</h2>
@@ -59,30 +57,21 @@ export default function ClientsPage() {
         <button type="button" onClick={() => void submit()} disabled={loading} className="btn-faos-primary">
           {loading ? 'Saving…' : 'Add client'}
         </button>
-        {msg && <p className="text-xs text-slate-400">{msg}</p>}
+        {msg && <MsgBanner msg={msg} />}
       </div>
 
       <div className="space-y-2">
         {clients.map((c) => (
-          <div key={c.id} className="rounded-lg border border-[#2a3548] bg-[#111827] p-4 flex justify-between gap-4">
-            <div>
-              <p className="font-semibold text-white">{c.name}</p>
-              <p className="text-xs text-slate-500">{c.industry || '—'} · {c.contact_email || 'no email'}</p>
-              <p className="text-[10px] font-mono text-slate-600 mt-1">{c.id}</p>
-            </div>
-            <LinkClientProjects clientId={c.id} />
-          </div>
+          <RecordLink
+            key={c.id}
+            href={`/clients/${c.id}`}
+            title={c.name}
+            subtitle={`${c.industry || '—'} · ${c.contact_email || 'no email'}`}
+            meta={c.id}
+          />
         ))}
         {clients.length === 0 && <p className="text-sm text-slate-500">No clients yet.</p>}
       </div>
-    </div>
-  );
-}
-
-function LinkClientProjects({ clientId }: { clientId: string }) {
-  return (
-    <a href={`/projects?client=${clientId}`} className="text-xs text-[#00bbf9] hover:underline shrink-0">
-      Projects →
-    </a>
+    </PageShell>
   );
 }

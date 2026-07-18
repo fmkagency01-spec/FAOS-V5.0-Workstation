@@ -24,6 +24,10 @@ export function listClientsLocal(): ClientRecord[] {
   return [...clients.values()].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
+export function getClientLocal(id: string): ClientRecord | null {
+  return clients.get(id) || null;
+}
+
 export function createClientLocal(input: Partial<ClientRecord>): ClientRecord {
   const ts = now();
   const record: ClientRecord = {
@@ -45,6 +49,10 @@ export function listProjectsLocal(clientId?: string): ProjectRecord[] {
   return (clientId ? all.filter((p) => p.client_id === clientId) : all).sort(
     (a, b) => b.updated_at.localeCompare(a.updated_at)
   );
+}
+
+export function getProjectLocal(id: string): ProjectRecord | null {
+  return projects.get(id) || null;
 }
 
 export function createProjectLocal(input: Partial<ProjectRecord>): ProjectRecord {

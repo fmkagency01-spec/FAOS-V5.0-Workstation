@@ -2,6 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { PageShell } from '@/components/faos/erp/PageShell';
+import { RecordLink } from '@/components/faos/erp/RecordLink';
 import type { ProjectRecord } from '@/lib/workflow-types';
 
 function ProjectsInner() {
@@ -18,7 +20,7 @@ function ProjectsInner() {
   useEffect(() => {
     setForm((f) => ({ ...f, client_id: clientFilter }));
     const q = clientFilter ? `?client_id=${encodeURIComponent(clientFilter)}` : '';
-    void fetch(`/api/projects${q}`, { cache: 'no-store' })
+    void fetch(`/api/projects${q}`, { cache: 'no-store', credentials: 'include' })
       .then((res) => res.json())
       .then((data: { projects?: ProjectRecord[] }) => setProjects(data.projects || []));
   }, [clientFilter]);
@@ -27,24 +29,23 @@ function ProjectsInner() {
     const res = await fetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(form),
     });
     if (res.ok) {
       setForm({ client_id: clientFilter, name: '', command_brief: '', priority: 'normal' });
       const q = clientFilter ? `?client_id=${encodeURIComponent(clientFilter)}` : '';
-      const list = await fetch(`/api/projects${q}`, { cache: 'no-store' });
+      const list = await fetch(`/api/projects${q}`, { cache: 'no-store', credentials: 'include' });
       const data = (await list.json()) as { projects?: ProjectRecord[] };
       setProjects(data.projects || []);
     }
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Projects</h1>
-        <p className="text-sm text-slate-400 mt-1">Project boards with command briefs for agent routing.</p>
-      </div>
-
+    <PageShell
+      title="Projects"
+      subtitle="Project boards — tap for details, client link & agent shortcuts."
+    >
       <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-5 space-y-3">
         <input className="input-faos" placeholder="Project name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input className="input-faos" placeholder="Client ID (optional)" value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
@@ -54,22 +55,29 @@ function ProjectsInner() {
           <option value="normal">Normal</option>
           <option value="high">High</option>
         </select>
-        <button type="button" onClick={() => void submit()} className="btn-faos-primary">Create project</button>
+        <button type="button" onClick={() => void submit()} className="btn-faos-primary">
+          Create project
+        </button>
       </div>
 
-      <div className="grid gap-3">
+      <div className="space-y-2">
         {projects.map((p) => (
-          <div key={p.id} className="rounded-lg border border-[#2a3548] bg-[#111827] p-4">
-            <div className="flex justify-between items-start gap-2">
-              <p className="font-semibold text-white">{p.name}</p>
-              <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-[#00f5d4]/10 text-[#00f5d4]">{p.status}</span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2 line-clamp-2">{p.command_brief || 'No brief'}</p>
-            <p className="text-[10px] font-mono text-slate-600 mt-2">{p.id}</p>
-          </div>
+          <RecordLink
+            key={p.id}
+            href={`/projects/${p.id}`}
+            title={p.name}
+            subtitle={p.command_brief || 'No brief'}
+            meta={p.id}
+            badge={
+              <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-[#00f5d4]/10 text-[#00f5d4]">
+                {p.status}
+              </span>
+            }
+          />
         ))}
+        {projects.length === 0 && <p className="text-sm text-slate-500">No projects yet.</p>}
       </div>
-    </div>
+    </PageShell>
   );
 }
 
