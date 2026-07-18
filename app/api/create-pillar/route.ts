@@ -6,7 +6,7 @@ import {
   triggerGatekeeperProtocol,
   type CreatePillarPayload,
 } from "@/lib/create-pillar";
-import { joinBackendUrl, getFaosBackendBaseUrl } from "@/lib/backend";
+import { joinBackendUrl, getFaosBackendBaseUrl, getBackendAuthHeaders } from "@/lib/backend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,10 +26,7 @@ async function fetchRender(path: string, init?: RequestInit): Promise<Response |
       ...init,
       signal: controller.signal,
       cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers || {}),
-      },
+      headers: getBackendAuthHeaders(init?.headers),
     });
   } catch {
     return null;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { joinBackendUrl, getFaosBackendBaseUrl } from "@/lib/backend";
+import { joinBackendUrl, getFaosBackendBaseUrl, getBackendAuthHeaders } from "@/lib/backend";
 import {
   processSupplyCommand,
   triggerGatekeeperProtocol,
@@ -25,10 +25,7 @@ async function fetchRender(
       ...init,
       cache: "no-store",
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers || {}),
-      },
+      headers: getBackendAuthHeaders(init?.headers),
     });
   } catch {
     return null;

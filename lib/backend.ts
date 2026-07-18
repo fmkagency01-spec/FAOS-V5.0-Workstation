@@ -92,3 +92,31 @@ export function getBackendDocsUrl(): string {
 export function getApiVersion(): string {
   return process.env.NEXT_PUBLIC_API_VERSION?.trim() || "v5.0";
 }
+
+/** Server-only headers for Render /api/v5 calls (never expose to browser). */
+export function getBackendAuthHeaders(
+  extra?: HeadersInit
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (extra) {
+    const merged = new Headers(extra);
+    merged.forEach((value, key) => {
+      headers[key] = value;
+    });
+  }
+
+  const key = process.env.FAOS_BACKEND_API_KEY?.trim();
+  if (key) {
+    headers["X-FAOS-Api-Key"] = key;
+  }
+
+  return headers;
+}
+
+/** True when Vercel has FAOS_BACKEND_API_KEY configured (value never returned). */
+export function isBackendApiKeyConfigured(): boolean {
+  return Boolean(process.env.FAOS_BACKEND_API_KEY?.trim());
+}
