@@ -3,10 +3,12 @@ import { getCreatePillarNamespace } from "@/lib/create-pillar";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
 import { probeOpenRouterKey } from "@/lib/openrouter-probe";
 import { resolveOwnerPassword } from "@/lib/auth";
+import { isAuthSecretConfigured } from "@/lib/auth-crypto";
 import {
   getBackendRootUrl,
   getFaosBackendBaseUrl,
   getBackendDocsUrl,
+  isBackendApiKeyConfigured,
 } from "@/lib/backend";
 import { OPENROUTER_GUARD_CONFIG } from "@/lib/openrouter-guard";
 
@@ -59,6 +61,18 @@ async function probeRenderBackend(): Promise<{
   }
 }
 
+function notificationStatus(): {
+  resend: "configured" | "missing";
+  default_to: "configured" | "missing";
+  fallback: "outbox";
+} {
+  return {
+    resend: process.env.RESEND_API_KEY?.trim() ? "configured" : "missing",
+    default_to: process.env.FAOS_NOTIFY_DEFAULT_TO?.trim() ? "configured" : "missing",
+    fallback: "outbox",
+  };
+}
+
 export async function GET() {
   const hasOpenRouterKey = Boolean(getOpenRouterApiKey());
   const openrouterProbe = await probeOpenRouterKey();
@@ -73,7 +87,11 @@ export async function GET() {
     status: "operational",
     timestamp: new Date().toISOString(),
     tac: { pillars: 3, brain: "TAC Central Command", jarvis_agents: 25 },
-    jarvis: { shell_agents: 25, voice: true, erp_modules: ["invoicing", "inventory", "hr"] },
+    jarvis: {
+      shell_agents: 25,
+      voice: true,
+      erp_modules: ["invoicing", "inventory", "hr", "orders", "products"],
+    },
     gateway: {
       openrouter: hasOpenRouterKey ? "configured" : "missing_key",
       openrouter_status: openrouterProbe.status,
@@ -86,9 +104,12 @@ export async function GET() {
         : process.env.FAOS_OWNER_PASSWRD?.trim()
           ? "FAOS_OWNER_PASSWRD"
           : null,
+      auth_secret_configured: isAuthSecretConfigured(),
     },
+    notifications: notificationStatus(),
     backend: {
       url: getFaosBackendBaseUrl() || null,
+      api_key_configured: isBackendApiKeyConfigured(),
       render,
     },
     pillars: {

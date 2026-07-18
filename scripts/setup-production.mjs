@@ -2,35 +2,40 @@
 /**
  * FAOS v5.3 Production Setup Helper
  * Run: node scripts/setup-production.mjs
- * Copy output into Vercel Dashboard → Settings → Environment Variables
+ * Copy output into Vercel + Render dashboards — NEVER commit the printed values.
  */
 import { randomBytes } from "crypto";
 
 const secret = randomBytes(32).toString("base64url");
+const backendKey = randomBytes(32).toString("hex");
 const suggestedPassword = `FMK-FAOS-${randomBytes(4).toString("hex").toUpperCase()}`;
 
 console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║  FAOS v5.3 — Vercel Environment Setup (copy to dashboard)   ║
+║  FAOS v5.3 — Dashboard env setup (do NOT commit these)       ║
 ╚══════════════════════════════════════════════════════════════╝
 
-Required secrets (Production + Preview):
-
+── Vercel (Production) ─────────────────────────────────────────
   FAOS_AUTH_SECRET=${secret}
-
   FAOS_OWNER_PASSWORD=${suggestedPassword}
-
+  FAOS_BACKEND_API_KEY=${backendKey}
   OPENROUTER_API_KEY=<your-openrouter-key>
+  RESEND_API_KEY=<optional>
+  FAOS_NOTIFY_DEFAULT_TO=<optional-email>
+  FAOS_NOTIFY_FROM=<optional-from@domain>
 
-Optional team (JSON, single line):
-  FAOS_AUTH_USERS=[{"username":"fahim","password":"${suggestedPassword}","name":"Fahim Mahmud Khan","role":"owner"}]
+── Render (same FAOS_BACKEND_API_KEY as Vercel) ────────────────
+  FAOS_BACKEND_API_KEY=${backendKey}
+  FAOS_REQUIRE_BACKEND_API_KEY=true
+  RESEND_API_KEY=<optional>
+  FAOS_NOTIFY_DEFAULT_TO=<optional-email>
+  FAOS_NOTIFY_FROM=<optional-from@domain>
 
-Public vars (already in vercel.json):
-  NEXT_PUBLIC_BACKEND_URL, FAOS_TOKEN_SAVING_MODE, etc.
+── Notes ───────────────────────────────────────────────────────
+  • vercel.json must NOT contain secrets (public vars only)
+  • After rotating FAOS_AUTH_SECRET → users must log in again
+  • Without RESEND_API_KEY, notifications fall back to outbox (no crash)
+  • Login: username fahim · password = FAOS_OWNER_PASSWORD above
 
-After adding env vars → Redeploy in Vercel.
-
-Login: username fahim · password (FAOS_OWNER_PASSWORD above)
-
-⚠ Save these values securely — they are not stored in git.
+⚠ Save these values in a password manager — they are not stored in git.
 `);

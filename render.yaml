@@ -21,6 +21,8 @@ services:
         sync: false
       - key: FAOS_BACKEND_API_KEY
         sync: false
+      - key: FAOS_REQUIRE_BACKEND_API_KEY
+        value: "true"
       - key: RESEND_API_KEY
         sync: false
       - key: FAOS_NOTIFY_FROM

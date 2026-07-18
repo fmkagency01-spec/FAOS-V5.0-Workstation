@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { joinBackendUrl, getFaosBackendBaseUrl } from "@/lib/backend";
+import {
+  joinBackendUrl,
+  getFaosBackendBaseUrl,
+  getBackendAuthHeaders,
+} from "@/lib/backend";
 import { getFmkWigContext } from "@/lib/create-pillar";
 
 export const runtime = "nodejs";
@@ -12,6 +16,7 @@ export async function GET() {
     try {
       const upstream = await fetch(joinBackendUrl("create-pillar/fmk-wig"), {
         cache: "no-store",
+        headers: getBackendAuthHeaders(),
       });
       if (upstream.ok) {
         return new NextResponse(await upstream.text(), {

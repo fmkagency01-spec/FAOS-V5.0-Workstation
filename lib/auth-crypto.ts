@@ -1,5 +1,8 @@
 /**
  * Universal session crypto — Web Crypto API (works in Node 18+ and Edge middleware).
+ *
+ * Production MUST set FAOS_AUTH_SECRET in Vercel Environment Variables only
+ * (never commit secrets to vercel.json or git).
  */
 
 export type SessionPayload = {
@@ -9,6 +12,7 @@ export type SessionPayload = {
   exp: number;
 };
 
+/** Resolve signing secret from env — dashboard/env only, no hardcoded production value. */
 export function getAuthSecretValue(): string {
   const secret = process.env.FAOS_AUTH_SECRET?.trim();
   if (secret) return secret;
@@ -16,6 +20,10 @@ export function getAuthSecretValue(): string {
     return "faos-dev-secret-change-in-production";
   }
   return "";
+}
+
+export function isAuthSecretConfigured(): boolean {
+  return Boolean(process.env.FAOS_AUTH_SECRET?.trim());
 }
 
 async function hmacSign(data: string, secret: string): Promise<string> {
@@ -54,7 +62,11 @@ function decodePayload(data: string): SessionPayload | null {
 
 export async function createSignedToken(payload: SessionPayload): Promise<string> {
   const secret = getAuthSecretValue();
-  if (!secret) throw new Error("FAOS_AUTH_SECRET is not configured");
+  if (!secret) {
+    throw new Error(
+      "FAOS_AUTH_SECRET is not configured. Set it in Vercel Environment Variables and redeploy."
+    );
+  }
   const data = encodePayload(payload);
   const sig = await hmacSign(data, secret);
   return `${data}.${sig}`;
