@@ -1,5 +1,7 @@
 {
   "invoices": [],
   "inventory": [],
-  "employees": []
+  "employees": [],
+  "orders": [],
+  "products": []
 }

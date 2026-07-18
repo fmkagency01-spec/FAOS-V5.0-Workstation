@@ -45,3 +45,36 @@ export type EmployeeRecord = {
   created_at: string;
   updated_at: string;
 };
+
+export type OrderStatus = "pending" | "confirmed" | "fulfilled" | "cancelled";
+
+export type OrderRecord = {
+  id: string;
+  order_number: string;
+  client_id: string;
+  client_name: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+  currency: string;
+  status: OrderStatus;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProductRecord = {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  description: string;
+  unit_price: number;
+  currency: string;
+  active: boolean;
+  brand_agent?: string;
+  created_at: string;
+  updated_at: string;
+};
