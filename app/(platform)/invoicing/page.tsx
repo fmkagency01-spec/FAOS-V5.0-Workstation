@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageShell, StatCard, MsgBanner } from '@/components/faos/erp/PageShell';
+import { RecordLink } from '@/components/faos/erp/RecordLink';
 import type { InvoiceRecord } from '@/lib/erp-types';
 
 export default function InvoicingPage() {
@@ -55,16 +57,11 @@ export default function InvoicingPage() {
   const total = invoices.reduce((s, i) => s + i.amount, 0);
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Invoicing</h1>
-        <p className="text-sm text-slate-400 mt-1">Billing & payments — synced to Render · JARVIS can create invoices by voice.</p>
-      </div>
-
+    <PageShell title="Invoicing" subtitle="Billing & payments — tap any invoice for details & shortcuts.">
       <div className="grid sm:grid-cols-3 gap-3">
-        <Stat label="Invoices" value={String(invoices.length)} />
-        <Stat label="Total billed" value={`$${total.toLocaleString()}`} />
-        <Stat label="Draft" value={String(invoices.filter((i) => i.status === 'draft').length)} />
+        <StatCard label="Invoices" value={String(invoices.length)} />
+        <StatCard label="Total billed" value={`$${total.toLocaleString()}`} />
+        <StatCard label="Draft" value={String(invoices.filter((i) => i.status === 'draft').length)} />
       </div>
 
       <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-5 space-y-3">
@@ -78,36 +75,29 @@ export default function InvoicingPage() {
         <button type="button" onClick={() => void submit()} disabled={loading} className="btn-faos-primary">
           {loading ? 'Saving…' : 'Create invoice'}
         </button>
-        {msg && <p className="text-xs text-slate-400">{msg}</p>}
+        {msg && <MsgBanner msg={msg} />}
       </div>
 
       <div className="space-y-2">
         {invoices.map((inv) => (
-          <div key={inv.id} className="rounded-lg border border-[#2a3548] bg-[#111827] p-4 flex justify-between gap-4 flex-wrap">
-            <div>
-              <p className="font-semibold text-white">{inv.invoice_number}</p>
-              <p className="text-sm text-slate-300">{inv.client_name}</p>
-              <p className="text-[10px] font-mono text-slate-600">{inv.id}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-bold text-[#00f5d4]">
+          <RecordLink
+            key={inv.id}
+            href={`/invoicing/${inv.id}`}
+            title={inv.invoice_number}
+            subtitle={inv.client_name}
+            meta={inv.id}
+            badge={
+              <span className="text-[10px] uppercase text-slate-500">{inv.status}</span>
+            }
+            right={
+              <span className="text-lg font-bold text-[#00f5d4]">
                 {inv.currency} {inv.amount.toLocaleString()}
-              </p>
-              <p className="text-xs uppercase text-slate-500">{inv.status}</p>
-            </div>
-          </div>
+              </span>
+            }
+          />
         ))}
         {invoices.length === 0 && <p className="text-sm text-slate-500">No invoices yet.</p>}
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[#2a3548] bg-[#111827] p-4">
-      <p className="text-[10px] uppercase text-slate-500">{label}</p>
-      <p className="text-xl font-bold text-white mt-1">{value}</p>
-    </div>
+    </PageShell>
   );
 }

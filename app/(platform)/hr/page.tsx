@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageShell, MsgBanner } from '@/components/faos/erp/PageShell';
+import { RecordLink } from '@/components/faos/erp/RecordLink';
 import type { EmployeeRecord } from '@/lib/erp-types';
 
 export default function HrPage() {
@@ -48,11 +50,7 @@ export default function HrPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">HR & People</h1>
-        <p className="text-sm text-slate-400 mt-1">Team records — JARVIS: &quot;Hire sales manager for FMK WIG&quot;</p>
-      </div>
+    <PageShell title="HR & People" subtitle="Team records — tap for profile & shortcuts.">
 
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="rounded-lg border border-[#2a3548] bg-[#111827] p-4">
@@ -81,24 +79,22 @@ export default function HrPage() {
         <button type="button" onClick={() => void submit()} disabled={loading} className="btn-faos-primary">
           {loading ? 'Saving…' : 'Add employee'}
         </button>
-        {msg && <p className="text-xs text-slate-400">{msg}</p>}
+        {msg && <MsgBanner msg={msg} />}
       </div>
 
       <div className="space-y-2">
         {employees.map((emp) => (
-          <div key={emp.id} className="rounded-lg border border-[#2a3548] bg-[#111827] p-4 flex justify-between gap-4">
-            <div>
-              <p className="font-semibold text-white">{emp.name}</p>
-              <p className="text-xs text-slate-400">
-                {emp.role} · {emp.department}
-              </p>
-              <p className="text-[10px] text-slate-600">{emp.email}</p>
-            </div>
-            <span className="text-xs uppercase text-emerald-400 h-fit">{emp.status}</span>
-          </div>
+          <RecordLink
+            key={emp.id}
+            href={`/hr/${emp.id}`}
+            title={emp.name}
+            subtitle={`${emp.role} · ${emp.department}`}
+            meta={emp.email}
+            badge={<span className="text-[10px] uppercase text-emerald-400">{emp.status}</span>}
+          />
         ))}
         {employees.length === 0 && <p className="text-sm text-slate-500">No employees yet.</p>}
       </div>
-    </div>
+    </PageShell>
   );
 }

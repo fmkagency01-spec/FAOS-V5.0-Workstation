@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageShell, MsgBanner } from '@/components/faos/erp/PageShell';
+import { RecordLink } from '@/components/faos/erp/RecordLink';
 import type { InventoryRecord } from '@/lib/erp-types';
 
 export default function InventoryPage() {
@@ -58,11 +60,7 @@ export default function InventoryPage() {
   const lowStock = items.filter((i) => i.quantity <= i.reorder_level);
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Inventory</h1>
-        <p className="text-sm text-slate-400 mt-1">SKU & stock management — JARVIS: &quot;Add stock for WIG-SKU-100&quot;</p>
-      </div>
+    <PageShell title="Inventory" subtitle="SKU & stock — tap a row for details, adjust stock, and shortcuts.">
 
       {lowStock.length > 0 && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-200">
@@ -83,40 +81,28 @@ export default function InventoryPage() {
         <button type="button" onClick={() => void submit()} disabled={loading} className="btn-faos-primary">
           {loading ? 'Saving…' : 'Add item'}
         </button>
-        {msg && <p className="text-xs text-slate-400">{msg}</p>}
+        {msg && <MsgBanner msg={msg} />}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-left text-slate-500 border-b border-[#2a3548]">
-              <th className="py-2 pr-4">SKU</th>
-              <th className="py-2 pr-4">Name</th>
-              <th className="py-2 pr-4">Qty</th>
-              <th className="py-2 pr-4">Location</th>
-              <th className="py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id} className="border-b border-[#2a3548]/50 text-slate-300">
-                <td className="py-3 pr-4 font-mono text-[#00f5d4]">{item.sku}</td>
-                <td className="py-3 pr-4">{item.name}</td>
-                <td className="py-3 pr-4">{item.quantity}</td>
-                <td className="py-3 pr-4">{item.location}</td>
-                <td className="py-3">
-                  {item.quantity <= item.reorder_level ? (
-                    <span className="text-amber-400">Low</span>
-                  ) : (
-                    <span className="text-emerald-400">OK</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {items.length === 0 && <p className="text-sm text-slate-500 py-4">No inventory items.</p>}
+      <div className="space-y-2">
+        {items.map((item) => (
+          <RecordLink
+            key={item.id}
+            href={`/inventory/${item.id}`}
+            title={item.name}
+            subtitle={`${item.sku} · Qty ${item.quantity} · ${item.location}`}
+            meta={item.id}
+            badge={
+              item.quantity <= item.reorder_level ? (
+                <span className="text-[10px] text-amber-400">Low</span>
+              ) : (
+                <span className="text-[10px] text-emerald-400">OK</span>
+              )
+            }
+          />
+        ))}
+        {items.length === 0 && <p className="text-sm text-slate-500">No inventory items.</p>}
       </div>
-    </div>
+    </PageShell>
   );
 }

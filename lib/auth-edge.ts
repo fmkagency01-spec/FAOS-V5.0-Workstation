@@ -23,6 +23,8 @@ const ROUTE_MODULES: Record<string, string> = {
   "/projects": "projects",
   "/invoicing": "invoicing",
   "/inventory": "inventory",
+  "/orders": "orders",
+  "/products": "products",
   "/hr": "hr",
   "/agents": "agents",
   "/dashboard/create-pillar": "create-pillar",
@@ -59,7 +61,7 @@ export function isProtectedPage(pathname: string): boolean {
   if (pathname === "/login") return false;
   if (pathname === "/") return true;
   return [
-    "/jarvis", "/tac", "/clients", "/projects", "/invoicing", "/inventory", "/hr",
+    "/jarvis", "/tac", "/clients", "/projects", "/invoicing", "/inventory", "/orders", "/products", "/hr",
     "/agents", "/creative", "/operations", "/settings", "/team", "/status", "/dashboard",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }

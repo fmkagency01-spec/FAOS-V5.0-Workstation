@@ -73,6 +73,26 @@
       "description": "SKU stock levels, warehouses, reorder alerts"
     },
     {
+      "id": "orders",
+      "name": "Orders",
+      "icon": "🛒",
+      "route": "/orders",
+      "category": "sales",
+      "tier": "core",
+      "enabled": true,
+      "description": "Sales orders linked to clients, products & invoices"
+    },
+    {
+      "id": "products",
+      "name": "Products",
+      "icon": "🏷️",
+      "route": "/products",
+      "category": "operations",
+      "tier": "core",
+      "enabled": true,
+      "description": "Product catalog — pricing, SKUs, order shortcuts"
+    },
+    {
       "id": "hr",
       "name": "HR & People",
       "icon": "🧑‍💼",
