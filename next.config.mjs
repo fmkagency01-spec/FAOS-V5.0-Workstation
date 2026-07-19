@@ -14,6 +14,10 @@ const backendV5 = rawBackend
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Bundle shared ERP/TAC helpers into fewer serverless chunks to cut cold starts.
+  experimental: {
+    optimizePackageImports: ["zod"],
+  },
   eslint: {
     dirs: ["app", "lib", "scripts"],
   },

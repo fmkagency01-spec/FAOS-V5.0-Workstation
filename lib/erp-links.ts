@@ -17,6 +17,8 @@ export function orderLinks(order: {
   client_id?: string;
   product_id?: string;
   client_name?: string;
+  invoice_id?: string;
+  inventory_id?: string;
 }): QuickLink[] {
   return [
     { label: 'All orders', href: '/orders', icon: '🛒' },
@@ -26,8 +28,18 @@ export function orderLinks(order: {
     ...(order.product_id
       ? [{ label: 'Product', href: `/products/${order.product_id}`, icon: '🏷️' }]
       : []),
-    { label: 'New invoice', href: `/invoicing?client=${encodeURIComponent(order.client_name || '')}`, icon: '🧾' },
-    { label: 'Inventory', href: '/inventory', icon: '📦' },
+    ...(order.invoice_id
+      ? [{ label: 'Invoice', href: `/invoicing?id=${order.invoice_id}`, icon: '🧾' }]
+      : [
+          {
+            label: 'New invoice',
+            href: `/invoicing?client=${encodeURIComponent(order.client_name || '')}&order=${order.id}`,
+            icon: '🧾',
+          },
+        ]),
+    ...(order.inventory_id
+      ? [{ label: 'Stock item', href: `/inventory?id=${order.inventory_id}`, icon: '📦' }]
+      : [{ label: 'Inventory', href: '/inventory', icon: '📦' }]),
   ];
 }
 

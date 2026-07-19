@@ -22,15 +22,24 @@ def _load_ecosystem() -> Dict[str, Any]:
 
 def _load_state() -> Dict[str, Any]:
     if not STATE_PATH.exists():
-        return {"last_sync": None, "pillar_tasks": [], "tac_commands": []}
+        return {
+            "last_sync": None,
+            "pillar_tasks": [],
+            "tac_commands": [],
+            "intelligence_logs": [],
+        }
     with STATE_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+    data.setdefault("intelligence_logs", [])
+    data.setdefault("tac_commands", [])
+    data.setdefault("pillar_tasks", [])
+    return data
 
 
 def _save_state(data: Dict[str, Any]) -> None:
-    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with STATE_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    from services.erp_tx import atomic_save
+
+    atomic_save(STATE_PATH, data)
 
 
 class TacOrchestrator:
@@ -113,6 +122,20 @@ class TacOrchestrator:
             key=lambda c: c.get("created_at", ""),
             reverse=True,
         )
+
+    def list_intelligence(self, limit: int = 50) -> List[Dict[str, Any]]:
+        from services.tac_events import list_intelligence_logs
+
+        return list_intelligence_logs(limit)
+
+    def record_system_event(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        from services.tac_events import emit_intelligence_event
+
+        event_type = (payload.get("event_type") or "system_state_change").strip()
+        pillar_id = payload.get("pillar_id") or "capital"
+        body = payload.get("payload") if isinstance(payload.get("payload"), dict) else payload
+        record = emit_intelligence_event(event_type, body, pillar_id=pillar_id)
+        return {"ok": True, "log": record}
 
 
 tac = TacOrchestrator()

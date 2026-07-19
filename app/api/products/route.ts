@@ -9,6 +9,7 @@ import {
   getProductLocal,
   listProductsLocal,
   updateProductLocal,
+  type ProductWithSync,
 } from "@/lib/erp-store";
 import { parseJsonWithSchema } from "@/lib/validation/parse";
 import { productCreateSchema } from "@/lib/validation/schemas";
@@ -31,12 +32,22 @@ export const GET = withApiRoute(async () => handleCrudList(config));
 
 export const POST = withApiRoute(async (request) => {
   const body = await parseJsonWithSchema(request, productCreateSchema);
-  const { data, upstream, error } = await fetchWorkflow<{ product: unknown }>("products", {
+  const { data, upstream, error } = await fetchWorkflow<{
+    product: unknown;
+    sync?: unknown;
+  }>("products", {
     method: "POST",
     body: JSON.stringify(body),
   });
-  if (data?.product) return jsonOk({ source: "render", product: data.product }, 201);
+  if (data?.product) {
+    return jsonOk(
+      { source: "render", product: data.product, sync: data.sync ?? null },
+      201
+    );
+  }
   if (upstream && error) throw ApiError.upstream(error);
-  const product = createProductLocal(body);
-  return jsonOk({ source: "vercel-local", product }, 201);
+  const product: ProductWithSync = createProductLocal(body);
+  const sync = product._sync ?? null;
+  if (sync) delete product._sync;
+  return jsonOk({ source: "vercel-local", product, sync }, 201);
 });

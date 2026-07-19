@@ -9,6 +9,7 @@ FAOS v5.0 Backend Core — FastAPI apex entry for Render (GitHub integration).
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -102,6 +103,7 @@ async def strip_trailing_slash(request: Request, call_next):
 @app.get("/")
 async def root_health() -> Dict[str, Any]:
     """Default root health handler for Render uptime / browser probes."""
+    modules = erp.health_modules()
     return {
         "status": "active",
         "message": "FAOS v5.3 Backend serving on Render cluster",
@@ -115,12 +117,26 @@ async def root_health() -> Dict[str, Any]:
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
+        "modules": modules.get("modules"),
+        "tac": modules.get("tac"),
     }
 
 
 @app.get("/health")
 async def health() -> Dict[str, Any]:
     return await root_health()
+
+
+@app.get("/api/v5/health")
+async def api_v5_health() -> Dict[str, Any]:
+    """Versioned health with full ERP + TAC module broadcast."""
+    base = await root_health()
+    return {
+        "ok": True,
+        **base,
+        "version": "5.3.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @app.get("/api/v5/agent-trigger")
@@ -467,12 +483,21 @@ async def list_orders(status: str | None = Query(default=None)) -> Dict[str, Any
 
 @app.post("/api/v5/orders")
 async def create_order(payload: OrderCreate) -> Dict[str, Any]:
-    record = erp.create_order(payload.model_dump())
+    try:
+        record = erp.create_order(payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    sync = record.pop("_sync", None)
     notify_to = os.getenv("FAOS_NOTIFY_DEFAULT_TO", "").strip()
     notification = None
     if notify_to:
         notification = notify_order_created(record, [e.strip() for e in notify_to.split(",") if e.strip()])
-    return {"ok": True, "order": record, "notification": notification}
+    return {
+        "ok": True,
+        "order": record,
+        "sync": sync,
+        "notification": notification,
+    }
 
 
 @app.get("/api/v5/orders/{record_id}")
@@ -486,12 +511,13 @@ async def get_order(record_id: str) -> Dict[str, Any]:
 @app.patch("/api/v5/orders/{record_id}")
 async def update_order(record_id: str, payload: OrderUpdate) -> Dict[str, Any]:
     try:
-        return {
-            "ok": True,
-            "order": erp.update_order(record_id, payload.model_dump(exclude_unset=True)),
-        }
+        record = erp.update_order(record_id, payload.model_dump(exclude_unset=True))
+        sync = record.pop("_sync", None)
+        return {"ok": True, "order": record, "sync": sync}
     except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        message = str(exc)
+        status = 404 if "not found" in message.lower() else 400
+        raise HTTPException(status_code=status, detail=message) from exc
 
 
 @app.delete("/api/v5/orders/{record_id}")
@@ -500,7 +526,9 @@ async def delete_order(record_id: str) -> Dict[str, Any]:
         erp.delete_order(record_id)
         return {"ok": True, "deleted": record_id}
     except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        message = str(exc)
+        status = 404 if "not found" in message.lower() else 400
+        raise HTTPException(status_code=status, detail=message) from exc
 
 
 @app.get("/api/v5/products")
@@ -511,7 +539,8 @@ async def list_products() -> Dict[str, Any]:
 @app.post("/api/v5/products")
 async def create_product(payload: ProductCreate) -> Dict[str, Any]:
     record = erp.create_product(payload.model_dump())
-    return {"ok": True, "product": record}
+    sync = record.pop("_sync", None)
+    return {"ok": True, "product": record, "sync": sync}
 
 
 @app.get("/api/v5/products/{record_id}")
@@ -525,12 +554,9 @@ async def get_product(record_id: str) -> Dict[str, Any]:
 @app.patch("/api/v5/products/{record_id}")
 async def update_product(record_id: str, payload: ProductUpdate) -> Dict[str, Any]:
     try:
-        return {
-            "ok": True,
-            "product": erp.update_product(
-                record_id, payload.model_dump(exclude_unset=True)
-            ),
-        }
+        record = erp.update_product(record_id, payload.model_dump(exclude_unset=True))
+        sync = record.pop("_sync", None)
+        return {"ok": True, "product": record, "sync": sync}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -583,6 +609,19 @@ async def tac_dispatch(payload: Dict[str, Any]) -> Dict[str, Any]:
 @app.get("/api/v5/tac/commands")
 async def tac_commands() -> Dict[str, Any]:
     return {"ok": True, "commands": tac.list_commands()}
+
+
+@app.get("/api/v5/tac/intelligence")
+async def tac_intelligence(limit: int = Query(default=50, ge=1, le=200)) -> Dict[str, Any]:
+    return {"ok": True, "logs": tac.list_intelligence(limit)}
+
+
+@app.post("/api/v5/tac/intelligence")
+async def tac_intelligence_emit(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return tac.record_system_event(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 if __name__ == "__main__":
