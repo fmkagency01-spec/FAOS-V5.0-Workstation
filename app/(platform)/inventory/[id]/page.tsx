@@ -15,16 +15,20 @@ export default function InventoryDetailPage() {
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    const res = await fetch(`/api/inventory/${id}`, { credentials: 'include' });
-    const data = (await res.json()) as { item?: InventoryRecord; error?: string };
-    setItem(data.item || null);
-    if (!data.item) setMsg(data.error || 'Not found');
-    setLoading(false);
-  };
-
   useEffect(() => {
-    if (id) void load();
+    if (!id) return;
+    let cancelled = false;
+    void (async () => {
+      const res = await fetch(`/api/inventory/${id}`, { credentials: 'include' });
+      const data = (await res.json()) as { item?: InventoryRecord; error?: string };
+      if (cancelled) return;
+      setItem(data.item || null);
+      if (!data.item) setMsg(data.error || 'Not found');
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const adjust = async () => {

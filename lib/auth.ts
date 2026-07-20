@@ -60,17 +60,7 @@ export function loadAuthUsers(): StoredUser[] {
     ];
   }
 
-  if (process.env.NODE_ENV === "development") {
-    return [
-      {
-        username: "fahim",
-        password: "faos2025",
-        name: "Fahim Mahmud Khan (dev)",
-        role: "owner",
-      },
-    ];
-  }
-
+  // No hardcoded credentials — set FAOS_OWNER_PASSWORD or FAOS_AUTH_USERS in env.
   return [];
 }
 

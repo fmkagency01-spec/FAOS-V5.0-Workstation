@@ -2,8 +2,10 @@
 
 ## Auto-configured (in repo — public only)
 
-`vercel.json` holds **non-secret** public env vars only (backend URL, token-saving mode, site URL).  
+`vercel.json` holds **non-secret** public env vars only (backend URL, site URL).  
 **Never put** `FAOS_AUTH_SECRET`, `FAOS_OWNER_PASSWORD`, `FAOS_BACKEND_API_KEY`, `OPENROUTER_API_KEY`, or `RESEND_API_KEY` in git / `vercel.json`.
+
+If any secret was ever committed historically, **rotate it immediately** in the Vercel/Render dashboards and redeploy (`node scripts/setup-production.mjs` prints fresh values — do not commit them).
 
 ## Required secrets (Vercel dashboard)
 
