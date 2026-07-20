@@ -15,21 +15,25 @@ export default function OrderDetailPage() {
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    setLoading(true);
-    const res = await fetch(`/api/orders/${id}`, { credentials: 'include' });
-    const data = (await res.json()) as { order?: OrderRecord; error?: string };
-    if (data.order) {
-      setOrder(data.order);
-      setStatus(data.order.status);
-    } else {
-      setMsg(data.error || 'Not found');
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    if (id) void load();
+    if (!id) return;
+    let cancelled = false;
+    void (async () => {
+      setLoading(true);
+      const res = await fetch(`/api/orders/${id}`, { credentials: 'include' });
+      const data = (await res.json()) as { order?: OrderRecord; error?: string };
+      if (cancelled) return;
+      if (data.order) {
+        setOrder(data.order);
+        setStatus(data.order.status);
+      } else {
+        setMsg(data.error || 'Not found');
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const saveStatus = async () => {

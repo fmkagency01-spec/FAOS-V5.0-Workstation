@@ -12,14 +12,9 @@ export type SessionPayload = {
   exp: number;
 };
 
-/** Resolve signing secret from env — dashboard/env only, no hardcoded production value. */
+/** Resolve signing secret from env — dashboard/env only, no hardcoded fallback. */
 export function getAuthSecretValue(): string {
-  const secret = process.env.FAOS_AUTH_SECRET?.trim();
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "development") {
-    return "faos-dev-secret-change-in-production";
-  }
-  return "";
+  return process.env.FAOS_AUTH_SECRET?.trim() || "";
 }
 
 export function isAuthSecretConfigured(): boolean {

@@ -9,6 +9,7 @@ import {
   getOrderLocal,
   listOrdersLocal,
   updateOrderLocal,
+  type OrderWithSync,
 } from "@/lib/erp-store";
 import { parseJsonWithSchema } from "@/lib/validation/parse";
 import { orderCreateSchema } from "@/lib/validation/schemas";
@@ -34,6 +35,7 @@ export const POST = withApiRoute(async (request) => {
   const body = await parseJsonWithSchema(request, orderCreateSchema);
   const { data, upstream, error } = await fetchWorkflow<{
     order: unknown;
+    sync?: unknown;
     notification?: unknown;
   }>("orders", {
     method: "POST",
@@ -41,14 +43,33 @@ export const POST = withApiRoute(async (request) => {
   });
 
   if (data?.order) {
-    return jsonOk({ source: "render", order: data.order, notification: data.notification ?? null }, 201);
+    return jsonOk(
+      {
+        source: "render",
+        order: data.order,
+        sync: data.sync ?? null,
+        notification: data.notification ?? null,
+      },
+      201
+    );
   }
 
   if (upstream && error) {
     throw ApiError.upstream(error, "Render backend rejected the order.");
   }
 
-  const order = createOrderLocal(body);
+  let order: OrderWithSync;
+  try {
+    order = createOrderLocal(body);
+  } catch (err) {
+    throw ApiError.badRequest(
+      err instanceof Error ? err.message : "Order create failed cross-module sync."
+    );
+  }
+
+  const sync = order._sync ?? null;
+  if (sync) delete order._sync;
+
   const notifyTo = process.env.FAOS_NOTIFY_DEFAULT_TO?.trim();
   let notification = null;
   if (notifyTo) {
@@ -61,5 +82,5 @@ export const POST = withApiRoute(async (request) => {
     });
   }
 
-  return jsonOk({ source: "vercel-local", order, notification }, 201);
+  return jsonOk({ source: "vercel-local", order, sync, notification }, 201);
 });

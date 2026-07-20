@@ -42,13 +42,15 @@ export const invoiceCreateSchema = z.object({
   currency: z.string().trim().min(3).max(8).default("USD"),
   status: z.enum(["draft", "sent", "paid", "overdue", "cancelled"]).default("draft"),
   due_date: z.string().trim().max(32).optional(),
+  order_id: z.string().trim().max(80).optional().default(""),
+  product_id: z.string().trim().max(80).optional().default(""),
   notes: z.string().trim().max(2000).optional(),
   line_items: z
     .array(
       z.object({
-        description: z.string(),
-        qty: z.number(),
-        unit_price: z.number(),
+        description: z.string().trim().min(1).max(500),
+        qty: z.coerce.number().min(0),
+        unit_price: z.coerce.number().min(0),
       })
     )
     .optional()
@@ -56,6 +58,37 @@ export const invoiceCreateSchema = z.object({
 });
 
 export const invoiceUpdateSchema = invoiceCreateSchema.partial();
+
+export const inventoryCreateSchema = z.object({
+  sku: z.string().trim().max(64).optional(),
+  product_id: z.string().trim().max(80).optional().default(""),
+  name: z.string().trim().min(1, "name is required").max(200),
+  category: z.string().trim().max(120).default("General"),
+  quantity: z.coerce.number().int().min(0).default(0),
+  reorder_level: z.coerce.number().int().min(0).default(10),
+  unit_cost: z.coerce.number().min(0).default(0),
+  location: z.string().trim().max(200).default("Main Warehouse"),
+  brand_agent: z.string().trim().max(120).optional(),
+});
+
+export const inventoryUpdateSchema = inventoryCreateSchema.partial().extend({
+  delta: z.coerce.number().int().optional(),
+  id: z.string().trim().max(80).optional(),
+});
+
+export const employeeCreateSchema = z.object({
+  name: z.string().trim().min(1, "name is required").max(200),
+  role: z.string().trim().max(120).default("Staff"),
+  department: z.string().trim().max(120).default("General"),
+  email: z.string().trim().max(200).default(""),
+  phone: z.string().trim().max(40).optional(),
+  status: z.enum(["active", "on_leave", "terminated"]).default("active"),
+  hire_date: z.string().trim().max(32).optional(),
+  salary: z.coerce.number().min(0).optional(),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const employeeUpdateSchema = employeeCreateSchema.partial();
 
 export const clientCreateSchema = z.object({
   name: z.string().trim().min(1).max(200),
@@ -73,6 +106,17 @@ export const notifySchema = z.object({
   meta: z.record(z.string(), z.unknown()).optional(),
 });
 
+export const tacIntelligenceEmitSchema = z.object({
+  event_type: z.string().trim().min(1).max(80).default("system_state_change"),
+  pillar_id: z.string().trim().max(40).optional().default("capital"),
+  payload: z.record(z.string(), z.unknown()).optional(),
+  message: z.string().trim().max(2000).optional(),
+  actions: z.array(z.string().trim().max(200)).max(5).optional(),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type OrderCreateInput = z.infer<typeof orderCreateSchema>;
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
+export type InvoiceCreateInput = z.infer<typeof invoiceCreateSchema>;
+export type InventoryCreateInput = z.infer<typeof inventoryCreateSchema>;
+export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;

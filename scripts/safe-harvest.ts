@@ -3,7 +3,7 @@
  * Local harvest automation — uses safeOpenRouterCall with process.exit(1) on failure.
  *
  * Usage:
- *   OPENROUTER_API_KEY=sk-or-... npx tsx scripts/safe-harvest.ts "Your prompt here"
+ *   OPENROUTER_API_KEY=your_openrouter_api_key_here npx tsx scripts/safe-harvest.ts "Your prompt here"
  *
  * NEVER wrap this in a while(true) loop. One prompt = one call.
  */

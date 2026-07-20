@@ -14,6 +14,8 @@ class InvoiceCreate(BaseModel):
     status: str = "draft"
     due_date: Optional[str] = None
     line_items: List[Dict[str, Any]] = Field(default_factory=list)
+    order_id: str = ""
+    product_id: str = ""
     notes: Optional[str] = None
 
     @field_validator("client_name")
@@ -24,6 +26,14 @@ class InvoiceCreate(BaseModel):
             raise ValueError("client_name is required")
         return value
 
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        allowed = {"draft", "sent", "paid", "overdue", "cancelled"}
+        if v not in allowed:
+            raise ValueError(f"status must be one of {sorted(allowed)}")
+        return v
+
 
 class InvoiceUpdate(BaseModel):
     client_name: Optional[str] = None
@@ -32,11 +42,14 @@ class InvoiceUpdate(BaseModel):
     status: Optional[str] = None
     due_date: Optional[str] = None
     line_items: Optional[List[Dict[str, Any]]] = None
+    order_id: Optional[str] = None
+    product_id: Optional[str] = None
     notes: Optional[str] = None
 
 
 class InventoryCreate(BaseModel):
     sku: Optional[str] = None
+    product_id: str = ""
     name: str = Field(..., min_length=1, max_length=200)
     category: str = "General"
     quantity: int = Field(0, ge=0)
@@ -48,6 +61,7 @@ class InventoryCreate(BaseModel):
 
 class InventoryUpdate(BaseModel):
     sku: Optional[str] = None
+    product_id: Optional[str] = None
     name: Optional[str] = None
     category: Optional[str] = None
     quantity: Optional[int] = Field(None, ge=0)
@@ -95,6 +109,14 @@ class OrderCreate(BaseModel):
     status: str = "pending"
     notes: Optional[str] = None
 
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        allowed = {"pending", "confirmed", "fulfilled", "cancelled"}
+        if v not in allowed:
+            raise ValueError(f"status must be one of {sorted(allowed)}")
+        return v
+
 
 class OrderUpdate(BaseModel):
     client_name: Optional[str] = None
@@ -107,6 +129,16 @@ class OrderUpdate(BaseModel):
     currency: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        allowed = {"pending", "confirmed", "fulfilled", "cancelled"}
+        if v not in allowed:
+            raise ValueError(f"status must be one of {sorted(allowed)}")
+        return v
 
 
 class ProductCreate(BaseModel):

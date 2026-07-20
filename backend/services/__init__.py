@@ -1,1 +1,1 @@
-"""FAOS backend service helpers (notifications, integrations)."""
+"""FAOS backend service helpers (notifications, ERP sync, TAC intelligence)."""

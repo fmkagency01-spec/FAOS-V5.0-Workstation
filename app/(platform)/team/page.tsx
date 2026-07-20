@@ -42,11 +42,11 @@ export default function TeamPolicyPage() {
       <div className="rounded-xl border border-[#00f5d4]/20 bg-[#00f5d4]/5 p-4 text-xs text-[#00f5d4]/90">
         <p className="font-bold mb-2">Add teammates (Vercel Environment Variables)</p>
         <pre className="overflow-x-auto text-[10px] bg-[#0c1222] p-3 rounded-lg text-slate-300 whitespace-pre-wrap">
-{`FAOS_AUTH_SECRET=your-long-random-secret
+{`FAOS_AUTH_SECRET=your_auth_secret_here
 FAOS_AUTH_USERS=[
-  {"username":"fahim","password":"YOUR_PASSWORD","name":"Fahim Mahmud Khan","role":"owner"},
-  {"username":"sales1","password":"TEAM_PASSWORD","name":"Sales Rep","role":"sales"},
-  {"username":"finance1","password":"TEAM_PASSWORD","name":"Finance","role":"finance"}
+  {"username":"fahim","password":"your_password_here","name":"Fahim Mahmud Khan","role":"owner"},
+  {"username":"sales1","password":"your_password_here","name":"Sales Rep","role":"sales"},
+  {"username":"finance1","password":"your_password_here","name":"Finance","role":"finance"}
 ]`}
         </pre>
         <p className="mt-2 text-slate-400">

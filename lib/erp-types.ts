@@ -10,6 +10,8 @@ export type InvoiceRecord = {
   status: InvoiceStatus;
   due_date: string;
   line_items: Array<{ description: string; qty: number; unit_price: number }>;
+  order_id?: string;
+  product_id?: string;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -24,6 +26,7 @@ export type InventoryRecord = {
   reorder_level: number;
   unit_cost: number;
   location: string;
+  product_id?: string;
   brand_agent?: string;
   created_at: string;
   updated_at: string;
@@ -61,6 +64,9 @@ export type OrderRecord = {
   currency: string;
   status: OrderStatus;
   notes?: string;
+  invoice_id?: string;
+  inventory_id?: string;
+  inventory_adjusted?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -77,4 +83,13 @@ export type ProductRecord = {
   brand_agent?: string;
   created_at: string;
   updated_at: string;
+};
+
+export type ErpSyncEffects = {
+  inventory: InventoryRecord | null;
+  invoice: InvoiceRecord | null;
+  events: Array<{ type: string; inventory_id?: string; invoice_id?: string; delta?: number }>;
+  stock_adjusted: boolean;
+  invoice_mutated: boolean;
+  tac_log_ids?: string[];
 };
