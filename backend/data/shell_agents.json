@@ -214,6 +214,51 @@
       "description": "Pushes H2, direct answers & schema to connected client/shell sites"
     },
     {
+      "id": "fmk_wig_internal_engine",
+      "name": "FMK Wig B2B Internal Engine",
+      "icon": "🏢",
+      "domain": "sales",
+      "keywords": ["b2b", "salon", "export", "import", "catalog", "buyer", "wholesale", "fmk wig"],
+      "model_hint": "automation",
+      "description": "Internal B2B lead pipelines, global salon orders, export/import catalogs"
+    },
+    {
+      "id": "rr_wigs_client_workspace",
+      "name": "RR Wigs Client Workspace",
+      "icon": "🏭",
+      "domain": "sales",
+      "keywords": ["rr wigs", "tenant", "client workspace", "factory", "oem", "linkedin", "analytics"],
+      "model_hint": "strategy",
+      "description": "Isolated tenant dashboard — web, SEO, ads, factory inventory for RR Wigs"
+    },
+    {
+      "id": "harness_alpha_web_engineering",
+      "name": "Harness Alpha — Web Engineering",
+      "icon": "⚙️",
+      "domain": "automation",
+      "keywords": ["harness", "web", "node", "react", "inquiry api", "rr wigs"],
+      "model_hint": "automation",
+      "description": "24/7 worker — RR Wigs Node.js web backend & B2B inquiry endpoints"
+    },
+    {
+      "id": "harness_beta_marketing_automation",
+      "name": "Harness Beta — Marketing Automation",
+      "icon": "📣",
+      "domain": "marketing",
+      "keywords": ["harness", "linkedin", "google ads", "aio", "lead gen", "rr wigs"],
+      "model_hint": "strategy",
+      "description": "24/7 worker — LinkedIn outreach, ad pixels, AIO schema generation"
+    },
+    {
+      "id": "harness_gamma_inventory_sync",
+      "name": "Harness Gamma — Inventory Sync",
+      "icon": "🔄",
+      "domain": "operations",
+      "keywords": ["harness", "inventory", "catalog sync", "factory", "fmk wig", "rr wigs"],
+      "model_hint": "automation",
+      "description": "24/7 worker — RR factory inventory sync to FMK Wig B2B sourcing panel"
+    },
+    {
       "id": "project_ops_agent",
       "name": "Project Ops Agent",
       "icon": "📋",

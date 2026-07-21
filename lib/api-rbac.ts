@@ -21,6 +21,10 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/agent-trigger": "agents",
   "/api/ai-seo": "ai-seo",
   "/api/bulletseye": "ai-seo",
+  "/api/brain": "jarvis",
+  "/api/harness": "agents",
+  "/api/apps/fmk-wig": "fmk-wig-b2b",
+  "/api/apps/rr-wigs": "rr-wigs-workspace",
   "/api/attachments": "command",
 };
 
@@ -29,17 +33,17 @@ const ROLE_MODULES: Record<string, string[]> = {
   executive: ["*"],
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products",
-    "command", "creative", "create-pillar", "ai-seo", "status",
+    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "status",
   ],
   team_lead: [
     "home", "tac", "jarvis", "crm", "projects", "agents",
-    "command", "creative", "create-pillar", "ai-seo", "status",
+    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "status",
   ],
   sales: ["home", "crm", "projects", "orders", "command", "status"],
   finance: ["home", "invoicing", "inventory", "orders", "products", "status"],
   hr: ["home", "hr", "status"],
   creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
-  client: ["home", "projects", "status"],
+  client: ["home", "projects", "status", "rr-wigs-workspace"],
   viewer: ["home", "status"],
 };
 

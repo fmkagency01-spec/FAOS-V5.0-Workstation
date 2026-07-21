@@ -18,6 +18,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from router.create_pillar_routing import orchestrator
 from router.ai_seo_routing import engine as ai_seo_engine
 from router.bulletseye_routing import squad as bulletseye_squad
+from router.brain_routing import brain
+from router.b2b_wig_routing import b2b_wig
+from router.harness_routing import harness
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
@@ -120,6 +123,9 @@ async def root_health() -> Dict[str, Any]:
         "bulletseye_namespace": "fmk_bulletseye_core_namespace",
         "ai_seo_module": "ENABLED",
         "bulletseye_squad": "ENABLED",
+        "b2b_wig_ecosystem": "ENABLED",
+        "harness_workers": "ENABLED",
+        "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
         "modules": modules.get("modules"),
@@ -354,6 +360,61 @@ async def bulletseye_squad_execute(payload: Dict[str, Any]) -> Dict[str, Any]:
         return bulletseye_squad.execute(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+# --- Jarvis Brain Memory + B2B Wig Ecosystem + Harness Workers ---
+
+
+@app.get("/api/v5/brain")
+async def brain_status() -> Dict[str, Any]:
+    return brain.status()
+
+
+@app.get("/api/v5/brain/{node_id}")
+async def brain_node(node_id: str) -> Dict[str, Any]:
+    try:
+        return brain.get_node(node_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/apps/fmk-wig")
+async def fmk_wig_app_get(resource: str = Query(default="summary")) -> Dict[str, Any]:
+    return {**b2b_wig.fmk_get(resource), "source": "render"}
+
+
+@app.post("/api/v5/apps/fmk-wig")
+async def fmk_wig_app_post(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {**b2b_wig.fmk_add_lead(payload), "source": "render"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/apps/rr-wigs")
+async def rr_wigs_app_get(resource: str = Query(default="summary")) -> Dict[str, Any]:
+    return {**b2b_wig.rr_get(resource), "source": "render"}
+
+
+@app.post("/api/v5/apps/rr-wigs/inquiry")
+async def rr_wigs_inquiry(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return {**b2b_wig.rr_add_inquiry(payload), "source": "render"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/harness")
+async def harness_status() -> Dict[str, Any]:
+    return harness.status()
+
+
+@app.post("/api/v5/harness/cycle")
+async def harness_cycle(payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    workers = (payload or {}).get("workers")
+    if payload and payload.get("action") == "sync-inventory":
+        return {**b2b_wig.sync_inventory(), "worker": "harness_gamma_inventory_sync", "source": "render"}
+    return harness.run_cycle(workers)
 
 
 # --- CRM / Projects / Agent Workflow (Odoo-style business suite) ---

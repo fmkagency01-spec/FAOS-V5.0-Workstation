@@ -9,6 +9,18 @@
       "assigned_agent": "fmk_wig_prosthetic_hair_agent",
       "created_at": "2026-07-17T12:58:25.316424+00:00",
       "updated_at": "2026-07-17T12:58:25.316424+00:00"
+    },
+    {
+      "id": "client_rr_wigs_001",
+      "name": "RR Wigs",
+      "industry": "Manufacturing / Wigs OEM",
+      "contact_email": "partnerships@rrwigs.example.com",
+      "notes": "External manufacturing partner under BulletsEye Agency — isolated tenant workspace",
+      "assigned_agent": "rr_wigs_client_workspace",
+      "tenant_id": "rr_wigs",
+      "brain_node": "rr_wigs_client_workspace",
+      "created_at": "2026-07-21T00:00:00.000Z",
+      "updated_at": "2026-07-21T00:00:00.000Z"
     }
   ],
   "projects": [
@@ -24,6 +36,23 @@
       ],
       "created_at": "2026-07-17T12:58:25.316386+00:00",
       "updated_at": "2026-07-17T12:58:25.316386+00:00"
+    },
+    {
+      "id": "project_rr_wigs_001",
+      "client_id": "client_rr_wigs_001",
+      "name": "RR Wigs — Web + SEO + B2B Lead Gen",
+      "status": "active",
+      "priority": "high",
+      "command_brief": "Custom Node/React web engine, BulletsEye SEO/AIO, LinkedIn/Google Ads automation, factory media",
+      "assigned_agents": [
+        "rr_wigs_client_workspace",
+        "harness_alpha_web_engineering",
+        "harness_beta_marketing_automation",
+        "harness_gamma_inventory_sync",
+        "bulletseye_ai_seo_agent"
+      ],
+      "created_at": "2026-07-21T00:00:00.000Z",
+      "updated_at": "2026-07-21T00:00:00.000Z"
     }
   ],
   "tasks": [
