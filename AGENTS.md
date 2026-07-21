@@ -43,12 +43,15 @@ npm run dev
 ### Local run notes (verified)
 
 - Two services: the **Next.js dev server** (`npm run dev`, port 3000 — the main
-  product, includes all `/api/*` routes) and an **optional Python FastAPI
-  backend** (`backend/`).
+ product, includes all `/api/*` routes) and an **optional Python FastAPI
+ backend** (`backend/`).
+- Workstation upgrades: Web Speech TTS (`lib/tts.ts`), multimodal attachments
+ (`/api/attachments`), PWA (`public/manifest.webmanifest` + `sw.js`), and
+ multi-tenant RBAC (`owner`/`executive`, `team_lead`, `client`).
 - The dashboard runs fully standalone: with no Python backend and no
-  `OPENROUTER_API_KEY`, everything works in "degraded" mode (health shows
-  `openrouter: missing_key`; only live LLM replies via `/api/chat` return 503).
-  Create Pillar / agent-trigger fall back to the local TS orchestrator.
+ `OPENROUTER_API_KEY`, everything works in "degraded" mode (health shows
+ `openrouter: missing_key`; only live LLM replies via `/api/chat` return 503).
+ Create Pillar / agent-trigger fall back to the local TS orchestrator.
 - Run the FastAPI backend from a venv (the repo installs it at `backend/.venv`;
   requires the `python3-venv` system package):
   `backend/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000`.
