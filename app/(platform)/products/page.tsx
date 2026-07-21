@@ -94,6 +94,21 @@ function ProductsInner() {
         <MsgBanner msg={msg} />
       </div>
 
+      <div className="rounded-xl border border-[#00f5d4]/20 bg-[#111827] p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold text-white">FMK WIG — Prosthetic Hair Systems</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            AI SEO product page with Organization · FAQ · Product JSON-LD in header
+          </p>
+        </div>
+        <RecordLink
+          href="/products/fmk-wig"
+          title="Open FMK WIG product"
+          subtitle="Schema-enabled · Bangladesh"
+          meta="GEO"
+        />
+      </div>
+
       <div className="space-y-2">
         {products.map((p) => (
           <RecordLink
