@@ -16,6 +16,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from router.create_pillar_routing import orchestrator
+from router.ai_seo_routing import engine as ai_seo_engine
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
@@ -115,6 +116,8 @@ async def root_health() -> Dict[str, Any]:
         "docs_url": "/docs",
         "openapi_url": "/openapi.json",
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
+        "bulletseye_namespace": "fmk_bulletseye_core_namespace",
+        "ai_seo_module": "ENABLED",
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
         "modules": modules.get("modules"),
@@ -249,6 +252,28 @@ async def get_entity_context(entity_id: str) -> Dict[str, Any]:
         "route_key": meta.get("route_key"),
         "sub_categories": meta.get("sub_categories"),
     }
+
+
+# --- BulletsEye AI SEO / GEO (Query Fan-Out) ---
+
+
+@app.get("/api/v5/ai-seo")
+async def ai_seo_status() -> Dict[str, Any]:
+    return {**ai_seo_engine.module_status(), "source": "render"}
+
+
+@app.post("/api/v5/ai-seo")
+async def ai_seo_action(payload: Dict[str, Any]) -> Dict[str, Any]:
+    action = payload.get("action") or "fan-out"
+    if action == "status":
+        return {"ok": True, "action": action, "source": "render", **ai_seo_engine.module_status()}
+    if action in {"fan-out", "process"}:
+        result = ai_seo_engine.generate_fan_out(payload)
+        return {"action": action, "source": "render", **result}
+    raise HTTPException(
+        status_code=400,
+        detail="Unknown action. Use action=fan-out|status.",
+    )
 
 
 # --- CRM / Projects / Agent Workflow (Odoo-style business suite) ---

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCreatePillarNamespace } from "@/lib/create-pillar";
+import { getAiSeoModuleStatus } from "@/lib/ai-seo-geo";
 import { getOpenRouterApiKey } from "@/lib/openrouter";
 import { probeOpenRouterKey } from "@/lib/openrouter-probe";
 import { resolveOwnerPassword } from "@/lib/auth";
@@ -154,6 +155,7 @@ export async function GET() {
 
   const hasOpenRouterKey = Boolean(getOpenRouterApiKey());
   const createPillar = getCreatePillarNamespace();
+  const aiSeo = getAiSeoModuleStatus();
   const localCounts = erpModuleCountsLocal();
   const localTac = tacLocalHealth();
 
@@ -209,7 +211,7 @@ export async function GET() {
         })),
       },
       jarvis: {
-        shell_agents: 25,
+        shell_agents: 26,
         voice: true,
         erp_modules: ["invoicing", "inventory", "hr", "orders", "products"],
       },
@@ -244,6 +246,13 @@ export async function GET() {
           parent_hub: createPillar.parent_hub,
           entities: Object.keys(createPillar.entities).length,
           status: "mounted",
+        },
+        bulletseye_ai_seo: {
+          namespace: "fmk_bulletseye_core_namespace",
+          module: aiSeo.module,
+          status: aiSeo.status,
+          brands: aiSeo.brands.length,
+          core_strategy: aiSeo.core_strategy,
         },
       },
       safety: {

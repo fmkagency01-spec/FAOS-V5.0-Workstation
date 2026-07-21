@@ -18,6 +18,8 @@ Next.js dashboard + secure API backend for the FAOS ERP workstation.
 | `/api/chat` | POST | Secure OpenRouter proxy (`{ "message": "..." }`) |
 | `/api/create-pillar` | GET | Create Pillar namespace + entity memory map |
 | `/api/create-pillar` | POST | `action=process\|gatekeeper` retail orchestration |
+| `/api/ai-seo` | GET | BulletsEye AI SEO / GEO module status |
+| `/api/ai-seo` | POST | `action=fan-out\|status` Query Fan-Out + schema pack |
 
 The browser never receives `OPENROUTER_API_KEY`. Only the Next.js server uses it.
 
@@ -35,6 +37,18 @@ The browser never receives `OPENROUTER_API_KEY`. Only the Next.js server uses it
 - Never alias as "FMK Week", "FMCG Wish", or `fmk_fmcg_week_supply_agent`
 
 Entity memory lanes are isolated (FMK WIG / MK Clothing / MK Kitchen / FMK Shoes never share runtime arrays).
+
+### BulletsEye AI SEO / GEO
+
+- UI: `/dashboard/ai-seo`
+- Namespace DB: `data/fmk_bulletseye_core_namespace.json`
+- TS engine: `lib/ai-seo-geo.ts` (OpenRouter + deterministic fallback)
+- Python router: `backend/router/ai_seo_routing.py`
+- API: `/api/ai-seo` (proxies to Render `/api/v5/ai-seo` when available)
+
+**Query Fan-Out axes:** Direct Intent · Attribute Constraints · Comparative / Latent Need · Trust & E-E-A-T
+
+Internal shell brands (FMK WIG, MK Clothing, FMK Shoes, TakaBachaw.com) and external B2B GEO audits share the same fan-out + JSON-LD schema packer.
 
 ### Render backend
 

@@ -44,7 +44,7 @@
       "subtitle": "Media, CRM & Commerce Flow",
       "route": "/clients",
       "namespace": "fmk_connect_commerce_core",
-      "modules": ["crm", "projects", "creative", "agents", "command"],
+      "modules": ["crm", "projects", "creative", "agents", "command", "ai-seo"],
       "agents": [
         "crm_client_agent",
         "sales_pipeline_agent",
@@ -52,13 +52,22 @@
         "video_production_agent",
         "social_media_agent",
         "marketing_strategy_agent",
+        "bulletseye_ai_seo_agent",
         "project_ops_agent"
       ],
       "work_sections": [
         { "id": "crm", "label": "CRM & Clients", "agent": "crm_client_agent" },
         { "id": "creative", "label": "Creative Studio", "agent": "creative_design_agent" },
-        { "id": "media", "label": "Media & Video", "agent": "video_production_agent" }
+        { "id": "media", "label": "Media & Video", "agent": "video_production_agent" },
+        { "id": "ai-seo", "label": "AI SEO & GEO", "agent": "bulletseye_ai_seo_agent" }
       ],
+      "agency_wing": {
+        "id": "fmk_bulletseye_core_namespace",
+        "name": "BulletsEye Agency",
+        "module": "AI SEO & GEO Engine",
+        "status": "ENABLED",
+        "route": "/dashboard/ai-seo"
+      },
       "synergy_routes": {
         "media_pipeline": "fmk_media_empire_pipeline ➡️ fmk_editing_hub",
         "audio_engine": "Suno_ElevenLabs_Generative_Stack",
@@ -91,7 +100,7 @@
   "jarvis_orchestrator": {
     "id": "jarvis_core",
     "route": "/jarvis",
-    "shell_agents_total": 25,
+    "shell_agents_total": 26,
     "sync_backend": "https://faos-backend.onrender.com/api/v5"
   }
 }

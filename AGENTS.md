@@ -6,20 +6,26 @@ This repository is a **Next.js 15 App Router** app for the
 "FAOS v5.0 — Central Operating Dashboard".
 
 - UI: `app/page.tsx`, Create Pillar console at `app/dashboard/create-pillar/page.tsx`
+- BulletsEye AI SEO / GEO: `app/dashboard/ai-seo/page.tsx`
 - Backend: `app/api/*/route.ts` (deployed with the same Vercel project)
 - OpenRouter helper: `lib/openrouter.ts` (server-only)
 - Create Pillar: `lib/create-pillar.ts`, namespace `data/fmk_create_pillar_retail_core.json`
+- AI SEO / GEO: `lib/ai-seo-geo.ts`, namespace `data/fmk_bulletseye_core_namespace.json`
 - Python FastAPI: `backend/main.py` (Render entry; `/` must return JSON health)
 - Python router: `backend/router/create_pillar_routing.py`
+- Python AI SEO router: `backend/router/ai_seo_routing.py`
 
 **FMK WIG lock:** `fmk_wig_prosthetic_hair_agent` / brand `FMK WIG` only.
 Never use `fmk_week`, `fmcg_wish`, or `fmk_fmcg_week_supply_agent`.
+
+**BulletsEye AI SEO lock:** `fmk_bulletseye_core_namespace` · Query Fan-Out GEO engine enabled
+for internal shell brands + external B2B clients.
 
 Backend URL env (no trailing slash): `NEXT_PUBLIC_BACKEND_URL` or
 `NEXT_PUBLIC_FAOS_BACKEND_URL` — use the v5 API base, e.g.
 `https://faos-backend.onrender.com/api/v5`. Host-only URLs are auto-normalized.
 
-When set, Next `/api/create-pillar` and `/api/agent-trigger` proxy to Render
+When set, Next `/api/create-pillar`, `/api/agent-trigger`, and `/api/ai-seo` proxy to Render
 `/api/v5/*`. If Render is asleep/missing (free tier), they fall back to the
 local TS orchestrator so the dashboard stays online.
 

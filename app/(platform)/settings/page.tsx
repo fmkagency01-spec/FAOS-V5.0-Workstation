@@ -59,7 +59,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="rounded-xl border border-[#00f5d4]/30 bg-[#00f5d4]/5 p-5 text-sm text-[#00f5d4]">
-        <p className="font-bold">FAOS v5.3 — JARVIS + 25 shell agents</p>
+        <p className="font-bold">FAOS v5.3 — JARVIS + 26 shell agents</p>
         <ul className="mt-2 text-xs space-y-1 text-[#00f5d4]/80 list-disc pl-4">
           <li>Voice command (Chrome) · ⌘⇧J opens JARVIS panel</li>
           <li>ERP: Invoicing, Inventory, HR — voice-create via JARVIS</li>

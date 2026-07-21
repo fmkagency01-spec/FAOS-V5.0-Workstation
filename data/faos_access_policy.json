@@ -11,7 +11,7 @@
     "manager": {
       "label": "Operations Manager",
       "description": "TAC, projects, agents, CRM, inventory, orders — no executive finance/HR",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "status"],
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "status"],
       "can_manage_team": false
     },
     "sales": {
@@ -34,8 +34,8 @@
     },
     "creative": {
       "label": "Creative Team",
-      "description": "Creative studio and agent workflow — no client financial data",
-      "modules": ["home", "creative", "agents", "command", "status"],
+      "description": "Creative studio, AI SEO/GEO, and agent workflow — no client financial data",
+      "modules": ["home", "creative", "agents", "command", "ai-seo", "status"],
       "can_manage_team": false
     },
     "viewer": {
@@ -58,6 +58,7 @@
     "/hr": "hr",
     "/agents": "agents",
     "/dashboard/create-pillar": "create-pillar",
+    "/dashboard/ai-seo": "ai-seo",
     "/creative": "creative",
     "/operations": "command",
     "/settings": "settings",

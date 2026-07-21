@@ -23,7 +23,7 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
   const [history, setHistory] = useState<JarvisEntry[]>([
     {
       role: 'system',
-      text: 'JARVIS online — 25 shell agents ready. Speak or type any command.',
+      text: 'JARVIS online — 26 shell agents ready. Speak or type any command.',
     },
   ]);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -189,7 +189,7 @@ function JarvisPanelInner({
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a3548] bg-[#111827]">
         <div>
           <p className="text-sm font-bold text-[#00f5d4]">JARVIS v5.3</p>
-          <p className="text-[10px] text-slate-500">25 shell agents · voice + chat</p>
+          <p className="text-[10px] text-slate-500">26 shell agents · voice + chat</p>
         </div>
         {onClose && (
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-white text-lg">

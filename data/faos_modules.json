@@ -1,6 +1,6 @@
 {
   "platform": "FAOS v5.3 TAC Masterpiece",
-  "tagline": "TAC Central Brain — 3 Pillars · JARVIS · 25 Agents · Secure ERP",
+  "tagline": "TAC Central Brain — 3 Pillars · JARVIS · 26 Agents · AI SEO/GEO · Secure ERP",
   "modules": [
     {
       "id": "home",
@@ -30,7 +30,7 @@
       "category": "core",
       "tier": "core",
       "enabled": true,
-      "description": "Voice & chat command center — 25 shell agents orchestrated"
+      "description": "Voice & chat command center — 26 shell agents orchestrated"
     },
     {
       "id": "crm",
@@ -121,6 +121,16 @@
       "tier": "core",
       "enabled": true,
       "description": "FMK retail manufacturing & supply orchestration"
+    },
+    {
+      "id": "ai-seo",
+      "name": "AI SEO / GEO",
+      "icon": "🎯",
+      "route": "/dashboard/ai-seo",
+      "category": "marketing",
+      "tier": "pro",
+      "enabled": true,
+      "description": "BulletsEye Query Fan-Out, extractable content & citation schema"
     },
     {
       "id": "creative",

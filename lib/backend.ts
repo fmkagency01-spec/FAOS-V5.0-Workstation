@@ -78,6 +78,12 @@ export function getAgentTriggerApiUrl(): string {
   return "/api/agent-trigger";
 }
 
+export function getAiSeoApiUrl(): string {
+  const base = getFaosBackendBaseUrl();
+  if (base) return joinBackendUrl("ai-seo");
+  return "/api/ai-seo";
+}
+
 /** Root health probe — lives at service origin `/`, not under /api/v5 */
 export function getBackendRootUrl(): string {
   const origin = getFaosBackendOriginUrl();

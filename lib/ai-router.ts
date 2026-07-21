@@ -46,6 +46,14 @@ const STRATEGY = [
   "executive",
   "kpi",
   "okr",
+  "seo",
+  "geo",
+  "ai seo",
+  "fan-out",
+  "query fan-out",
+  "generative engine",
+  "citation",
+  "eeat",
 ];
 
 const CODE = [
