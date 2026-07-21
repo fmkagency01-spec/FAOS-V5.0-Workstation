@@ -178,6 +178,42 @@
       "description": "Query Fan-Out GEO, extractable content, schema & citation strategy"
     },
     {
+      "id": "fmk_seo_lead_agent",
+      "name": "BulletsEye SEO Lead Agent",
+      "icon": "🔀",
+      "domain": "marketing",
+      "keywords": ["fan-out", "h2", "sub-query", "cluster", "seo lead", "bulletseye"],
+      "model_hint": "strategy",
+      "description": "Fan-Out sub-query decomposition & H2 structure generator"
+    },
+    {
+      "id": "fmk_geo_engine_agent",
+      "name": "BulletsEye GEO Engine Agent",
+      "icon": "🌐",
+      "domain": "marketing",
+      "keywords": ["json-ld", "schema", "geo", "perplexity", "chatgpt", "ai overview"],
+      "model_hint": "strategy",
+      "description": "JSON-LD fact schema packages for generative search engines"
+    },
+    {
+      "id": "fmk_schema_backend_agent",
+      "name": "BulletsEye Schema Backend Agent",
+      "icon": "📄",
+      "domain": "marketing",
+      "keywords": ["metadata", "head", "next.js", "json-ld", "schema backend"],
+      "model_hint": "automation",
+      "description": "Next.js Metadata + HTML head JSON-LD injection pack manager"
+    },
+    {
+      "id": "fmk_website_injector_agent",
+      "name": "BulletsEye Website Injector Agent",
+      "icon": "💉",
+      "domain": "marketing",
+      "keywords": ["inject", "webhook", "rest", "content api", "auto-inject"],
+      "model_hint": "automation",
+      "description": "Pushes H2, direct answers & schema to connected client/shell sites"
+    },
+    {
       "id": "project_ops_agent",
       "name": "Project Ops Agent",
       "icon": "📋",

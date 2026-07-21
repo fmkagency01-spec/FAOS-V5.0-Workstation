@@ -46,3 +46,7 @@ yarn-error.log*
 # IDE
 .idea/
 .vscode/
+
+# BulletsEye autonomous injection records (runtime; may contain client payloads)
+data/bulletseye_injections/*.json
+backend/data/bulletseye_injections/*.json
