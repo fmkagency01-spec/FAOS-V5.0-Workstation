@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from router.create_pillar_routing import orchestrator
 from router.ai_seo_routing import engine as ai_seo_engine
+from router.bulletseye_routing import squad as bulletseye_squad
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
@@ -118,6 +119,7 @@ async def root_health() -> Dict[str, Any]:
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
         "bulletseye_namespace": "fmk_bulletseye_core_namespace",
         "ai_seo_module": "ENABLED",
+        "bulletseye_squad": "ENABLED",
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
         "modules": modules.get("modules"),
@@ -334,6 +336,24 @@ async def ai_seo_action(payload: Dict[str, Any]) -> Dict[str, Any]:
         status_code=400,
         detail="Unknown action. Use action=fan-out|status.",
     )
+
+
+# --- BulletsEye Autonomous SEO/GEO Squad ---
+
+
+@app.get("/api/v5/bulletseye/seo-geo-execute")
+async def bulletseye_squad_status() -> Dict[str, Any]:
+    return {**bulletseye_squad.squad_status(), "source": "render"}
+
+
+@app.post("/api/v5/bulletseye/seo-geo-execute")
+async def bulletseye_squad_execute(payload: Dict[str, Any]) -> Dict[str, Any]:
+    if not payload.get("brand_name") and not payload.get("brand_id"):
+        raise HTTPException(status_code=400, detail="Provide brand_name or brand_id.")
+    try:
+        return bulletseye_squad.execute(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 # --- CRM / Projects / Agent Workflow (Odoo-style business suite) ---

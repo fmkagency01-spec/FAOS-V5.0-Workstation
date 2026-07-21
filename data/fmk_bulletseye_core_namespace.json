@@ -115,6 +115,28 @@
       "Facebook",
       "Web Directories",
       "Review platforms"
-    ]
+    ],
+    "autonomous_squad": {
+      "status": "ENABLED",
+      "endpoint": "/api/v5/bulletseye/seo-geo-execute",
+      "agents": {
+        "fmk_seo_lead_agent": {
+          "role": "Query Fan-Out Decomposition & H2 Structure Generator",
+          "outputs": ["fan_out_queries", "recommended_h2_headers", "cluster_plan"]
+        },
+        "fmk_geo_engine_agent": {
+          "role": "JSON-LD Fact Schema Packages for Generative Engines",
+          "outputs": ["Organization", "FAQPage", "Product"]
+        },
+        "fmk_schema_backend_agent": {
+          "role": "Next.js Metadata + HTML head JSON-LD injection pack",
+          "outputs": ["next_metadata", "schema_blocks", "stored_injection_json"]
+        },
+        "fmk_website_injector_agent": {
+          "role": "Webhook / REST push to connected client & shell brand sites",
+          "outputs": ["remote_injection", "offline_fallback_store"]
+        }
+      }
+    }
   }
 }

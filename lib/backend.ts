@@ -84,6 +84,12 @@ export function getAiSeoApiUrl(): string {
   return "/api/ai-seo";
 }
 
+export function getBulletseyeExecuteApiUrl(): string {
+  const base = getFaosBackendBaseUrl();
+  if (base) return joinBackendUrl("bulletseye", "seo-geo-execute");
+  return "/api/bulletseye/seo-geo-execute";
+}
+
 /** Root health probe — lives at service origin `/`, not under /api/v5 */
 export function getBackendRootUrl(): string {
   const origin = getFaosBackendOriginUrl();

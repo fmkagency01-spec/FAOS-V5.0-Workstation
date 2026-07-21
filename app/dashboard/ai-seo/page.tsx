@@ -22,8 +22,12 @@ export default function AiSeoGeoConsole() {
   const [channel, setChannel] = useState<'internal' | 'external_b2b'>('internal');
   const [useLlm, setUseLlm] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [squadLoading, setSquadLoading] = useState(false);
+  const [autoInject, setAutoInject] = useState(true);
+  const [targetUrl, setTargetUrl] = useState('');
   const [telemetry, setTelemetry] = useState('Awaiting BulletsEye AI SEO sync...');
   const [result, setResult] = useState<FanOutResult | null>(null);
+  const [squadResult, setSquadResult] = useState<FanOutResult | null>(null);
   const [error, setError] = useState('');
   const [moduleStatus, setModuleStatus] = useState('ENABLED');
 
@@ -99,6 +103,38 @@ export default function AiSeoGeoConsole() {
       setError(err instanceof Error ? err.message : 'Fan-out failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const runAutonomousSquad = async () => {
+    setSquadLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/bulletseye/seo-geo-execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brand_name: selectedMeta?.brand_name,
+          brand_id: selectedBrand,
+          target_url: targetUrl.trim() || undefined,
+          query_type: topic,
+          client_type: channel,
+          auto_inject_flag: autoInject,
+          use_llm: useLlm,
+        }),
+      });
+      const data = (await res.json()) as FanOutResult & { error?: string; squad_pipeline?: unknown[] };
+      if (!res.ok) throw new Error(data.error || `Squad execute failed (${res.status})`);
+      setSquadResult(data);
+      setResult(data);
+      const pipeline = Array.isArray(data.squad_pipeline) ? data.squad_pipeline.length : 0;
+      setTelemetry(
+        `Autonomous squad · ${String(data.brand_name)} · agents=${pipeline} · inject=${String(data.auto_inject_flag)} · source=${String(data.source)}`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Autonomous squad failed');
+    } finally {
+      setSquadLoading(false);
     }
   };
 
@@ -215,17 +251,62 @@ export default function AiSeoGeoConsole() {
             Content Parser · Namespace <code className="text-amber-300">fmk_bulletseye_core_namespace</code>
           </div>
 
-          <button
-            onClick={() => void runFanOut()}
-            disabled={loading || !topic.trim()}
-            className="w-full sm:w-auto bg-[#9b5de5] hover:bg-[#00bbf9] disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg text-sm transition mb-4"
-          >
-            {loading ? 'Running Fan-Out...' : 'Generate Fan-Out + Schema Pack'}
-          </button>
+          <label className="block text-xs font-bold text-slate-300 mb-2">
+            Target URL (optional — defaults to internal shell route)
+          </label>
+          <input
+            value={targetUrl}
+            onChange={(e) => setTargetUrl(e.target.value)}
+            className="w-full p-3 bg-[#060b19] border border-[#334155] rounded-lg text-white mb-4 text-sm font-mono"
+            placeholder="https://client-site.com/api/content-inject"
+          />
+
+          <label className="flex items-center gap-2 text-sm text-slate-300 mb-5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoInject}
+              onChange={(e) => setAutoInject(e.target.checked)}
+              className="rounded border-[#334155]"
+            />
+            Auto-inject to connected website (webhook / internal route)
+          </label>
+
+          <div className="flex flex-wrap gap-3 mb-4">
+            <button
+              onClick={() => void runFanOut()}
+              disabled={loading || squadLoading || !topic.trim()}
+              className="bg-[#9b5de5] hover:bg-[#00bbf9] disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg text-sm transition"
+            >
+              {loading ? 'Running Fan-Out...' : 'Generate Fan-Out + Schema Pack'}
+            </button>
+            <button
+              onClick={() => void runAutonomousSquad()}
+              disabled={loading || squadLoading || !topic.trim()}
+              className="bg-[#00f5d4] hover:bg-[#00bbf9] disabled:opacity-50 text-[#060b19] font-bold py-3 px-6 rounded-lg text-sm transition"
+            >
+              {squadLoading ? 'Executing Squad...' : 'Autonomous Squad Execute'}
+            </button>
+          </div>
 
           <p className="text-xs font-mono text-slate-400 mb-3">{telemetry}</p>
           {error && <p className="text-xs font-mono text-red-400 mb-3">{error}</p>}
         </div>
+
+        {squadResult && Array.isArray(squadResult.squad_pipeline) && (
+          <div className="rounded-xl border border-[#1e293b] bg-[#0f172a] p-6 space-y-3">
+            <h3 className="text-sm font-bold text-white">Autonomous Squad Pipeline</h3>
+            {(squadResult.squad_pipeline as Array<Record<string, unknown>>).map((step) => (
+              <div
+                key={String(step.agent)}
+                className="p-3 rounded-lg border border-[#334155] bg-[#060b19] text-xs"
+              >
+                <p className="text-[#00f5d4] font-semibold font-mono">{String(step.agent)}</p>
+                <p className="text-slate-400 mt-1">{String(step.summary)}</p>
+                <p className="text-amber-300 mt-1">status: {String(step.status)}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {fanOutQueries.length > 0 && (
           <div className="rounded-xl border border-[#1e293b] bg-[#0f172a] p-6 space-y-4">

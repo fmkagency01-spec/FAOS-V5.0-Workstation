@@ -100,7 +100,7 @@
   "jarvis_orchestrator": {
     "id": "jarvis_core",
     "route": "/jarvis",
-    "shell_agents_total": 26,
+    "shell_agents_total": 30,
     "sync_backend": "https://faos-backend.onrender.com/api/v5"
   }
 }

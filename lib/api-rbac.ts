@@ -20,6 +20,7 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/create-pillar": "create-pillar",
   "/api/agent-trigger": "agents",
   "/api/ai-seo": "ai-seo",
+  "/api/bulletseye": "ai-seo",
   "/api/attachments": "command",
 };
 
