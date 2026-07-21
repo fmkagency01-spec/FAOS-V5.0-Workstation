@@ -10,6 +10,14 @@ import {
   summarizeAttachmentsForPrompt,
   type PipelineAttachment,
 } from "@/lib/attachment-pipeline";
+import { getSessionFromRequest } from "@/lib/auth";
+import { isSuperAdmin } from "@/lib/rbac-guards";
+import {
+  appendChatMessages,
+  createChatSession,
+  getActiveSessionForUser,
+  getChatSession,
+} from "@/lib/jarvis-chat-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,6 +89,7 @@ export async function POST(request: NextRequest) {
     voice?: boolean;
     attachments?: PipelineAttachment[];
     tts_requested?: boolean;
+    session_id?: string;
   };
   try {
     body = (await request.json()) as {
@@ -88,6 +97,7 @@ export async function POST(request: NextRequest) {
       voice?: boolean;
       attachments?: PipelineAttachment[];
       tts_requested?: boolean;
+      session_id?: string;
     };
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
@@ -101,9 +111,38 @@ export async function POST(request: NextRequest) {
 
   const plan = planJarvisCommand(command);
   const clientKey = resolveClientKeyFromHeaders(request.headers);
+  const session = await getSessionFromRequest(request);
 
   try {
     const result = await executeJarvisPlan(plan, clientKey, executeJarvisAction);
+
+    let chatSessionId: string | undefined;
+    // Persist turns for Super Admin only — never store for team/client roles.
+    if (session && isSuperAdmin(session.role)) {
+      let chat =
+        (body.session_id ? getChatSession(body.session_id) : null) ||
+        getActiveSessionForUser(session.username) ||
+        createChatSession({
+          user_id: session.username,
+          username: session.username,
+          user_name: session.name,
+          source: "jarvis",
+        });
+      const meta = [
+        result.primary_agent ? `${result.primary_agent.icon} ${result.primary_agent.name}` : "",
+        plan.route.label,
+        result.action_taken,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      chat =
+        appendChatMessages(chat.id, [
+          { role: "user", text: body.command?.trim() || command, meta: body.voice ? "voice" : undefined },
+          { role: "jarvis", text: result.reply, meta },
+        ]) || chat;
+      chatSessionId = chat.id;
+    }
+
     return NextResponse.json({
       ok: true,
       version: "5.3.0",
@@ -124,6 +163,7 @@ export async function POST(request: NextRequest) {
       action_taken: result.action_taken,
       action_result: result.action_result ?? null,
       usage: result.usage ?? null,
+      session_id: chatSessionId,
     });
   } catch (err) {
     if (err instanceof OpenRouterGuardError) {

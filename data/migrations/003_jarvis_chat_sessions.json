@@ -1,0 +1,25 @@
+{
+  "migration_id": "003_jarvis_chat_sessions",
+  "version": 1,
+  "table": "jarvis_chat_sessions",
+  "description": "Persisted Admin↔JARVIS conversations — Super Admin (owner) only",
+  "engine": "json_file_store",
+  "compatible_targets": ["SQLite", "PostgreSQL", "MongoDB"],
+  "columns": {
+    "id": "TEXT PRIMARY KEY",
+    "user_id": "TEXT NOT NULL",
+    "username": "TEXT NOT NULL",
+    "user_name": "TEXT",
+    "source": "TEXT",
+    "title": "TEXT",
+    "is_active": "BOOLEAN",
+    "created_at": "TIMESTAMPTZ",
+    "updated_at": "TIMESTAMPTZ",
+    "messages": "JSONB"
+  },
+  "privacy": {
+    "visibility": "super_admin_only",
+    "roles_allowed": ["owner", "executive"],
+    "blocked_roles": ["manager", "team_lead", "sales", "client", "viewer"]
+  }
+}

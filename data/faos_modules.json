@@ -153,6 +153,16 @@
       "description": "Isolated tenant dashboard — analytics, ads, SEO, factory inventory"
     },
     {
+      "id": "rr-wigs-portal",
+      "name": "RR Wigs Client Portal",
+      "icon": "🔐",
+      "route": "/portal/rr-wigs",
+      "category": "sales",
+      "tier": "enterprise",
+      "enabled": true,
+      "description": "External client portal — leads, ads ROI, inventory, media approval"
+    },
+    {
       "id": "creative",
       "name": "Creative Studio",
       "icon": "🎨",

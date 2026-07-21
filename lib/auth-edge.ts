@@ -37,6 +37,7 @@ const ROUTE_MODULES: Record<string, string> = {
   "/dashboard/ai-seo": "ai-seo",
   "/apps/fmk-wig": "fmk-wig-b2b",
   "/apps/rr-wigs": "rr-wigs-workspace",
+  "/portal/rr-wigs": "rr-wigs-portal",
   "/dashboard": "home",
   "/creative": "creative",
   "/operations": "command",
@@ -61,7 +62,7 @@ const ROLE_MODULES: Record<string, string[]> = {
   finance: ["home", "invoicing", "inventory", "status"],
   hr: ["home", "hr", "status"],
   creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
-  client: ["home", "projects", "status", "rr-wigs-workspace"],
+  client: ["rr-wigs-portal"],
   viewer: ["home", "status"],
 };
 
@@ -80,7 +81,7 @@ export function isProtectedPage(pathname: string): boolean {
   if (pathname === "/") return true;
   return [
     "/jarvis", "/tac", "/clients", "/projects", "/invoicing", "/inventory", "/orders", "/products", "/hr",
-    "/agents", "/creative", "/operations", "/settings", "/team", "/status", "/dashboard", "/apps",
+    "/agents", "/creative", "/operations", "/settings", "/team", "/status", "/dashboard", "/apps", "/portal",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
@@ -93,6 +94,6 @@ export function isProtectedApiEdge(pathname: string): boolean {
     "/api/invoices", "/api/inventory", "/api/hr", "/api/orders", "/api/products", "/api/users",
     "/api/notifications", "/api/media", "/api/harvest",
     "/api/create-pillar", "/api/agent-trigger", "/api/ai-seo", "/api/bulletseye",
-    "/api/brain", "/api/harness", "/api/apps", "/api/attachments",
+    "/api/brain", "/api/harness", "/api/apps", "/api/attachments", "/api/jarvis/sessions",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }

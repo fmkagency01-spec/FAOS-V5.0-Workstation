@@ -76,12 +76,13 @@
       "tier": "team_leads"
     },
     "client": {
-      "label": "External B2B Client",
-      "description": "Read-only portfolio, project status, and system health — no mutations",
-      "modules": ["home", "projects", "status"],
+      "label": "External B2B Client (RR Wigs Portal)",
+      "description": "Isolated tenant portal only — no agency revenue, other clients, FMK margins, or JARVIS brain",
+      "modules": ["rr-wigs-portal"],
       "can_manage_team": false,
       "tier": "external_b2b",
-      "read_only": true
+      "read_only": true,
+      "default_route": "/portal/rr-wigs"
     },
     "viewer": {
       "label": "Read-only Viewer",
@@ -108,6 +109,7 @@
     "/dashboard/ai-seo": "ai-seo",
     "/apps/fmk-wig": "fmk-wig-b2b",
     "/apps/rr-wigs": "rr-wigs-workspace",
+    "/portal/rr-wigs": "rr-wigs-portal",
     "/dashboard": "home",
     "/creative": "creative",
     "/operations": "command",

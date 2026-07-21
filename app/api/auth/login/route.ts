@@ -30,7 +30,18 @@ export const POST = withApiRoute(
 
     const token = await createSessionToken(user);
     const response = jsonOk({
-      user: { username: user.username, name: user.name, role: user.role },
+      user: {
+        username: user.username,
+        name: user.name,
+        role: user.role,
+        tenant_id: user.tenant_id ?? null,
+      },
+      redirect:
+        user.role === "client"
+          ? user.tenant_id && user.tenant_id !== "rr_wigs"
+            ? `/portal/${user.tenant_id}`
+            : "/portal/rr-wigs"
+          : "/",
     });
     const opts = sessionCookieOptions(token);
     response.cookies.set(opts.name, opts.value, {

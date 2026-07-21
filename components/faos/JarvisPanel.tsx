@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { matchShellAgents } from '@/lib/shell-agents';
 import { routeQuery } from '@/lib/ai-router';
 import { VoiceButton } from '@/components/faos/VoiceButton';
+import { ChatHistorySidebar } from '@/components/faos/ChatHistorySidebar';
 import {
   loadTtsPreferences,
   saveTtsPreferences,
@@ -28,24 +29,29 @@ type JarvisEntry = {
 
 type JarvisPanelProps = {
   compact?: boolean;
+  /** Show Gemini-style history sidebar (full page /jarvis). Super Admin only. */
+  showHistory?: boolean;
 };
 
-export function JarvisPanel({ compact = false }: JarvisPanelProps) {
+const BOOT_MESSAGE: JarvisEntry = {
+  role: 'system',
+  text: 'JARVIS online — shell agents ready. Speak or type any command. History auto-saves for Super Admin.',
+};
+
+export function JarvisPanel({ compact = false, showHistory = false }: JarvisPanelProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [canSeeHistory, setCanSeeHistory] = useState(false);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
   const [tts, setTts] = useState<TtsPreferences>({
     enabled: true,
     langMode: 'auto',
     rate: 1.05,
   });
   const [attachments, setAttachments] = useState<PromptAttachment[]>([]);
-  const [history, setHistory] = useState<JarvisEntry[]>([
-    {
-      role: 'system',
-      text: 'JARVIS online — 26 shell agents ready. Speak or type any command. TTS reads replies aloud.',
-    },
-  ]);
+  const [history, setHistory] = useState<JarvisEntry[]>([BOOT_MESSAGE]);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -53,6 +59,47 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
   useEffect(() => {
     setTts(loadTtsPreferences());
   }, []);
+
+  // Hydrate active session on mount (Super Admin) — survives browser refresh
+  useEffect(() => {
+    if (!showHistory) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/jarvis/sessions?active=1', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (res.status === 403) {
+          if (!cancelled) setCanSeeHistory(false);
+          return;
+        }
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          session?: {
+            id: string;
+            messages: Array<{ role: string; text: string; meta?: string }>;
+          };
+        };
+        if (cancelled || !data.session) return;
+        setCanSeeHistory(true);
+        setSessionId(data.session.id);
+        const msgs = data.session.messages
+          .filter((m) => m.role === 'user' || m.role === 'jarvis' || m.role === 'system')
+          .map((m) => ({
+            role: m.role as JarvisEntry['role'],
+            text: m.text,
+            meta: m.meta,
+          }));
+        if (msgs.length) setHistory(msgs);
+      } catch {
+        /* offline — keep local boot message */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showHistory]);
 
   const preview = input.trim() ? routeQuery(input.trim(), true) : null;
   const agentPreview = input.trim() ? matchShellAgents(input.trim(), 2) : [];
@@ -64,6 +111,57 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
       if (!enabled) stopSpeaking();
       return next;
     });
+  };
+
+  const loadSession = async (id: string) => {
+    const res = await fetch(`/api/jarvis/sessions?id=${encodeURIComponent(id)}`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (!res.ok) return;
+    await fetch('/api/jarvis/sessions', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'activate', session_id: id }),
+    });
+    const data = (await res.json()) as {
+      session?: { id: string; messages: Array<{ role: string; text: string; meta?: string }> };
+    };
+    if (!data.session) return;
+    setSessionId(data.session.id);
+    setHistory(
+      data.session.messages
+        .filter((m) => m.role === 'user' || m.role === 'jarvis' || m.role === 'system')
+        .map((m) => ({
+          role: m.role as JarvisEntry['role'],
+          text: m.text,
+          meta: m.meta,
+        }))
+    );
+  };
+
+  const startNewSession = async () => {
+    const res = await fetch('/api/jarvis/sessions', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create', source: 'jarvis' }),
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as {
+      session?: { id: string; messages: Array<{ role: string; text: string; meta?: string }> };
+    };
+    if (!data.session) return;
+    setSessionId(data.session.id);
+    setHistory(
+      data.session.messages.map((m) => ({
+        role: m.role as JarvisEntry['role'],
+        text: m.text,
+        meta: m.meta,
+      }))
+    );
+    setHistoryRefresh((n) => n + 1);
   };
 
   const send = useCallback(
@@ -96,11 +194,13 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
             voice: fromVoice,
             attachments: packed,
             tts_requested: tts.enabled,
+            session_id: sessionId || undefined,
           }),
         });
         const data = (await res.json()) as {
           reply?: string;
           error?: string;
+          session_id?: string;
           primary_agent?: { icon?: string; name?: string };
           agents_dispatched?: string[];
           route_label?: string;
@@ -109,6 +209,11 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
           usage?: { total_tokens?: number };
         };
         if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+
+        if (data.session_id) {
+          setSessionId(data.session_id);
+          setHistoryRefresh((n) => n + 1);
+        }
 
         const meta = [
           data.primary_agent ? `${data.primary_agent.icon} ${data.primary_agent.name}` : '',
@@ -123,8 +228,6 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
 
         const reply = data.reply || '(empty)';
         setHistory((h) => [...h, { role: 'jarvis', text: reply, meta }]);
-
-        // Voice-to-voice: speak every reply when TTS toggle is on
         speakIfEnabled(reply, tts);
       } catch (e) {
         setHistory((h) => [
@@ -139,7 +242,7 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
         setLoading(false);
       }
     },
-    [attachments, loading, tts]
+    [attachments, loading, tts, sessionId]
   );
 
   const addFiles = async (files: FileList | null) => {
@@ -165,6 +268,44 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const panel = (
+    <div className={`flex ${showHistory && canSeeHistory ? 'flex-col sm:flex-row' : 'flex-col'} min-h-0`}>
+      {showHistory && canSeeHistory && (
+        <ChatHistorySidebar
+          activeSessionId={sessionId}
+          onSelectSession={(id) => void loadSession(id)}
+          onNewSession={() => void startNewSession()}
+          refreshKey={historyRefresh}
+        />
+      )}
+      <div className="flex-1 min-w-0">
+        <JarvisPanelInner
+          input={input}
+          setInput={setInput}
+          inputRef={inputRef}
+          fileRef={fileRef}
+          loading={loading}
+          history={history}
+          preview={preview}
+          agentPreview={agentPreview}
+          voiceReply={tts.enabled}
+          setVoiceReply={setVoiceReply}
+          attachments={attachments}
+          onRemoveAttachment={(id) =>
+            setAttachments((list) => {
+              const t = list.find((a) => a.id === id);
+              if (t) revokeAttachmentPreview(t);
+              return list.filter((a) => a.id !== id);
+            })
+          }
+          onPickFiles={(f) => void addFiles(f)}
+          onSend={send}
+          onClose={compact ? () => setOpen(false) : undefined}
+        />
+      </div>
+    </div>
+  );
+
   if (compact) {
     return (
       <>
@@ -181,31 +322,9 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/60">
             <div
               ref={panelRef}
-              className="w-full max-w-lg max-h-[90dvh] rounded-2xl border border-[#00f5d4]/30 bg-[#0c1222] shadow-2xl overflow-hidden"
+              className="w-full max-w-3xl max-h-[90dvh] rounded-2xl border border-[#00f5d4]/30 bg-[#0c1222] shadow-2xl overflow-hidden"
             >
-              <JarvisPanelInner
-                input={input}
-                setInput={setInput}
-                inputRef={inputRef}
-                fileRef={fileRef}
-                loading={loading}
-                history={history}
-                preview={preview}
-                agentPreview={agentPreview}
-                voiceReply={tts.enabled}
-                setVoiceReply={setVoiceReply}
-                attachments={attachments}
-                onRemoveAttachment={(id) =>
-                  setAttachments((list) => {
-                    const t = list.find((a) => a.id === id);
-                    if (t) revokeAttachmentPreview(t);
-                    return list.filter((a) => a.id !== id);
-                  })
-                }
-                onPickFiles={(f) => void addFiles(f)}
-                onSend={send}
-                onClose={() => setOpen(false)}
-              />
+              {panel}
             </div>
           </div>
         )}
@@ -213,30 +332,7 @@ export function JarvisPanel({ compact = false }: JarvisPanelProps) {
     );
   }
 
-  return (
-    <JarvisPanelInner
-      input={input}
-      setInput={setInput}
-      inputRef={inputRef}
-      fileRef={fileRef}
-      loading={loading}
-      history={history}
-      preview={preview}
-      agentPreview={agentPreview}
-      voiceReply={tts.enabled}
-      setVoiceReply={setVoiceReply}
-      attachments={attachments}
-      onRemoveAttachment={(id) =>
-        setAttachments((list) => {
-          const t = list.find((a) => a.id === id);
-          if (t) revokeAttachmentPreview(t);
-          return list.filter((a) => a.id !== id);
-        })
-      }
-      onPickFiles={(f) => void addFiles(f)}
-      onSend={send}
-    />
-  );
+  return panel;
 }
 
 type InnerProps = {
@@ -279,7 +375,7 @@ function JarvisPanelInner({
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a3548] bg-[#111827]">
         <div>
           <p className="text-sm font-bold text-[#00f5d4]">JARVIS v5.3</p>
-          <p className="text-[10px] text-slate-500">26 agents · voice-to-voice · multimodal</p>
+          <p className="text-[10px] text-slate-500">agents · voice-to-voice · multimodal · persistent</p>
         </div>
         {onClose && (
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-white text-lg touch-manipulation">
