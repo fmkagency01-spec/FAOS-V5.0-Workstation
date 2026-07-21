@@ -152,6 +152,66 @@ async def agent_trigger_status() -> Dict[str, Any]:
     }
 
 
+@app.post("/api/v5/attachments")
+async def ingest_attachments(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate multimodal attachment metadata for Aigorithm pipeline (no disk persist)."""
+    raw = payload.get("attachments") or []
+    if not isinstance(raw, list) or not raw:
+        raise HTTPException(status_code=400, detail="Provide attachments[].")
+    if len(raw) > 4:
+        raise HTTPException(status_code=400, detail="Max 4 attachments.")
+
+    max_bytes = 2 * 1024 * 1024
+    sanitized: List[Dict[str, Any]] = []
+    for item in raw[:4]:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "file")[:180]
+        size = int(item.get("size") or 0)
+        remote = item.get("remote_url")
+        if isinstance(remote, str) and remote.startswith(("http://", "https://")):
+            remote_url = remote[:2000]
+        else:
+            remote_url = None
+        if size > max_bytes and not remote_url:
+            raise HTTPException(status_code=400, detail=f"{name} exceeds size limit.")
+        base64 = item.get("base64") if isinstance(item.get("base64"), str) else None
+        if base64 and len(base64) > 1_800_000:
+            raise HTTPException(status_code=400, detail=f"{name} base64 too large.")
+        sanitized.append(
+            {
+                "id": str(item.get("id") or f"att_{len(sanitized)+1}"),
+                "name": name,
+                "kind": str(item.get("kind") or "file")[:40],
+                "mime": str(item.get("mime") or "application/octet-stream")[:120],
+                "size": size,
+                "remote_url": remote_url,
+                "has_base64": bool(base64),
+                "truncated": bool(item.get("truncated")),
+            }
+        )
+
+    return {
+        "ok": True,
+        "pipeline": "aigorithm_multimodal",
+        "count": len(sanitized),
+        "attachments": sanitized,
+        "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
+        "note": "Secrets stay in Render env — attachment metadata only.",
+    }
+
+
+@app.get("/api/v5/attachments")
+async def attachments_status() -> Dict[str, Any]:
+    return {
+        "ok": True,
+        "endpoint": "/api/v5/attachments",
+        "max_files": 4,
+        "max_bytes": 2 * 1024 * 1024,
+        "accepted": ["image/*", "application/pdf", "audio/*", "https video links"],
+    }
+
+
 @app.post("/api/v5/agent-trigger")
 async def agent_trigger(payload: Dict[str, Any]) -> Dict[str, Any]:
     target = payload.get("target_brand") or payload.get("agent") or "fmk_wig_prosthetic_hair_agent"

@@ -17,9 +17,16 @@ type VoiceButtonProps = {
   onTranscript: (text: string) => void;
   disabled?: boolean;
   className?: string;
+  /** Recognition language hint — bn-BD for Bengali, en-US default, or auto */
+  lang?: 'auto' | 'bn-BD' | 'en-US';
 };
 
-export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceButtonProps) {
+export function VoiceButton({
+  onTranscript,
+  disabled,
+  className = '',
+  lang = 'auto',
+}: VoiceButtonProps) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(true);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -27,6 +34,14 @@ export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceBut
   useEffect(() => {
     setSupported(Boolean(getSpeechRecognition()));
   }, []);
+
+  const resolveLang = useCallback(() => {
+    if (lang === 'bn-BD' || lang === 'en-US') return lang;
+    // Auto: prefer browser locale when Bengali, else en-US
+    const nav = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
+    if (nav.toLowerCase().startsWith('bn')) return 'bn-BD';
+    return 'en-US';
+  }, [lang]);
 
   const toggle = useCallback(() => {
     const Ctor = getSpeechRecognition();
@@ -39,7 +54,7 @@ export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceBut
     }
 
     const rec = new Ctor();
-    rec.lang = 'en-US';
+    rec.lang = resolveLang();
     rec.interimResults = false;
     rec.maxAlternatives = 1;
 
@@ -53,11 +68,11 @@ export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceBut
     recognitionRef.current = rec;
     rec.start();
     setListening(true);
-  }, [disabled, listening, onTranscript]);
+  }, [disabled, listening, onTranscript, resolveLang]);
 
   if (!supported) {
     return (
-      <span className="text-[9px] text-slate-500" title="Use Chrome for voice">
+      <span className="text-[9px] text-slate-500" title="Use Chrome/Edge for voice">
         🎤 N/A
       </span>
     );
@@ -68,8 +83,8 @@ export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceBut
       type="button"
       onClick={toggle}
       disabled={disabled}
-      title={listening ? 'Stop listening' : 'Voice command'}
-      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm transition ${
+      title={listening ? 'Stop listening' : 'Voice command (BN/EN)'}
+      className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm transition touch-manipulation ${
         listening
           ? 'bg-red-500/20 text-red-400 ring-2 ring-red-500/50 animate-pulse'
           : 'bg-[#00f5d4]/10 text-[#00f5d4] hover:bg-[#00f5d4]/20'
@@ -81,11 +96,5 @@ export function VoiceButton({ onTranscript, disabled, className = '' }: VoiceBut
   );
 }
 
-export function speakText(text: string, lang = 'en-US') {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text.slice(0, 500));
-  utter.lang = lang;
-  utter.rate = 1.05;
-  window.speechSynthesis.speak(utter);
-}
+/** @deprecated Prefer `speakText` / `speakIfEnabled` from `@/lib/tts` */
+export { speakText, speakIfEnabled, stopSpeaking } from '@/lib/tts';

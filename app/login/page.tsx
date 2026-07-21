@@ -42,8 +42,10 @@ function LoginForm() {
           <div className="w-16 h-16 mx-auto rounded-2xl bg-[#00f5d4] text-[#0c1222] flex items-center justify-center text-3xl font-black mb-4">
             F
           </div>
-          <h1 className="text-2xl font-bold text-white">FAOS v5.2</h1>
-          <p className="text-sm text-slate-400 mt-2">FMK Group · Secure workstation login</p>
+          <h1 className="text-2xl font-bold text-white">FAOS v5.3</h1>
+          <p className="text-sm text-slate-400 mt-2">
+            Multi-tenant RBAC · Executive Alpha · Team Leads · B2B Clients
+          </p>
         </div>
 
         <form

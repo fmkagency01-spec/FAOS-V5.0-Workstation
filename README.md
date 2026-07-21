@@ -83,6 +83,25 @@ npm run dev
 
 Open http://localhost:3000
 
+## Auth (multi-tenant RBAC)
+
+Signed-session cookies (`FAOS_AUTH_SECRET` + `FAOS_OWNER_PASSWORD` / `FAOS_AUTH_USERS`).
+Not NextAuth — `GET/POST /api/auth/[...nextauth]` returns a discovery payload pointing at
+`/api/auth/login` and `/api/auth/session`.
+
+| Tier | Roles | Access |
+|---|---|---|
+| Executive Alpha / CEO | `owner`, `executive` | Full system + TAC gateways |
+| Team Leads | `manager`, `team_lead`, department roles | Module-scoped Create / Media / Service |
+| External B2B | `client`, `viewer` | Read-only portfolio / status (GET only) |
+
+## PWA
+
+- Manifest: `/manifest.webmanifest`
+- Service worker: `/sw.js` (production auto-register)
+- Install via browser “Add to Home Screen” / “Install App”
+
+
 ## Production secrets (required)
 
 **Do not commit `.env` or real keys to GitHub.**
@@ -93,6 +112,8 @@ Set in **Vercel → Project Settings → Environment Variables** (Production + P
 |---|---|
 | `OPENROUTER_API_KEY` | your OpenRouter secret key |
 | `NEXT_PUBLIC_SITE_URL` | `https://faos-v5-0-workstation.vercel.app` |
+| `FAOS_AUTH_SECRET` | session HMAC secret |
+| `FAOS_OWNER_PASSWORD` | CEO login password |
 
 Then redeploy.
 

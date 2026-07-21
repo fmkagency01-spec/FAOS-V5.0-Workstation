@@ -39,7 +39,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/?denied=1", request.url));
   }
 
-  if (pathname.startsWith("/api/") && isProtectedApiEdge(pathname) && !roleCanAccessApi(session.role, pathname)) {
+  if (
+    pathname.startsWith("/api/") &&
+    isProtectedApiEdge(pathname) &&
+    !roleCanAccessApi(session.role, pathname, request.method)
+  ) {
     return NextResponse.json(
       { ok: false, error: "Access denied for your role", code: "FORBIDDEN" },
       { status: 403 }

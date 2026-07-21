@@ -18,9 +18,9 @@ export default function JarvisPage() {
           JARVIS <span className="text-[#00f5d4]">v5.3</span>
         </h1>
         <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-          Executive AI orchestrator — chat or voice command. JARVIS routes to 25 specialist shell
-          agents, executes ERP actions, and delivers creative/video output. One gateway for 10x–100x
-          workflow scale.
+          Executive AI orchestrator — chat, voice-to-voice TTS, and multimodal attachments. JARVIS
+          routes to specialist shell agents, executes ERP actions, and keeps OpenRouter keys
+          server-side with token-saving model routing.
         </p>
       </div>
 

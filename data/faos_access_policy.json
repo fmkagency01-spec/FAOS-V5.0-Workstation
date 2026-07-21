@@ -1,48 +1,95 @@
 {
-  "version": "5.3.0",
-  "policy": "FMK Group FAOS — role-based access. Owner sees all; teammates see assigned modules only.",
+  "version": "5.3.1",
+  "policy": "FAOS multi-tenant RBAC — Executive Alpha (CEO), Team Leads, External B2B Clients, plus department roles.",
+  "tenant_tiers": {
+    "executive_alpha": {
+      "roles": ["owner", "executive"],
+      "label": "Executive Alpha / CEO (Fahim Mahmud Khan)",
+      "access": "Full system control & TAC approval gateways"
+    },
+    "team_leads": {
+      "roles": ["manager", "team_lead", "sales", "finance", "hr", "creative"],
+      "label": "Team Leads / Department Agents",
+      "access": "Module-scoped Create, Media, Service access"
+    },
+    "external_b2b": {
+      "roles": ["client", "viewer"],
+      "label": "External B2B Clients",
+      "access": "Read-only portfolio / status views"
+    }
+  },
   "roles": {
     "owner": {
-      "label": "Executive / Owner",
-      "description": "Full access — TAC, JARVIS, finance, HR, all private data",
+      "label": "Executive Alpha / CEO",
+      "description": "Full system control — TAC approval gateways, JARVIS, finance, HR, all private data (Fahim Mahmud Khan)",
       "modules": ["*"],
-      "can_manage_team": true
+      "can_manage_team": true,
+      "tier": "executive_alpha"
+    },
+    "executive": {
+      "label": "Executive Alpha (alias)",
+      "description": "Same as owner — full control & TAC gateways",
+      "modules": ["*"],
+      "can_manage_team": true,
+      "tier": "executive_alpha"
     },
     "manager": {
-      "label": "Operations Manager",
+      "label": "Operations Manager / Team Lead",
       "description": "TAC, projects, agents, CRM, inventory, orders — no executive finance/HR",
       "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "team_leads"
+    },
+    "team_lead": {
+      "label": "Department Team Lead",
+      "description": "Create Pillar, Media/Creative, Service modules — department agent scope",
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "command", "creative", "create-pillar", "ai-seo", "status"],
+      "can_manage_team": false,
+      "tier": "team_leads"
     },
     "sales": {
       "label": "Sales Team",
       "description": "Clients, projects, and orders — no invoices, HR, or TAC executive",
       "modules": ["home", "crm", "projects", "orders", "command", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "team_leads"
     },
     "finance": {
       "label": "Finance Team",
       "description": "Invoicing, inventory, orders, and products — no HR personal records or JARVIS",
       "modules": ["home", "invoicing", "inventory", "orders", "products", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "team_leads"
     },
     "hr": {
       "label": "HR Team",
       "description": "HR module only — isolated people data",
       "modules": ["home", "hr", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "team_leads"
     },
     "creative": {
-      "label": "Creative Team",
+      "label": "Creative / Media Team",
       "description": "Creative studio, AI SEO/GEO, and agent workflow — no client financial data",
       "modules": ["home", "creative", "agents", "command", "ai-seo", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "team_leads"
+    },
+    "client": {
+      "label": "External B2B Client",
+      "description": "Read-only portfolio, project status, and system health — no mutations",
+      "modules": ["home", "projects", "status"],
+      "can_manage_team": false,
+      "tier": "external_b2b",
+      "read_only": true
     },
     "viewer": {
       "label": "Read-only Viewer",
       "description": "Home and system health only",
       "modules": ["home", "status"],
-      "can_manage_team": false
+      "can_manage_team": false,
+      "tier": "external_b2b",
+      "read_only": true
     }
   },
   "route_module_map": {
@@ -59,6 +106,7 @@
     "/agents": "agents",
     "/dashboard/create-pillar": "create-pillar",
     "/dashboard/ai-seo": "ai-seo",
+    "/dashboard": "home",
     "/creative": "creative",
     "/operations": "command",
     "/settings": "settings",

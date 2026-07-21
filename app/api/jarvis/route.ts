@@ -6,6 +6,10 @@ import { fetchWorkflow } from "@/lib/workflow-api";
 import { createInvoiceLocal, createInventoryLocal, createEmployeeLocal } from "@/lib/erp-store";
 import { generateImage, generateVideoPlan } from "@/lib/media-generation";
 import { isTokenSavingMode } from "@/lib/token-saving";
+import {
+  summarizeAttachmentsForPrompt,
+  type PipelineAttachment,
+} from "@/lib/attachment-pipeline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,19 +71,30 @@ export async function GET() {
     shell_agents: getAllShellAgents().length,
     agents: getAllShellAgents().map((a) => ({ id: a.id, name: a.name, domain: a.domain, icon: a.icon })),
     token_saving_mode: isTokenSavingMode(),
-    capabilities: ["voice", "chat", "erp", "creative", "video", "multi-agent"],
+    capabilities: ["voice", "chat", "erp", "creative", "video", "multi-agent", "multimodal", "tts"],
   });
 }
 
 export async function POST(request: NextRequest) {
-  let body: { command?: string; voice?: boolean };
+  let body: {
+    command?: string;
+    voice?: boolean;
+    attachments?: PipelineAttachment[];
+    tts_requested?: boolean;
+  };
   try {
-    body = (await request.json()) as { command?: string; voice?: boolean };
+    body = (await request.json()) as {
+      command?: string;
+      voice?: boolean;
+      attachments?: PipelineAttachment[];
+      tts_requested?: boolean;
+    };
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const command = body.command?.trim();
+  const summarized = summarizeAttachmentsForPrompt(body.attachments);
+  const command = `${body.command?.trim() || ""}${summarized.contextBlock}`.trim();
   if (!command) {
     return NextResponse.json({ error: "command is required" }, { status: 400 });
   }
@@ -96,6 +111,9 @@ export async function POST(request: NextRequest) {
       model: result.model,
       intent: result.intent,
       voice_mode: Boolean(body.voice),
+      tts_requested: Boolean(body.tts_requested),
+      attachments_received: summarized.count,
+      attachments: summarized.leanAttachments,
       primary_agent: {
         id: result.primary_agent.id,
         name: result.primary_agent.name,
