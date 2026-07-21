@@ -10,6 +10,10 @@ import {
 } from "@/lib/openrouter-guard";
 import type { AiIntent } from "@/lib/ai-router";
 import { isTokenSavingMode } from "@/lib/token-saving";
+import {
+  summarizeAttachmentsForPrompt,
+  type PipelineAttachment,
+} from "@/lib/attachment-pipeline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,8 +21,9 @@ export const dynamic = "force-dynamic";
 type ChatBody = {
   message?: string;
   messages?: ChatMessage[];
-  /** Force intent override (optional) */
   intent?: string;
+  attachments?: PipelineAttachment[];
+  tts_requested?: boolean;
 };
 
 function isChatMessage(value: unknown): value is ChatMessage {
@@ -38,6 +43,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
+  const summarized = summarizeAttachmentsForPrompt(body.attachments);
+
   let messages: ChatMessage[] = [];
   if (Array.isArray(body.messages) && body.messages.every(isChatMessage)) {
     messages = body.messages
@@ -47,9 +54,33 @@ export async function POST(request: NextRequest) {
     messages = [{ role: "user", content: body.message.trim() }];
   }
 
+  if (summarized.contextBlock) {
+    if (messages.length === 0) {
+      messages = [
+        {
+          role: "user",
+          content: `Analyze the attached media for FAOS executive briefing.${summarized.contextBlock}`,
+        },
+      ];
+    } else {
+      const last = messages[messages.length - 1];
+      if (last?.role === "user") {
+        messages = [
+          ...messages.slice(0, -1),
+          { role: "user", content: `${last.content}${summarized.contextBlock}` },
+        ];
+      } else {
+        messages = [
+          ...messages,
+          { role: "user", content: `Attachment context:${summarized.contextBlock}` },
+        ];
+      }
+    }
+  }
+
   if (messages.length === 0) {
     return NextResponse.json(
-      { error: "Provide `message` or non-empty `messages`." },
+      { error: "Provide `message`, `messages`, or attachments." },
       { status: 400 }
     );
   }
@@ -74,6 +105,9 @@ export async function POST(request: NextRequest) {
       route_label: result.route.label,
       route_reason: result.route.reason,
       token_saving_mode: isTokenSavingMode(),
+      tts_requested: Boolean(body.tts_requested),
+      attachments_received: summarized.count,
+      attachments: summarized.leanAttachments,
       usage: result.usage ?? null,
     });
   } catch (err) {
@@ -107,8 +141,9 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     endpoint: "/api/chat",
-    description: "Unified FAOS AI gateway — auto-routes to Claude, GPT, or Gemini",
+    description: "Unified FAOS AI gateway — auto-routes Claude, GPT, Gemini, Gemma, Llama",
     token_saving_mode: isTokenSavingMode(),
+    multimodal: true,
     intents: [
       "strategy → Claude Sonnet",
       "code → GPT-4o",
@@ -116,8 +151,8 @@ export async function GET() {
       "video → Gemini Flash",
       "analysis → GPT-4o Mini",
       "bengali → Gemini Flash",
-      "chat → Gemini Flash",
-      "automation → Hermes 405B",
+      "chat → Gemma 2 9B (token saver) / Gemini Flash",
+      "automation → Llama 3.3 70B (token saver) / Hermes",
     ],
   });
 }

@@ -1,3 +1,5 @@
+import { normalizeRole } from "@/lib/auth-edge";
+
 /** Map API paths to FAOS modules for role-based API access. */
 const API_MODULE_MAP: Record<string, string> = {
   "/api/tac": "tac",
@@ -18,20 +20,30 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/create-pillar": "create-pillar",
   "/api/agent-trigger": "agents",
   "/api/ai-seo": "ai-seo",
+  "/api/attachments": "command",
 };
 
 const ROLE_MODULES: Record<string, string[]> = {
   owner: ["*"],
+  executive: ["*"],
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products",
+    "command", "creative", "create-pillar", "ai-seo", "status",
+  ],
+  team_lead: [
+    "home", "tac", "jarvis", "crm", "projects", "agents",
     "command", "creative", "create-pillar", "ai-seo", "status",
   ],
   sales: ["home", "crm", "projects", "orders", "command", "status"],
   finance: ["home", "invoicing", "inventory", "orders", "products", "status"],
   hr: ["home", "hr", "status"],
   creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
+  client: ["home", "projects", "status"],
   viewer: ["home", "status"],
 };
+
+/** Roles that may only GET (no POST/PATCH/DELETE) on allowed modules. */
+const READ_ONLY_ROLES = new Set(["client", "viewer"]);
 
 export function apiPathToModule(pathname: string): string | null {
   const clean = pathname.split("?")[0].replace(/\/$/, "") || "/";
@@ -43,10 +55,16 @@ export function apiPathToModule(pathname: string): string | null {
   return null;
 }
 
-export function roleCanAccessApi(role: string, pathname: string): boolean {
+export function roleCanAccessApi(role: string, pathname: string, method = "GET"): boolean {
   const moduleId = apiPathToModule(pathname);
-  if (!moduleId) return role === "owner";
-  const allowed = ROLE_MODULES[role] || ROLE_MODULES.viewer;
+  const normalized = normalizeRole(role);
+  if (!moduleId) return normalized === "owner";
+  const allowed = ROLE_MODULES[role] || ROLE_MODULES[normalized] || ROLE_MODULES.viewer;
   if (allowed.includes("*")) return true;
-  return allowed.includes(moduleId);
+  if (!allowed.includes(moduleId)) return false;
+
+  if (READ_ONLY_ROLES.has(role) && method.toUpperCase() !== "GET") {
+    return false;
+  }
+  return true;
 }

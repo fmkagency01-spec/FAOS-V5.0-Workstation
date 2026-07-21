@@ -31,6 +31,9 @@ export const AI_MODELS = {
   geminiFlash: "google/gemini-2.0-flash-001",
   geminiPro: "google/gemini-2.5-pro-preview",
   hermes: "nousresearch/hermes-3-llama-3.1-405b",
+  /** Ultra-low-cost internal / chat paths */
+  gemma9b: "google/gemma-2-9b-it",
+  llama70b: "meta-llama/llama-3.3-70b-instruct",
 } as const;
 
 const STRATEGY = [
@@ -169,7 +172,9 @@ export function classifyIntent(query: string): AiIntent {
 function providerFromModel(model: string): string {
   if (model.startsWith("anthropic/")) return "Claude";
   if (model.startsWith("openai/")) return "GPT";
+  if (model.startsWith("google/gemma")) return "Gemma";
   if (model.startsWith("google/")) return "Gemini";
+  if (model.startsWith("meta-llama/")) return "Llama";
   if (model.startsWith("nousresearch/")) return "Hermes";
   return "OpenRouter";
 }
@@ -228,18 +233,18 @@ export function routeQuery(query: string, tokenSaving = true): AiRoute {
       reason: "Strong multilingual support",
     },
     chat: {
-      model: AI_MODELS.geminiFlash,
-      provider: "Gemini",
-      label: "Quick chat · Gemini Flash",
-      maxTokens: tokenSaving ? 280 : 600,
-      reason: "Fast, low-cost answers for simple questions",
+      model: tokenSaving ? AI_MODELS.gemma9b : AI_MODELS.geminiFlash,
+      provider: tokenSaving ? "Gemma" : "Gemini",
+      label: tokenSaving ? "Quick chat · Gemma 2 9B" : "Quick chat · Gemini Flash",
+      maxTokens: tokenSaving ? 220 : 600,
+      reason: "Ultra-low-cost internal chat (Gemma) with Gemini fallback off saver",
     },
     automation: {
-      model: AI_MODELS.hermes,
-      provider: "Hermes",
-      label: "Automation · Hermes 405B",
-      maxTokens: tokenSaving ? 280 : 700,
-      reason: "FMK agent automation and operations",
+      model: tokenSaving ? AI_MODELS.llama70b : AI_MODELS.hermes,
+      provider: tokenSaving ? "Llama" : "Hermes",
+      label: tokenSaving ? "Automation · Llama 3.3 70B" : "Automation · Hermes 405B",
+      maxTokens: tokenSaving ? 240 : 700,
+      reason: "Token-saver routes internal ops to Llama; full mode uses Hermes",
     },
   };
 

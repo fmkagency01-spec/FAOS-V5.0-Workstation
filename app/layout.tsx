@@ -1,25 +1,36 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { PwaRegister } from "@/components/faos/PwaRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FAOS v5.3 — TAC Masterpiece Workstation",
+  title: "FAOS v5.0 — Master Workstation",
   description:
-    "TAC Central Brain — 3 pillars, JARVIS voice AI, 25 agents, secure ERP, mobile-ready",
+    "TAC Central Brain — voice-to-voice JARVIS, multimodal uploads, PWA, multi-tenant RBAC ERP",
+  applicationName: "FAOS Workstation",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "FAOS",
   },
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>",
+    icon: [
+      { url: "/icons/faos.svg", type: "image/svg+xml" },
+      { url: "/icons/faos-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/faos-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/faos-192.png", sizes: "192x192", type: "image/png" }],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
   viewportFit: "cover",
   themeColor: "#060b19",
 };
@@ -27,7 +38,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="bn">
-      <body className="bg-fmkDark text-slate-100 antialiased">{children}</body>
+      <body className="bg-fmkDark text-slate-100 antialiased min-h-[100dvh]">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }

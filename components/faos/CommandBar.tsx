@@ -21,7 +21,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
   const [history, setHistory] = useState<ChatEntry[]>([
     {
       role: 'system',
-      text: 'JARVIS Gateway — ask anything. 25 agents · best AI auto-routed. Token-saving ON.',
+      text: 'JARVIS Gateway — ask anything. Best AI auto-routed · token-saving ON · TTS via JARVIS panel.',
     },
   ]);
   const inputRef = useRef<HTMLInputElement>(null);

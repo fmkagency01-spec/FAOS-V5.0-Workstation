@@ -1,0 +1,33 @@
+{
+  "name": "FAOS Workstation",
+  "short_name": "FAOS",
+  "description": "FAOS v5.0 Master Workstation — TAC · JARVIS · ERP · AI SEO",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060b19",
+  "theme_color": "#060b19",
+  "lang": "bn",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/faos-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/faos-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/faos.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
