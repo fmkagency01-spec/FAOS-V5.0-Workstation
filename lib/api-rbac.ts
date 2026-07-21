@@ -25,6 +25,7 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/harness": "agents",
   "/api/apps/fmk-wig": "fmk-wig-b2b",
   "/api/apps/rr-wigs": "rr-wigs-workspace",
+  "/api/jarvis/sessions": "jarvis-history",
   "/api/attachments": "command",
 };
 
@@ -43,7 +44,7 @@ const ROLE_MODULES: Record<string, string[]> = {
   finance: ["home", "invoicing", "inventory", "orders", "products", "status"],
   hr: ["home", "hr", "status"],
   creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
-  client: ["home", "projects", "status", "rr-wigs-workspace"],
+  client: ["rr-wigs-portal"],
   viewer: ["home", "status"],
 };
 
@@ -66,7 +67,17 @@ export function roleCanAccessApi(role: string, pathname: string, method = "GET")
   if (!moduleId) return normalized === "owner";
   const allowed = ROLE_MODULES[role] || ROLE_MODULES[normalized] || ROLE_MODULES.viewer;
   if (allowed.includes("*")) return true;
-  if (!allowed.includes(moduleId)) return false;
+
+  // Super Admin–only chat history API
+  if (moduleId === "jarvis-history") {
+    return normalized === "owner";
+  }
+
+  // Client portal may use RR Wigs workspace APIs without accessing internal /apps UI
+  const hasModule =
+    allowed.includes(moduleId) ||
+    (moduleId === "rr-wigs-workspace" && allowed.includes("rr-wigs-portal"));
+  if (!hasModule) return false;
 
   if (READ_ONLY_ROLES.has(role) && method.toUpperCase() !== "GET") {
     return false;

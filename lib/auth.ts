@@ -15,6 +15,8 @@ export type AuthUser = {
   username: string;
   name: string;
   role: FaosRole;
+  /** Isolates external B2B clients to a portal tenant (e.g. rr_wigs). */
+  tenant_id?: string;
 };
 
 export type StoredUser = AuthUser & {
@@ -70,7 +72,12 @@ export function authenticateUser(username: string, password: string): AuthUser |
     (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
   );
   if (!found) return null;
-  return { username: found.username, name: found.name, role: found.role };
+  return {
+    username: found.username,
+    name: found.name,
+    role: found.role,
+    tenant_id: found.tenant_id,
+  };
 }
 
 export async function createSessionToken(user: AuthUser): Promise<string> {

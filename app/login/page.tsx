@@ -24,9 +24,19 @@ function LoginForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = (await res.json()) as { error?: string; user?: { role?: string } };
+      const data = (await res.json()) as {
+        error?: string;
+        user?: { role?: string; tenant_id?: string; name?: string };
+      };
       if (!res.ok) throw new Error(data.error || 'Login failed');
-      router.replace(next.startsWith('/login') ? '/' : next);
+
+      const role = data.user?.role || '';
+      const tenantId = data.user?.tenant_id;
+      let dest = next.startsWith('/login') ? '/' : next;
+      if (role === 'client') {
+        dest = tenantId && tenantId !== 'rr_wigs' ? `/portal/${tenantId}` : '/portal/rr-wigs';
+      }
+      router.replace(dest);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

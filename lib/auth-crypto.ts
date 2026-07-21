@@ -9,6 +9,8 @@ export type SessionPayload = {
   username: string;
   name: string;
   role: string;
+  /** Multi-tenant client scope — e.g. "rr_wigs" for RR Wigs portal */
+  tenant_id?: string;
   exp: number;
 };
 

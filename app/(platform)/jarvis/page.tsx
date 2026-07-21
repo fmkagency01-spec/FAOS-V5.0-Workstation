@@ -18,14 +18,14 @@ export default function JarvisPage() {
           JARVIS <span className="text-[#00f5d4]">v5.3</span>
         </h1>
         <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-          Executive AI orchestrator — chat, voice-to-voice TTS, and multimodal attachments. JARVIS
-          routes to specialist shell agents, executes ERP actions, and keeps OpenRouter keys
-          server-side with token-saving model routing.
+          Executive AI orchestrator — chat, voice-to-voice TTS, multimodal attachments, and
+          Super-Admin-only persistent history (survives refresh). Team and clients cannot view
+          internal prompt logs.
         </p>
       </div>
 
       <div className="rounded-2xl border border-[#00f5d4]/20 bg-[#111827] overflow-hidden">
-        <JarvisPanel />
+        <JarvisPanel showHistory />
       </div>
 
       <div>
