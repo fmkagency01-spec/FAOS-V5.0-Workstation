@@ -1,0 +1,75 @@
+{
+  "migration_id": "001_fmk_wig_b2b_schema",
+  "version": 1,
+  "applied_at": "2026-07-21T00:00:00.000Z",
+  "description": "FMK Wig internal B2B engine — leads, salon orders, export/import catalogs",
+  "brain_node": "fmk_wig_internal_engine",
+  "collections": {
+    "b2b_leads": {
+      "fields": {
+        "id": "string",
+        "company": "string",
+        "contact_name": "string",
+        "email": "string",
+        "phone": "string",
+        "country": "string",
+        "lead_source": "string",
+        "pipeline_stage": "string",
+        "estimated_value_usd": "number",
+        "assigned_agent": "string",
+        "created_at": "iso8601",
+        "updated_at": "iso8601"
+      },
+      "indexes": ["pipeline_stage", "country", "created_at"]
+    },
+    "salon_orders": {
+      "fields": {
+        "id": "string",
+        "salon_name": "string",
+        "buyer_id": "string",
+        "items": "array",
+        "currency": "string",
+        "total_usd": "number",
+        "status": "string",
+        "fulfillment_route": "string",
+        "created_at": "iso8601"
+      },
+      "indexes": ["status", "buyer_id"]
+    },
+    "global_buyers": {
+      "fields": {
+        "id": "string",
+        "name": "string",
+        "type": "string",
+        "region": "string",
+        "tier": "string",
+        "active_orders": "number",
+        "last_order_at": "iso8601"
+      },
+      "indexes": ["region", "tier"]
+    },
+    "export_catalog": {
+      "fields": {
+        "sku": "string",
+        "name": "string",
+        "category": "string",
+        "moq": "number",
+        "unit_price_usd": "number",
+        "stock_units": "number",
+        "origin": "string"
+      },
+      "indexes": ["category", "sku"]
+    },
+    "import_catalog": {
+      "fields": {
+        "sku": "string",
+        "name": "string",
+        "supplier": "string",
+        "lead_time_days": "number",
+        "unit_cost_usd": "number",
+        "status": "string"
+      },
+      "indexes": ["supplier", "status"]
+    }
+  }
+}

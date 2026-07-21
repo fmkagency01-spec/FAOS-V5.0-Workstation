@@ -1,0 +1,68 @@
+{
+  "fmk_jarvis_brain_memory": {
+    "version": "5.3.0",
+    "parent_hub": "Jarvis Central Brain & TAC Common Center",
+    "sync_target": "fmk_tac_ecosystem",
+    "nodes": {
+      "fmk_wig_internal_engine": {
+        "type": "internal_b2b_engine",
+        "brand": "FMK WIG",
+        "parent_agent": "fmk_wig_prosthetic_hair_agent",
+        "purpose": "B2B lead generation pipelines, global salon orders, export/import catalog management",
+        "integration": {
+          "jarvis_core": true,
+          "tac_common_center": true,
+          "create_pillar": "fmk_create_pillar_retail_core",
+          "connect_pillar": "fmk_connect_commerce_core"
+        },
+        "memory_keys": [
+          "b2b_leads",
+          "global_buyers",
+          "salon_orders",
+          "export_catalog",
+          "import_catalog",
+          "fulfillment_pipeline"
+        ],
+        "routes": {
+          "dashboard": "/apps/fmk-wig",
+          "api": "/api/apps/fmk-wig"
+        },
+        "harness_agents": ["harness_gamma_inventory_sync"]
+      },
+      "rr_wigs_client_workspace": {
+        "type": "external_tenant_workspace",
+        "brand": "RR Wigs",
+        "agency": "BulletsEye Agency (FMK Agency)",
+        "parent_pillar": "connect",
+        "purpose": "Isolated client sub-dashboard — web analytics, ad spend, LinkedIn leads, SEO rankings, factory inventory",
+        "scope": [
+          "Custom Web Engine (Node.js/React)",
+          "SEO/AIO",
+          "Factory Media Shoot",
+          "B2B Lead Gen (LinkedIn/Google Ads)",
+          "Automation",
+          "Analytics"
+        ],
+        "isolation_level": "dedicated_tenant_dashboard",
+        "memory_keys": [
+          "web_analytics",
+          "ad_spend",
+          "linkedin_leads",
+          "seo_rankings",
+          "factory_inventory",
+          "media_shoots",
+          "b2b_inquiries"
+        ],
+        "routes": {
+          "dashboard": "/apps/rr-wigs",
+          "api": "/api/apps/rr-wigs",
+          "inquiry_webhook": "/api/apps/rr-wigs/inquiry"
+        },
+        "harness_agents": [
+          "harness_alpha_web_engineering",
+          "harness_beta_marketing_automation"
+        ]
+      }
+    }
+  }
+}

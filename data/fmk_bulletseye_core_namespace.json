@@ -107,6 +107,18 @@
           "TakaBachaw.com review"
         ],
         "local_signals": ["Bangladesh", "fintech", "savings"]
+      },
+      "rr_wigs_client_workspace": {
+        "brand_name": "RR Wigs",
+        "channel": "external_b2b",
+        "pillar_topic": "wholesale human hair wigs manufacturer OEM",
+        "primary_queries": [
+          "RR Wigs wholesale manufacturer",
+          "custom wig factory OEM partner"
+        ],
+        "local_signals": ["factory", "OEM", "B2B wholesale"],
+        "agency": "BulletsEye Agency",
+        "tenant_id": "rr_wigs"
       }
     },
     "ugc_engines": [

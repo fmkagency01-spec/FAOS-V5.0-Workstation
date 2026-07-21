@@ -1,0 +1,60 @@
+{
+  "fmk_harness_workers": {
+    "version": "5.3.0",
+    "mode": "24_7_background",
+    "loop_interval_ms": 300000,
+    "parent": "jarvis_core",
+    "workers": {
+      "harness_alpha_web_engineering": {
+        "id": "harness_alpha_web_engineering",
+        "codename": "Agent Alpha",
+        "role": "Web Engineering",
+        "tenant": "rr_wigs_client_workspace",
+        "tasks": [
+          "Initialize Node.js/React web backend structure",
+          "Expose B2B inquiry API endpoints",
+          "Deploy custom web engine routes"
+        ],
+        "endpoints": {
+          "app_root": "apps/rr-wigs",
+          "inquiry_api": "/api/apps/rr-wigs/inquiry"
+        },
+        "schedule": "continuous"
+      },
+      "harness_beta_marketing_automation": {
+        "id": "harness_beta_marketing_automation",
+        "codename": "Agent Beta",
+        "role": "Marketing & Lead Automation",
+        "tenant": "rr_wigs_client_workspace",
+        "tasks": [
+          "LinkedIn cold outreach pipeline",
+          "Google Search Ad tracking pixels",
+          "AIO schema generation (BulletsEye)"
+        ],
+        "integrations": {
+          "linkedin": "rr_wigs_workspace_db.linkedin_leads",
+          "google_ads": "rr_wigs_workspace_db.ad_spend",
+          "aio_schema": "fmk_bulletseye_core_namespace"
+        },
+        "schedule": "continuous"
+      },
+      "harness_gamma_inventory_sync": {
+        "id": "harness_gamma_inventory_sync",
+        "codename": "Agent Gamma",
+        "role": "Inventory & Catalog Sync",
+        "tenant": "fmk_wig_internal_engine",
+        "tasks": [
+          "Sync RR Wigs factory inventory to Jarvis Common Center",
+          "Mirror stock to FMK Wig B2B sourcing panel",
+          "Real-time catalog updates across tenants"
+        ],
+        "sync_routes": {
+          "source": "rr_wigs_workspace_db.factory_inventory",
+          "target": "fmk_wig_b2b_db.export_catalog",
+          "api": "/api/harness/sync-inventory"
+        },
+        "schedule": "continuous"
+      }
+    }
+  }
+}

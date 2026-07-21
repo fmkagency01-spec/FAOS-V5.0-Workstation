@@ -1,0 +1,99 @@
+{
+  "brain_node": "fmk_wig_internal_engine",
+  "migration": "001_fmk_wig_b2b_schema",
+  "b2b_leads": [
+    {
+      "id": "lead_fmk_001",
+      "company": "Elite Salon Dubai",
+      "contact_name": "Amira Hassan",
+      "email": "procurement@elitesalondubai.ae",
+      "phone": "+971-4-555-0101",
+      "country": "UAE",
+      "lead_source": "global_trade_show",
+      "pipeline_stage": "qualified",
+      "estimated_value_usd": 24000,
+      "assigned_agent": "fmk_wig_prosthetic_hair_agent",
+      "created_at": "2026-07-15T10:00:00.000Z",
+      "updated_at": "2026-07-20T14:30:00.000Z"
+    },
+    {
+      "id": "lead_fmk_002",
+      "company": "London Hair Systems Ltd",
+      "contact_name": "James Porter",
+      "email": "orders@londonhairsystems.co.uk",
+      "phone": "+44-20-7946-0958",
+      "country": "UK",
+      "lead_source": "linkedin_outreach",
+      "pipeline_stage": "proposal",
+      "estimated_value_usd": 18500,
+      "assigned_agent": "fmk_wig_prosthetic_hair_agent",
+      "created_at": "2026-07-18T09:15:00.000Z",
+      "updated_at": "2026-07-21T08:00:00.000Z"
+    }
+  ],
+  "salon_orders": [
+    {
+      "id": "order_salon_001",
+      "salon_name": "Premium Hair Studio NYC",
+      "buyer_id": "buyer_us_001",
+      "items": [
+        { "sku": "FMK-WIG-PRO-12", "qty": 50, "unit_price_usd": 89 }
+      ],
+      "currency": "USD",
+      "total_usd": 4450,
+      "status": "fulfillment",
+      "fulfillment_route": "export_dhaka_nyc",
+      "created_at": "2026-07-19T16:00:00.000Z"
+    }
+  ],
+  "global_buyers": [
+    {
+      "id": "buyer_us_001",
+      "name": "Premium Hair Studio NYC",
+      "type": "salon_chain",
+      "region": "North America",
+      "tier": "gold",
+      "active_orders": 2,
+      "last_order_at": "2026-07-19T16:00:00.000Z"
+    },
+    {
+      "id": "buyer_ae_001",
+      "name": "Elite Salon Dubai",
+      "type": "distributor",
+      "region": "Middle East",
+      "tier": "silver",
+      "active_orders": 1,
+      "last_order_at": "2026-07-15T10:00:00.000Z"
+    }
+  ],
+  "export_catalog": [
+    {
+      "sku": "FMK-WIG-PRO-12",
+      "name": "FMK Pro Lace System 12\"",
+      "category": "prosthetic_hair",
+      "moq": 25,
+      "unit_price_usd": 89,
+      "stock_units": 1200,
+      "origin": "Bangladesh"
+    },
+    {
+      "sku": "FMK-WIG-CST-08",
+      "name": "FMK Custom Mono 8\"",
+      "category": "prosthetic_hair",
+      "moq": 10,
+      "unit_price_usd": 125,
+      "stock_units": 450,
+      "origin": "Bangladesh"
+    }
+  ],
+  "import_catalog": [
+    {
+      "sku": "IMP-BASE-LACE-EU",
+      "name": "European Lace Base Material",
+      "supplier": "EU Hair Components GmbH",
+      "lead_time_days": 21,
+      "unit_cost_usd": 12.5,
+      "status": "active"
+    }
+  ]
+}

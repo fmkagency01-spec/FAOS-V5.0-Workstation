@@ -15,6 +15,13 @@
         "route_key": "wig",
         "scope": "Prosthetic Hair Systems, Global Supply Chain Logistics, Inventory Forecasting, Voice-to-Command Filtering Stack."
       },
+      "fmk_wig_internal_engine": {
+        "brand_name": "FMK WIG B2B",
+        "route_key": "wig-b2b",
+        "scope": "Internal B2B sales & sourcing — global salon orders, export/import catalogs, buyer lead pipelines.",
+        "brain_node": true,
+        "parent_agent": "fmk_wig_prosthetic_hair_agent"
+      },
       "fmk_mk_clothing_lifestyle_agent": {
         "brand_name": "MK Clothing",
         "route_key": "apparel",

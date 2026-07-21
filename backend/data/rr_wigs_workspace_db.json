@@ -1,0 +1,105 @@
+{
+  "brain_node": "rr_wigs_client_workspace",
+  "tenant_id": "rr_wigs",
+  "migration": "002_rr_wigs_tenant_schema",
+  "client_id": "client_rr_wigs_001",
+  "agency": "BulletsEye Agency",
+  "web_analytics": [
+    {
+      "id": "wa_rr_001",
+      "period": "2026-07",
+      "sessions": 8420,
+      "bounce_rate": 0.38,
+      "conversions": 124,
+      "top_pages": ["/products", "/b2b-inquiry", "/factory-tour"],
+      "recorded_at": "2026-07-21T00:00:00.000Z"
+    }
+  ],
+  "ad_spend": [
+    {
+      "id": "ads_rr_001",
+      "channel": "google_search",
+      "campaign": "RR Wigs B2B Wholesale",
+      "spend_usd": 1850,
+      "clicks": 920,
+      "leads": 34,
+      "period": "2026-07"
+    },
+    {
+      "id": "ads_rr_002",
+      "channel": "linkedin",
+      "campaign": "Salon Owner Cold Outreach",
+      "spend_usd": 640,
+      "clicks": 210,
+      "leads": 18,
+      "period": "2026-07"
+    }
+  ],
+  "linkedin_leads": [
+    {
+      "id": "li_rr_001",
+      "prospect_name": "Sarah Chen",
+      "company": "Pacific Hair Solutions",
+      "title": "Owner",
+      "outreach_status": "replied",
+      "reply_received": true,
+      "created_at": "2026-07-17T11:00:00.000Z"
+    },
+    {
+      "id": "li_rr_002",
+      "prospect_name": "Marcus Webb",
+      "company": "Webb Salon Group",
+      "title": "Procurement Director",
+      "outreach_status": "sent",
+      "reply_received": false,
+      "created_at": "2026-07-20T09:30:00.000Z"
+    }
+  ],
+  "seo_rankings": [
+    {
+      "id": "seo_rr_001",
+      "keyword": "wholesale human hair wigs manufacturer",
+      "position": 8,
+      "engine": "google",
+      "url": "https://rrwigs.example.com/wholesale",
+      "checked_at": "2026-07-21T06:00:00.000Z"
+    },
+    {
+      "id": "seo_rr_002",
+      "keyword": "custom wig factory OEM",
+      "position": 14,
+      "engine": "google",
+      "url": "https://rrwigs.example.com/oem",
+      "checked_at": "2026-07-21T06:00:00.000Z"
+    }
+  ],
+  "factory_inventory": [
+    {
+      "sku": "RR-WIG-LACE-14",
+      "product_name": "RR Lace Front 14\" Natural",
+      "units_on_hand": 680,
+      "production_line": "Line A",
+      "synced_to_fmk": true,
+      "last_sync_at": "2026-07-21T10:00:00.000Z"
+    },
+    {
+      "sku": "RR-WIG-MONO-10",
+      "product_name": "RR Mono Top 10\" Silk",
+      "units_on_hand": 320,
+      "production_line": "Line B",
+      "synced_to_fmk": true,
+      "last_sync_at": "2026-07-21T10:00:00.000Z"
+    }
+  ],
+  "b2b_inquiries": [
+    {
+      "id": "inq_rr_001",
+      "company": "Midwest Beauty Supply",
+      "contact_email": "buyer@midwestbeauty.com",
+      "message": "Looking for 200 units/month OEM lace systems",
+      "source": "website_form",
+      "status": "new",
+      "created_at": "2026-07-20T15:45:00.000Z"
+    }
+  ]
+}

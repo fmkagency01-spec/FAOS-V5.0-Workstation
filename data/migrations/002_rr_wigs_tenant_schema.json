@@ -1,0 +1,74 @@
+{
+  "migration_id": "002_rr_wigs_tenant_schema",
+  "version": 1,
+  "applied_at": "2026-07-21T00:00:00.000Z",
+  "description": "RR Wigs isolated tenant workspace — analytics, ads, LinkedIn, SEO, factory inventory",
+  "brain_node": "rr_wigs_client_workspace",
+  "tenant_id": "rr_wigs",
+  "collections": {
+    "web_analytics": {
+      "fields": {
+        "id": "string",
+        "period": "string",
+        "sessions": "number",
+        "bounce_rate": "number",
+        "conversions": "number",
+        "top_pages": "array",
+        "recorded_at": "iso8601"
+      }
+    },
+    "ad_spend": {
+      "fields": {
+        "id": "string",
+        "channel": "string",
+        "campaign": "string",
+        "spend_usd": "number",
+        "clicks": "number",
+        "leads": "number",
+        "period": "string"
+      }
+    },
+    "linkedin_leads": {
+      "fields": {
+        "id": "string",
+        "prospect_name": "string",
+        "company": "string",
+        "title": "string",
+        "outreach_status": "string",
+        "reply_received": "boolean",
+        "created_at": "iso8601"
+      }
+    },
+    "seo_rankings": {
+      "fields": {
+        "id": "string",
+        "keyword": "string",
+        "position": "number",
+        "engine": "string",
+        "url": "string",
+        "checked_at": "iso8601"
+      }
+    },
+    "factory_inventory": {
+      "fields": {
+        "sku": "string",
+        "product_name": "string",
+        "units_on_hand": "number",
+        "production_line": "string",
+        "synced_to_fmk": "boolean",
+        "last_sync_at": "iso8601"
+      }
+    },
+    "b2b_inquiries": {
+      "fields": {
+        "id": "string",
+        "company": "string",
+        "contact_email": "string",
+        "message": "string",
+        "source": "string",
+        "status": "string",
+        "created_at": "iso8601"
+      }
+    }
+  }
+}

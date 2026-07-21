@@ -25,6 +25,7 @@
       "modules": ["create-pillar", "inventory", "agents"],
       "agents": [
         "fmk_wig_prosthetic_hair_agent",
+        "fmk_wig_internal_engine",
         "fmk_mk_clothing_lifestyle_agent",
         "fmk_mk_kitchen_cloud_food_agent",
         "fmk_shoes_footwear_wing",
@@ -34,6 +35,7 @@
       "work_sections": [
         { "id": "supply", "label": "Supply & Production", "agent": "inventory_supply_agent" },
         { "id": "brands", "label": "Brand Operations", "agent": "fmk_wig_prosthetic_hair_agent" },
+        { "id": "b2b", "label": "FMK Wig B2B Engine", "agent": "fmk_wig_internal_engine" },
         { "id": "logistics", "label": "Global Logistics", "agent": "logistics_agent" }
       ]
     },
@@ -48,6 +50,7 @@
       "agents": [
         "crm_client_agent",
         "sales_pipeline_agent",
+        "rr_wigs_client_workspace",
         "creative_design_agent",
         "video_production_agent",
         "social_media_agent",
@@ -59,7 +62,8 @@
         { "id": "crm", "label": "CRM & Clients", "agent": "crm_client_agent" },
         { "id": "creative", "label": "Creative Studio", "agent": "creative_design_agent" },
         { "id": "media", "label": "Media & Video", "agent": "video_production_agent" },
-        { "id": "ai-seo", "label": "AI SEO & GEO", "agent": "bulletseye_ai_seo_agent" }
+        { "id": "ai-seo", "label": "AI SEO & GEO", "agent": "bulletseye_ai_seo_agent" },
+        { "id": "rr-wigs", "label": "RR Wigs Client Workspace", "agent": "rr_wigs_client_workspace" }
       ],
       "agency_wing": {
         "id": "fmk_bulletseye_core_namespace",
@@ -100,7 +104,9 @@
   "jarvis_orchestrator": {
     "id": "jarvis_core",
     "route": "/jarvis",
-    "shell_agents_total": 30,
+    "shell_agents_total": 36,
+    "brain_memory_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
+    "harness_workers": ["harness_alpha_web_engineering", "harness_beta_marketing_automation", "harness_gamma_inventory_sync"],
     "sync_backend": "https://faos-backend.onrender.com/api/v5"
   }
 }

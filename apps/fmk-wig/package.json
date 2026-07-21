@@ -1,0 +1,14 @@
+{
+  "name": "@faos/fmk-wig-b2b-engine",
+  "version": "5.3.0",
+  "private": true,
+  "description": "FMK Wig internal B2B sales & sourcing engine — leads, salon orders, export/import catalogs",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
