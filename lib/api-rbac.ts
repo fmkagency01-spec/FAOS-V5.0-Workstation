@@ -17,18 +17,19 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/harvest": "command",
   "/api/create-pillar": "create-pillar",
   "/api/agent-trigger": "agents",
+  "/api/ai-seo": "ai-seo",
 };
 
 const ROLE_MODULES: Record<string, string[]> = {
   owner: ["*"],
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products",
-    "command", "creative", "create-pillar", "status",
+    "command", "creative", "create-pillar", "ai-seo", "status",
   ],
   sales: ["home", "crm", "projects", "orders", "command", "status"],
   finance: ["home", "invoicing", "inventory", "orders", "products", "status"],
   hr: ["home", "hr", "status"],
-  creative: ["home", "creative", "agents", "command", "status"],
+  creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
   viewer: ["home", "status"],
 };
 

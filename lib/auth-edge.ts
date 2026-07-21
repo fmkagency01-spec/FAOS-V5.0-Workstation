@@ -28,6 +28,7 @@ const ROUTE_MODULES: Record<string, string> = {
   "/hr": "hr",
   "/agents": "agents",
   "/dashboard/create-pillar": "create-pillar",
+  "/dashboard/ai-seo": "ai-seo",
   "/creative": "creative",
   "/operations": "command",
   "/settings": "settings",
@@ -39,12 +40,12 @@ const ROLE_MODULES: Record<string, string[]> = {
   owner: ["*"],
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory",
-    "command", "creative", "create-pillar", "status",
+    "command", "creative", "create-pillar", "ai-seo", "status",
   ],
   sales: ["home", "crm", "projects", "command", "status"],
   finance: ["home", "invoicing", "inventory", "status"],
   hr: ["home", "hr", "status"],
-  creative: ["home", "creative", "agents", "command", "status"],
+  creative: ["home", "creative", "agents", "command", "ai-seo", "status"],
   viewer: ["home", "status"],
 };
 
@@ -73,6 +74,6 @@ export function isProtectedApiEdge(pathname: string): boolean {
     "/api/tac", "/api/jarvis", "/api/chat", "/api/agent-workflow", "/api/clients", "/api/projects",
     "/api/invoices", "/api/inventory", "/api/hr", "/api/orders", "/api/products", "/api/users",
     "/api/notifications", "/api/media", "/api/harvest",
-    "/api/create-pillar", "/api/agent-trigger",
+    "/api/create-pillar", "/api/agent-trigger", "/api/ai-seo",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }

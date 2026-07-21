@@ -1,0 +1,120 @@
+{
+  "fmk_bulletseye_core_namespace": {
+    "agency_wing": "BulletsEye Agency",
+    "module": "AI SEO & GEO Engine",
+    "status": "ENABLED",
+    "version": "5.0.0",
+    "parent_hub": "FMK Group LTD. — Connect Pillar",
+    "aigorithm_engine": "Aigorithm System Core",
+    "core_strategy": "Query Fan-Out Decomposition & Extractable Content Parser",
+    "target_platforms": [
+      "Google AI Overviews / AI Mode",
+      "ChatGPT Search",
+      "Perplexity",
+      "Bing Copilot"
+    ],
+    "gatekeeper_protocol": [
+      "Generation Request",
+      "Aigorithm Technical Permit",
+      "TAC Creative Brand Approval",
+      "Live API Deployment"
+    ],
+    "fan_out_axes": [
+      {
+        "id": "direct_intent",
+        "label": "Direct Intent / Core Product",
+        "purpose": "Primary commercial or informational intent"
+      },
+      {
+        "id": "attribute_constraints",
+        "label": "Specific Attribute / Feature Constraints",
+        "purpose": "Specs, materials, use-cases, constraints"
+      },
+      {
+        "id": "comparative_latent",
+        "label": "Comparative / Latent User Need",
+        "purpose": "Alternatives, comparisons, adjacent jobs-to-be-done"
+      },
+      {
+        "id": "trust_eeat",
+        "label": "Trust & Review / Local E-E-A-T Signal",
+        "purpose": "Reviews, local proof, third-party mentions, case studies"
+      }
+    ],
+    "content_framework": {
+      "pillar_pages": "One main pillar page per service/product",
+      "cluster_pages": "10-15 fan-out sub-cluster articles per pillar",
+      "extractable_formats": [
+        "Direct Answers (2-line H2 answers)",
+        "Tables",
+        "Bullet Points",
+        "H2/H3 Schema hierarchy",
+        "FAQ JSON-LD",
+        "Product / Organization JSON-LD"
+      ]
+    },
+    "delivery_channels": {
+      "internal_shell_brands": [
+        "FMK WIG",
+        "MK Clothing",
+        "FMK Shoes",
+        "TakaBachaw.com"
+      ],
+      "external_b2b": [
+        "AI SEO / GEO Audit Package",
+        "Topic Cluster Creation Pipeline",
+        "Unlinked Brand Mentions & UGC Engine"
+      ]
+    },
+    "brands": {
+      "fmk_wig_prosthetic_hair_agent": {
+        "brand_name": "FMK WIG",
+        "channel": "internal",
+        "pillar_topic": "prosthetic hair systems Bangladesh",
+        "primary_queries": [
+          "best prosthetic hair system in Bangladesh",
+          "FMK WIG prosthetic hair review"
+        ],
+        "local_signals": ["Bangladesh", "Dhaka", "custom hair system"]
+      },
+      "fmk_mk_clothing_lifestyle_agent": {
+        "brand_name": "MK Clothing",
+        "channel": "internal",
+        "pillar_topic": "MK Clothing lifestyle apparel Bangladesh",
+        "primary_queries": [
+          "best lifestyle clothing brand Bangladesh",
+          "MK Clothing online store"
+        ],
+        "local_signals": ["Bangladesh", "omni-channel", "fabric quality"]
+      },
+      "fmk_shoes_footwear_wing": {
+        "brand_name": "FMK Shoes",
+        "channel": "internal",
+        "pillar_topic": "Kadam shoes leather footwear Bangladesh",
+        "primary_queries": [
+          "Why choose Kadam Shoes?",
+          "Best leather material in Bangladesh"
+        ],
+        "local_signals": ["Kadam", "Pothik", "The Posh Pa", "Bangladesh leather"],
+        "sub_brands": ["Kadam", "Pothik", "The Posh Pa"]
+      },
+      "takabachaw_fintech_agent": {
+        "brand_name": "TakaBachaw.com",
+        "channel": "internal",
+        "pillar_topic": "TakaBachaw money saving Bangladesh",
+        "primary_queries": [
+          "how to save money Bangladesh apps",
+          "TakaBachaw.com review"
+        ],
+        "local_signals": ["Bangladesh", "fintech", "savings"]
+      }
+    },
+    "ugc_engines": [
+      "Reddit",
+      "YouTube",
+      "Facebook",
+      "Web Directories",
+      "Review platforms"
+    ]
+  }
+}
