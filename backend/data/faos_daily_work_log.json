@@ -1,0 +1,6 @@
+{
+  "table": "faos_daily_work_logs",
+  "version": 1,
+  "description": "FAOS / BulletsEye daily work tracking — team + agent progress",
+  "logs": []
+}

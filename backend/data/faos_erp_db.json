@@ -3,5 +3,6 @@
   "inventory": [],
   "employees": [],
   "orders": [],
-  "products": []
+  "products": [],
+  "work_logs": []
 }

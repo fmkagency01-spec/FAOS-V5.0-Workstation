@@ -238,6 +238,7 @@ def module_health_snapshot(erp_counts: Dict[str, int]) -> Dict[str, Any]:
             "invoicing": {"status": "operational", "records": erp_counts.get("invoices", 0)},
             "inventory": {"status": "operational", "records": erp_counts.get("inventory", 0)},
             "hr": {"status": "operational", "records": erp_counts.get("employees", 0)},
+            "work_log": {"status": "operational", "records": erp_counts.get("work_logs", 0)},
             "orders": {"status": "operational", "records": erp_counts.get("orders", 0)},
             "products": {"status": "operational", "records": erp_counts.get("products", 0)},
         },

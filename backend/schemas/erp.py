@@ -96,6 +96,65 @@ class EmployeeUpdate(BaseModel):
     notes: Optional[str] = None
 
 
+class WorkLogInProgressItem(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    progress_pct: int = Field(0, ge=0, le=100)
+
+
+class WorkLogCreate(BaseModel):
+    log_date: Optional[str] = None
+    member_name: str = Field(..., min_length=1, max_length=200)
+    member_role: str = "Team"
+    submitted_by: Optional[str] = None
+    tasks_completed: List[str] = Field(default_factory=list)
+    tasks_in_progress: List[WorkLogInProgressItem] = Field(default_factory=list)
+    blockers: List[str] = Field(default_factory=list)
+    next_day_plan: List[str] = Field(default_factory=list)
+    project_health: str = "on_track"
+    backend_notes: Optional[str] = None
+    agent_activity_ids: List[str] = Field(default_factory=list)
+
+    @field_validator("member_name")
+    @classmethod
+    def strip_member(cls, v: str) -> str:
+        value = v.strip()
+        if not value:
+            raise ValueError("member_name is required")
+        return value
+
+    @field_validator("project_health")
+    @classmethod
+    def validate_health(cls, v: str) -> str:
+        allowed = {"on_track", "at_risk", "blocked"}
+        if v not in allowed:
+            raise ValueError(f"project_health must be one of {sorted(allowed)}")
+        return v
+
+
+class WorkLogUpdate(BaseModel):
+    log_date: Optional[str] = None
+    member_name: Optional[str] = None
+    member_role: Optional[str] = None
+    submitted_by: Optional[str] = None
+    tasks_completed: Optional[List[str]] = None
+    tasks_in_progress: Optional[List[WorkLogInProgressItem]] = None
+    blockers: Optional[List[str]] = None
+    next_day_plan: Optional[List[str]] = None
+    project_health: Optional[str] = None
+    backend_notes: Optional[str] = None
+    agent_activity_ids: Optional[List[str]] = None
+
+    @field_validator("project_health")
+    @classmethod
+    def validate_health(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        allowed = {"on_track", "at_risk", "blocked"}
+        if v not in allowed:
+            raise ValueError(f"project_health must be one of {sorted(allowed)}")
+        return v
+
+
 class OrderCreate(BaseModel):
     order_number: Optional[str] = None
     client_id: str = ""

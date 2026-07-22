@@ -38,6 +38,8 @@ from schemas.erp import (
     OrderUpdate,
     ProductCreate,
     ProductUpdate,
+    WorkLogCreate,
+    WorkLogUpdate,
 )
 from schemas.notifications import NotifyRequest
 from schemas.workflow import AgentAssign, ClientCreate, ClientUpdate, ProjectCreate, ProjectUpdate
@@ -634,6 +636,54 @@ async def update_employee(record_id: str, payload: EmployeeUpdate) -> Dict[str, 
 async def delete_employee(record_id: str) -> Dict[str, Any]:
     try:
         erp.delete_employee(record_id)
+        return {"ok": True, "deleted": record_id}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+# --- Daily Work Logs (team + agent day tracking) ---
+
+
+@app.get("/api/v5/work-logs")
+async def list_work_logs(date: str | None = Query(default=None)) -> Dict[str, Any]:
+    logs = erp.list_work_logs(date)
+    return {
+        "ok": True,
+        "logs": logs,
+        "stats": erp.work_log_stats(date),
+    }
+
+
+@app.post("/api/v5/work-logs")
+async def create_work_log(payload: WorkLogCreate) -> Dict[str, Any]:
+    record = erp.create_work_log(payload.model_dump())
+    return {"ok": True, "work_log": record, "log": record}
+
+
+@app.get("/api/v5/work-logs/{record_id}")
+async def get_work_log(record_id: str) -> Dict[str, Any]:
+    try:
+        record = erp.get_work_log(record_id)
+        return {"ok": True, "work_log": record, "log": record}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.patch("/api/v5/work-logs/{record_id}")
+async def update_work_log(record_id: str, payload: WorkLogUpdate) -> Dict[str, Any]:
+    try:
+        record = erp.update_work_log(
+            record_id, payload.model_dump(exclude_unset=True)
+        )
+        return {"ok": True, "work_log": record, "log": record}
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.delete("/api/v5/work-logs/{record_id}")
+async def delete_work_log(record_id: str) -> Dict[str, Any]:
+    try:
+        erp.delete_work_log(record_id)
         return {"ok": True, "deleted": record_id}
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

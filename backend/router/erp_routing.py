@@ -33,6 +33,7 @@ DEFAULT_DB = {
     "employees": [],
     "orders": [],
     "products": [],
+    "work_logs": [],
 }
 
 
@@ -368,6 +369,184 @@ class ErpOrchestrator:
 
         return _tx(mutator)
 
+    # --- Daily Work Logs ---
+
+    def list_work_logs(self, log_date: Optional[str] = None) -> List[Dict[str, Any]]:
+        data = _load()
+        rows = data.get("work_logs") or []
+        if log_date:
+            rows = [r for r in rows if r.get("log_date") == log_date]
+        return sorted(rows, key=lambda x: x.get("updated_at", ""), reverse=True)
+
+    def get_work_log(self, record_id: str) -> Dict[str, Any]:
+        row = _find(_load().get("work_logs") or [], record_id)
+        if not row:
+            raise ValueError(f"Work log not found: {record_id}")
+        return row
+
+    def create_work_log(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        def mutator(data: Dict[str, Any]) -> Dict[str, Any]:
+            if "work_logs" not in data or not isinstance(data["work_logs"], list):
+                data["work_logs"] = []
+            ts = _now()
+            in_progress = []
+            for item in payload.get("tasks_in_progress") or []:
+                if not isinstance(item, dict):
+                    continue
+                name = str(item.get("name") or "").strip()
+                if not name:
+                    continue
+                try:
+                    pct = int(item.get("progress_pct") or 0)
+                except (TypeError, ValueError):
+                    pct = 0
+                in_progress.append(
+                    {"name": name, "progress_pct": max(0, min(100, pct))}
+                )
+            health = payload.get("project_health") or "on_track"
+            if health not in {"on_track", "at_risk", "blocked"}:
+                health = "on_track"
+            record = {
+                "id": _uid("wl"),
+                "log_date": (payload.get("log_date") or ts[:10]).strip()[:10],
+                "member_name": require_str(payload, "member_name", "Member"),
+                "member_role": (payload.get("member_role") or "Team").strip(),
+                "submitted_by": (payload.get("submitted_by") or "").strip() or None,
+                "tasks_completed": [
+                    str(x).strip()
+                    for x in (payload.get("tasks_completed") or [])
+                    if str(x).strip()
+                ][:20],
+                "tasks_in_progress": in_progress[:20],
+                "blockers": [
+                    str(x).strip()
+                    for x in (payload.get("blockers") or [])
+                    if str(x).strip()
+                ][:20],
+                "next_day_plan": [
+                    str(x).strip()
+                    for x in (payload.get("next_day_plan") or [])
+                    if str(x).strip()
+                ][:20],
+                "project_health": health,
+                "backend_notes": (payload.get("backend_notes") or "").strip() or None,
+                "agent_activity_ids": [
+                    str(x).strip()
+                    for x in (payload.get("agent_activity_ids") or [])
+                    if str(x).strip()
+                ][:50],
+                "created_at": ts,
+                "updated_at": ts,
+            }
+            data["work_logs"].append(record)
+            return dict(record)
+
+        record = _tx(mutator)
+        if record.get("project_health") in {"at_risk", "blocked"}:
+            emit_intelligence_event(
+                "system_state_change",
+                {
+                    "message": (
+                        f"Daily work log {record.get('project_health')} — "
+                        f"{record.get('member_name')} on {record.get('log_date')}"
+                    ),
+                    "work_log_id": record["id"],
+                    "actions": [
+                        "Review blockers",
+                        "Unblock agent / backend process",
+                        "Confirm next-day plan",
+                    ],
+                },
+                pillar_id="capital",
+            )
+        return record
+
+    def update_work_log(self, record_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        def mutator(data: Dict[str, Any]) -> Dict[str, Any]:
+            if "work_logs" not in data:
+                data["work_logs"] = []
+            row = _find(data["work_logs"], record_id)
+            if not row:
+                raise ValueError(f"Work log not found: {record_id}")
+            for field in (
+                "log_date",
+                "member_name",
+                "member_role",
+                "submitted_by",
+                "backend_notes",
+            ):
+                if field in payload and payload[field] is not None:
+                    row[field] = payload[field]
+            for list_field in (
+                "tasks_completed",
+                "blockers",
+                "next_day_plan",
+                "agent_activity_ids",
+            ):
+                if list_field in payload and payload[list_field] is not None:
+                    row[list_field] = [
+                        str(x).strip()
+                        for x in (payload.get(list_field) or [])
+                        if str(x).strip()
+                    ]
+            if "tasks_in_progress" in payload and payload["tasks_in_progress"] is not None:
+                cleaned = []
+                for item in payload["tasks_in_progress"] or []:
+                    if not isinstance(item, dict):
+                        continue
+                    name = str(item.get("name") or "").strip()
+                    if not name:
+                        continue
+                    try:
+                        pct = int(item.get("progress_pct") or 0)
+                    except (TypeError, ValueError):
+                        pct = 0
+                    cleaned.append(
+                        {"name": name, "progress_pct": max(0, min(100, pct))}
+                    )
+                row["tasks_in_progress"] = cleaned
+            if "project_health" in payload and payload["project_health"] is not None:
+                health = payload["project_health"]
+                if health in {"on_track", "at_risk", "blocked"}:
+                    row["project_health"] = health
+            row["updated_at"] = _now()
+            return dict(row)
+
+        return _tx(mutator)
+
+    def delete_work_log(self, record_id: str) -> bool:
+        def mutator(data: Dict[str, Any]) -> bool:
+            if "work_logs" not in data:
+                data["work_logs"] = []
+            if not _remove(data["work_logs"], record_id):
+                raise ValueError(f"Work log not found: {record_id}")
+            return True
+
+        return _tx(mutator)
+
+    def work_log_stats(self, log_date: Optional[str] = None) -> Dict[str, Any]:
+        day = log_date or _now()[:10]
+        today = self.list_work_logs(day)
+        members = {str(r.get("member_name") or "").lower() for r in today}
+        pct_sum = 0
+        pct_count = 0
+        for row in today:
+            for item in row.get("tasks_in_progress") or []:
+                if isinstance(item, dict):
+                    try:
+                        pct_sum += int(item.get("progress_pct") or 0)
+                        pct_count += 1
+                    except (TypeError, ValueError):
+                        pass
+        return {
+            "total_today": len(today),
+            "on_track": sum(1 for r in today if r.get("project_health") == "on_track"),
+            "at_risk": sum(1 for r in today if r.get("project_health") == "at_risk"),
+            "blocked": sum(1 for r in today if r.get("project_health") == "blocked"),
+            "members_logged_today": len({m for m in members if m}),
+            "avg_in_progress_pct": round(pct_sum / pct_count) if pct_count else 0,
+        }
+
     # --- Orders ---
 
     def list_orders(self, status: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -590,6 +769,7 @@ class ErpOrchestrator:
             "employees": len(data["employees"]),
             "orders": len(data["orders"]),
             "products": len(data["products"]),
+            "work_logs": len(data.get("work_logs") or []),
         }
         return module_health_snapshot(counts)
 

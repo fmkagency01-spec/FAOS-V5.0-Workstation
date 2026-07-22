@@ -36,42 +36,42 @@
     "manager": {
       "label": "Operations Manager / Team Lead",
       "description": "TAC, projects, agents, CRM, inventory, orders — no executive finance/HR",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "status"],
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "team_lead": {
       "label": "Department Team Lead",
       "description": "Create Pillar, Media/Creative, Service modules — department agent scope",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "status"],
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "sales": {
       "label": "Sales Team",
       "description": "Clients, projects, and orders — no invoices, HR, or TAC executive",
-      "modules": ["home", "crm", "projects", "orders", "command", "status", "rr-wigs-workspace"],
+      "modules": ["home", "crm", "projects", "orders", "command", "work-log", "status", "rr-wigs-workspace"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "finance": {
       "label": "Finance Team",
       "description": "Invoicing, inventory, orders, and products — no HR personal records or JARVIS",
-      "modules": ["home", "invoicing", "inventory", "orders", "products", "status"],
+      "modules": ["home", "invoicing", "inventory", "orders", "products", "work-log", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "hr": {
       "label": "HR Team",
       "description": "HR module only — isolated people data",
-      "modules": ["home", "hr", "status"],
+      "modules": ["home", "hr", "work-log", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "creative": {
       "label": "Creative / Media Team",
       "description": "Creative studio, AI SEO/GEO, and agent workflow — no client financial data",
-      "modules": ["home", "creative", "agents", "command", "ai-seo", "status"],
+      "modules": ["home", "creative", "agents", "command", "ai-seo", "work-log", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
@@ -104,6 +104,7 @@
     "/orders": "orders",
     "/products": "products",
     "/hr": "hr",
+    "/work-log": "work-log",
     "/agents": "agents",
     "/dashboard/create-pillar": "create-pillar",
     "/dashboard/ai-seo": "ai-seo",
