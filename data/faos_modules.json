@@ -103,6 +103,16 @@
       "description": "Employee records, hiring, departments"
     },
     {
+      "id": "work-log",
+      "name": "Daily Work Log",
+      "icon": "📝",
+      "route": "/work-log",
+      "category": "operations",
+      "tier": "core",
+      "enabled": true,
+      "description": "Team + agent daily progress — blockers, health, next-day plan"
+    },
+    {
       "id": "agents",
       "name": "Agent Workflow",
       "icon": "🤖",

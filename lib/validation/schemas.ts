@@ -114,9 +114,35 @@ export const tacIntelligenceEmitSchema = z.object({
   actions: z.array(z.string().trim().max(200)).max(5).optional(),
 });
 
+const workLogInProgressSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  progress_pct: z.coerce.number().min(0).max(100).default(0),
+});
+
+export const workLogCreateSchema = z.object({
+  log_date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "log_date must be YYYY-MM-DD")
+    .optional(),
+  member_name: z.string().trim().min(1, "member_name is required").max(200),
+  member_role: z.string().trim().max(120).optional().default("Team"),
+  submitted_by: z.string().trim().max(120).optional(),
+  tasks_completed: z.array(z.string().trim().min(1).max(500)).max(20).optional().default([]),
+  tasks_in_progress: z.array(workLogInProgressSchema).max(20).optional().default([]),
+  blockers: z.array(z.string().trim().min(1).max(500)).max(20).optional().default([]),
+  next_day_plan: z.array(z.string().trim().min(1).max(500)).max(20).optional().default([]),
+  project_health: z.enum(["on_track", "at_risk", "blocked"]).optional().default("on_track"),
+  backend_notes: z.string().trim().max(4000).optional(),
+  agent_activity_ids: z.array(z.string().trim().min(1).max(80)).max(50).optional().default([]),
+});
+
+export const workLogUpdateSchema = workLogCreateSchema.partial();
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type OrderCreateInput = z.infer<typeof orderCreateSchema>;
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 export type InvoiceCreateInput = z.infer<typeof invoiceCreateSchema>;
 export type InventoryCreateInput = z.infer<typeof inventoryCreateSchema>;
 export type EmployeeCreateInput = z.infer<typeof employeeCreateSchema>;
+export type WorkLogCreateInput = z.infer<typeof workLogCreateSchema>;
