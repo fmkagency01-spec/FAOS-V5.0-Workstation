@@ -3,8 +3,11 @@
   "parent_company": {
     "id": "fmk_group_ltd",
     "name": "FMK Group LTD.",
+    "core_namespace": "fmk_group_ltd_core",
+    "operating_pillars": ["CREATE", "MEDIA", "SERVICE"],
     "tac_brain": "TAC Central Command",
     "aigorithm_engine": "Aigorithm System Core",
+    "jarvis_matrix": "JARVIS MATRIX V5.0",
     "hub": "FMK (Manufacturing & Construction Hub)",
     "gatekeeper_protocol": [
       "Generation Request",

@@ -4,11 +4,15 @@ FAOS v5.0 Backend Core — FastAPI apex entry for Render (GitHub integration).
 - GET / always returns JSON health (fixes Render "Cannot GET /" / 404 probes)
 - CORS enabled for Vercel + localhost cross-origin dashboard calls
 - Automation routes live under /api/v5/*
+- Autonomous 24/7 orchestrate loop (JARVIS MATRIX) via FastAPI lifespan
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -24,6 +28,9 @@ from router.harness_routing import harness
 from router.erp_routing import erp
 from router.tac_routing import tac
 from router.workflow_routing import workflow
+from router.orchestrate_routing import orchestrate, enqueue_media_job
+from router.learning_hub_routing import learning_hub
+from services.memory_namespaces import memory_status, load_memory, append_memory, list_namespace_ids
 from middleware.auth import BackendAuthMiddleware
 from middleware.errors import RequestIdMiddleware, register_exception_handlers
 from middleware.rate_limit import RateLimitMiddleware
@@ -47,6 +54,54 @@ from services.notifications import notify_order_created, send_notification
 
 FMK_WIG_NAMESPACE = "fmk_wig_prosthetic_hair_agent"
 FMK_WIG_BRAND = "FMK WIG"
+FMK_GROUP_CORE = "fmk_group_ltd_core"
+
+logger = logging.getLogger("FAOS_Backend")
+
+
+def _autonomous_loop_enabled() -> bool:
+    return os.getenv("FAOS_AUTONOMOUS_LOOP", "true").lower() in {"1", "true", "yes"}
+
+
+def _orchestrate_interval_sec() -> int:
+    raw = os.getenv("FAOS_ORCHESTRATE_INTERVAL_SEC", "300").strip()
+    try:
+        return max(60, int(raw))
+    except ValueError:
+        return 300
+
+
+async def _autonomous_background_loop() -> None:
+    """24/7 tick — harness + SEO/GEO + media drain + TAC + learning hub."""
+    # Stagger first tick so health checks bind first
+    await asyncio.sleep(15)
+    while True:
+        if _autonomous_loop_enabled():
+            try:
+                await asyncio.to_thread(orchestrate.tick)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Autonomous tick error: %s", exc)
+        await asyncio.sleep(_orchestrate_interval_sec())
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    task: asyncio.Task | None = None
+    if _autonomous_loop_enabled():
+        task = asyncio.create_task(_autonomous_background_loop())
+        logger.info(
+            "JARVIS MATRIX autonomous loop started (interval=%ss)",
+            _orchestrate_interval_sec(),
+        )
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 DEFAULT_ORIGINS = [
     "https://faos-v5-0-workstation.vercel.app",
@@ -80,6 +135,7 @@ app = FastAPI(
     version="5.3",
     # Avoid silent 307 redirects that break POST when clients add a trailing slash.
     redirect_slashes=False,
+    lifespan=lifespan,
 )
 
 _cors = _cors_origins()
@@ -111,25 +167,35 @@ async def strip_trailing_slash(request: Request, call_next):
 async def root_health() -> Dict[str, Any]:
     """Default root health handler for Render uptime / browser probes."""
     modules = erp.health_modules()
+    orch = orchestrate.status()
     return {
+        # Locked gateway contract (Render 404 / Cannot GET / fix)
         "status": "active",
+        "engine": "JARVIS MATRIX V5.0",
+        "system": "100% Autonomous",
+        # Extended compatibility fields for FAOS workstation / TAC UI
         "message": "FAOS v5.3 Backend serving on Render cluster",
-        "system": "FAOS v5.3 TAC Central Framework",
-        "engine": "Aigorithm System Core Active",
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
         "api_prefix": "/api/v5",
         "docs_url": "/docs",
         "openapi_url": "/openapi.json",
+        "core_namespace": FMK_GROUP_CORE,
+        "pillars_bound": ["CREATE", "MEDIA", "SERVICE"],
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
         "bulletseye_namespace": "fmk_bulletseye_core_namespace",
         "ai_seo_module": "ENABLED",
         "bulletseye_squad": "ENABLED",
         "b2b_wig_ecosystem": "ENABLED",
         "harness_workers": "ENABLED",
+        "orchestrate": "ENABLED",
+        "learning_hub": "ENABLED",
+        "autonomous_loop": orch.get("autonomous_loop"),
         "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
         "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
+        "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
+        "database_configured": bool(os.getenv("DATABASE_URL")),
         "modules": modules.get("modules"),
         "tac": modules.get("tac"),
     }
@@ -296,9 +362,24 @@ async def create_pillar_action(payload: Dict[str, Any]) -> Dict[str, Any]:
     if action == "process":
         result = orchestrator.process_supply_command(payload)
         return {"ok": True, "action": action, **result}
+    if action == "media-push":
+        # CREATE brands push raw assets → MEDIA Editing Hub / Records pipeline
+        job = enqueue_media_job(
+            {
+                "source_brand": payload.get("source_brand")
+                or payload.get("brand")
+                or "fmk",
+                "asset_type": payload.get("asset_type") or "raw_media",
+                "target_pipeline": payload.get("target_pipeline")
+                or "fmk_editing_hub",
+                "title": payload.get("title") or payload.get("command") or "Create asset",
+                "notes": payload.get("notes") or payload.get("command") or "",
+            }
+        )
+        return {"ok": True, "action": action, "job": job, "source": "render"}
     raise HTTPException(
         status_code=400,
-        detail="Unknown action. Use action=process|gatekeeper.",
+        detail="Unknown action. Use action=process|gatekeeper|media-push.",
     )
 
 
@@ -417,6 +498,98 @@ async def harness_cycle(payload: Dict[str, Any] | None = None) -> Dict[str, Any]
     if payload and payload.get("action") == "sync-inventory":
         return {**b2b_wig.sync_inventory(), "worker": "harness_gamma_inventory_sync", "source": "render"}
     return harness.run_cycle(workers)
+
+
+# --- Autonomous Orchestration (JARVIS MATRIX) ---
+
+
+@app.get("/api/v5/orchestrate")
+async def orchestrate_status() -> Dict[str, Any]:
+    return orchestrate.status()
+
+
+@app.post("/api/v5/orchestrate/tick")
+async def orchestrate_tick(payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    body = payload or {}
+    jobs = body.get("jobs")
+    workers = body.get("workers")
+    use_llm = bool(body.get("use_llm", False))
+    try:
+        return await asyncio.to_thread(
+            orchestrate.tick, jobs=jobs, use_llm=use_llm, workers=workers
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/api/v5/orchestrate/memory")
+async def orchestrate_memory() -> Dict[str, Any]:
+    return memory_status()
+
+
+@app.get("/api/v5/orchestrate/memory/{namespace_id}")
+async def orchestrate_memory_get(namespace_id: str) -> Dict[str, Any]:
+    if namespace_id not in list_namespace_ids() and not namespace_id.startswith("fmk_"):
+        raise HTTPException(status_code=404, detail=f"Unknown namespace: {namespace_id}")
+    return {"ok": True, "memory": load_memory(namespace_id)}
+
+
+@app.post("/api/v5/orchestrate/memory/{namespace_id}")
+async def orchestrate_memory_append(
+    namespace_id: str, payload: Dict[str, Any]
+) -> Dict[str, Any]:
+    content = str(payload.get("content") or "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="content is required")
+    entry = append_memory(
+        namespace_id,
+        kind=str(payload.get("kind") or "note"),
+        content=content,
+        source=str(payload.get("source") or "api"),
+        meta=payload.get("meta") if isinstance(payload.get("meta"), dict) else {},
+    )
+    return {"ok": True, "entry": entry}
+
+
+@app.post("/api/v5/orchestrate/media-enqueue")
+async def orchestrate_media_enqueue(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Create Pillar brands push raw assets → Editing Hub / Records."""
+    job = enqueue_media_job(payload or {})
+    return {"ok": True, "job": job, "source": "render"}
+
+
+# --- Interactive Learning Hub (TAC / Aigorithm) ---
+
+
+@app.get("/api/v5/learning-hub")
+async def learning_hub_get(
+    limit: int = Query(default=50, ge=1, le=200),
+) -> Dict[str, Any]:
+    return {
+        **learning_hub.status(),
+        "items": learning_hub.list_items(limit),
+    }
+
+
+@app.post("/api/v5/learning-hub")
+async def learning_hub_push(payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        item = learning_hub.push(payload or {})
+        return {"ok": True, "item": item, "source": "render"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/v5/learning-hub/ingest")
+async def learning_hub_ingest(payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    body = payload or {}
+    item_id = body.get("id")
+    if item_id:
+        try:
+            return {"ok": True, "item": learning_hub.ingest(str(item_id))}
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return learning_hub.ingest_pending(limit=int(body.get("limit") or 10))
 
 
 # --- CRM / Projects / Agent Workflow (Odoo-style business suite) ---
