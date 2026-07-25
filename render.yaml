@@ -17,7 +17,15 @@ services:
         value: "true"
       - key: CORS_ALLOW_ORIGINS
         value: https://faos-v5-0-workstation.vercel.app
+      - key: FAOS_AUTONOMOUS_LOOP
+        value: "true"
+      - key: FAOS_ORCHESTRATE_INTERVAL_SEC
+        value: "300"
       - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
         sync: false
       - key: FAOS_BACKEND_API_KEY
         sync: false
@@ -31,3 +39,20 @@ services:
         sync: false
       - key: TAC_CENTRAL_CORE_URL
         value: https://tac.fmk-ecosystem.internal/approve
+
+  # External cron kick — complements in-process lifespan loop (keeps free tier warm)
+  - type: cron
+    name: faos-autonomous-tick
+    runtime: python
+    rootDir: backend
+    plan: free
+    schedule: "*/15 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/cron_orchestrate_tick.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: FAOS_BACKEND_BASE_URL
+        value: https://faos-backend.onrender.com
+      - key: FAOS_BACKEND_API_KEY
+        sync: false

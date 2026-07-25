@@ -24,6 +24,8 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/bulletseye": "ai-seo",
   "/api/brain": "jarvis",
   "/api/harness": "agents",
+  "/api/orchestrate": "learning-hub",
+  "/api/learning-hub": "learning-hub",
   "/api/apps/fmk-wig": "fmk-wig-b2b",
   "/api/apps/rr-wigs": "rr-wigs-workspace",
   "/api/jarvis/sessions": "jarvis-history",
@@ -35,11 +37,11 @@ const ROLE_MODULES: Record<string, string[]> = {
   executive: ["*"],
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products",
-    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "status",
+    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "learning-hub", "status",
   ],
   team_lead: [
     "home", "tac", "jarvis", "crm", "projects", "agents",
-    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "status",
+    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "learning-hub", "status",
   ],
   sales: ["home", "crm", "projects", "orders", "command", "work-log", "status"],
   finance: ["home", "invoicing", "inventory", "orders", "products", "work-log", "status"],

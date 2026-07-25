@@ -1,0 +1,217 @@
+{
+  "version": "5.3.0",
+  "core_id": "fmk_group_ltd_core",
+  "parent_company": "FMK Group LTD.",
+  "engine": "JARVIS MATRIX V5.0",
+  "autonomous": true,
+  "description": "Master namespace binding CREATE · MEDIA · SERVICE pillars with isolated shell-company memory",
+  "pillars": {
+    "create": {
+      "id": "create",
+      "name": "CREATE",
+      "parent_brand": "FMK",
+      "parent_role": "Manufacturer / Creator",
+      "legacy_tac_pillar": "create",
+      "namespace": "fmk_create_pillar_retail_core",
+      "memory_namespaces": [
+        {
+          "id": "fmk",
+          "label": "FMK (Parental Company — Manufacturer/Creator)",
+          "agent_ref": "fmk_create_pillar_retail_core"
+        },
+        {
+          "id": "fmk_mk_clothing",
+          "label": "FMK MK Clothing",
+          "agent_ref": "fmk_mk_clothing_lifestyle_agent"
+        },
+        {
+          "id": "fmk_mk_kitchen",
+          "label": "FMK MK Kitchen",
+          "agent_ref": "fmk_mk_kitchen_cloud_food_agent"
+        },
+        {
+          "id": "fmk_g_and_a",
+          "alias": "fmk_G&A",
+          "label": "FMK Gadgets & Accessories",
+          "agent_ref": "inventory_supply_agent"
+        },
+        {
+          "id": "fmk_shoes",
+          "label": "FMK Shoes (Kadam, Pothik, The Posh Pa)",
+          "agent_ref": "fmk_shoes_footwear_wing"
+        },
+        {
+          "id": "fmk_wig_prosthetic",
+          "label": "FMK WIG Prosthetic Hair",
+          "agent_ref": "fmk_wig_prosthetic_hair_agent",
+          "brand_lock": "FMK WIG"
+        },
+        {
+          "id": "takabachaw_com",
+          "label": "Takabachaw.com",
+          "agent_ref": "takabachaw_fintech_agent"
+        },
+        {
+          "id": "kiilaagbe_com",
+          "label": "Kiilaagbe.com",
+          "agent_ref": "project_ops_agent"
+        }
+      ]
+    },
+    "media": {
+      "id": "media",
+      "name": "MEDIA",
+      "parent_brand": "FMK Production",
+      "parent_role": "Media Production House",
+      "legacy_tac_pillar": "connect",
+      "namespace": "fmk_media_empire_pipeline",
+      "pipelines": {
+        "editing_hub": "fmk_editing_hub",
+        "records": "fmk_records",
+        "auto_process_on_create_push": true
+      },
+      "memory_namespaces": [
+        {
+          "id": "fmk_production",
+          "label": "FMK Production (Parental — Media Production House)",
+          "agent_ref": "video_production_agent"
+        },
+        {
+          "id": "fmk_media",
+          "label": "FMK Media (Media Partner)",
+          "agent_ref": "social_media_agent"
+        },
+        {
+          "id": "fmk_records",
+          "label": "FMK Records (Music Production)",
+          "agent_ref": "video_production_agent",
+          "pipeline": "fmk_records_audio_empire_pipeline"
+        },
+        {
+          "id": "fmk_editing_hub",
+          "label": "FMK Editing Hub (Editing Agency)",
+          "agent_ref": "creative_design_agent",
+          "pipeline": "fmk_editing_hub"
+        },
+        {
+          "id": "fmk_clicks",
+          "label": "FMK Clicks",
+          "agent_ref": "creative_design_agent"
+        },
+        {
+          "id": "fmk_vlogs",
+          "label": "FMK Vlogs",
+          "agent_ref": "video_production_agent"
+        },
+        {
+          "id": "fmk_weddy",
+          "label": "FMK Weddy",
+          "agent_ref": "creative_design_agent"
+        },
+        {
+          "id": "fmk_entertainment_100_yt_channels",
+          "label": "FMK Entertainment — 100 YT Channels",
+          "agent_ref": "marketing_strategy_agent"
+        }
+      ]
+    },
+    "service": {
+      "id": "service",
+      "name": "SERVICE",
+      "parent_brand": "FMK Agency",
+      "parent_role": "IT service agency / One-stop 360° solution center",
+      "legacy_tac_pillar": "connect",
+      "namespace": "fmk_agency_service_core",
+      "memory_namespaces": [
+        {
+          "id": "fmk_agency",
+          "label": "FMK Agency (Parental — IT / 360° Solutions)",
+          "agent_ref": "project_ops_agent"
+        },
+        {
+          "id": "fmk_tac_core",
+          "label": "FMK TAC Core (Gatekeeper)",
+          "agent_ref": "executive_strategy_agent"
+        },
+        {
+          "id": "fmk_aigorithm_ai_brain",
+          "label": "FMK Aigorithm AI Brain",
+          "agent_ref": "jarvis_core"
+        },
+        {
+          "id": "fmk_aidea_innovation_lab",
+          "label": "FMK Aidea Innovation Lab",
+          "agent_ref": "executive_strategy_agent"
+        },
+        {
+          "id": "fmk_bulletseye_agency",
+          "label": "BulletsEye Agency (Digital Marketing & Branding)",
+          "agent_ref": "bulletseye_ai_seo_agent",
+          "namespace_lock": "fmk_bulletseye_core_namespace"
+        },
+        {
+          "id": "fmk_socialistic",
+          "label": "FMK Socialistic (Advertise & Event Management)",
+          "agent_ref": "social_media_agent"
+        },
+        {
+          "id": "fmk_s_and_m_solutions",
+          "alias": "fmk_S&M_solutions",
+          "label": "FMK Sales & Marketing Solutions",
+          "agent_ref": "sales_pipeline_agent"
+        },
+        {
+          "id": "fmk_imex_solutions",
+          "alias": "fmk_IMEX_solutions",
+          "label": "FMK IMEX Solutions (Import & Export Logistics)",
+          "agent_ref": "logistics_agent"
+        }
+      ]
+    }
+  },
+  "seo_geo_targets": [
+    {
+      "brand_id": "fmk_wig_prosthetic_hair_agent",
+      "brand_name": "FMK WIG",
+      "query_type": "prosthetic hair wig manufacturer B2B wholesale",
+      "client_type": "internal_shell",
+      "memory_ns": "fmk_wig_prosthetic"
+    },
+    {
+      "brand_id": "rr_wigs_client_workspace",
+      "brand_name": "RR Wigs",
+      "query_type": "wholesale human hair wigs manufacturer OEM",
+      "client_type": "external_b2b",
+      "memory_ns": "fmk_bulletseye_agency"
+    },
+    {
+      "brand_id": "fmk_mk_clothing_lifestyle_agent",
+      "brand_name": "FMK MK Clothing",
+      "query_type": "apparel manufacturer lifestyle brand wholesale",
+      "client_type": "internal_shell",
+      "memory_ns": "fmk_mk_clothing"
+    }
+  ],
+  "autonomous_loop": {
+    "enabled_env": "FAOS_AUTONOMOUS_LOOP",
+    "interval_sec_env": "FAOS_ORCHESTRATE_INTERVAL_SEC",
+    "default_interval_sec": 300,
+    "jobs": [
+      "harness_cycle",
+      "bulletseye_seo_geo_scan",
+      "media_pipeline_drain",
+      "tac_sync",
+      "learning_hub_ingest_pending"
+    ]
+  },
+  "secrets_policy": {
+    "read_from_env_only": [
+      "OPENROUTER_API_KEY",
+      "GEMINI_API_KEY",
+      "DATABASE_URL",
+      "FAOS_BACKEND_API_KEY",
+      "FAOS_AUTH_SECRET"
+    ],
+    "never_hardcode": true
+  }
+}

@@ -113,6 +113,16 @@
       "description": "Team + agent daily progress — blockers, health, next-day plan"
     },
     {
+      "id": "learning-hub",
+      "name": "Learning Hub",
+      "icon": "📚",
+      "route": "/learning-hub",
+      "category": "core",
+      "tier": "enterprise",
+      "enabled": true,
+      "description": "TAC / Aigorithm knowledge ingestion + JARVIS MATRIX autonomous ticks"
+    },
+    {
       "id": "agents",
       "name": "Agent Workflow",
       "icon": "🤖",

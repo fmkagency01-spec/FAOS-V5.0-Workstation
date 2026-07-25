@@ -36,14 +36,14 @@
     "manager": {
       "label": "Operations Manager / Team Lead",
       "description": "TAC, projects, agents, CRM, inventory, orders — no executive finance/HR",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "status"],
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "inventory", "orders", "products", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "learning-hub", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
     "team_lead": {
       "label": "Department Team Lead",
       "description": "Create Pillar, Media/Creative, Service modules — department agent scope",
-      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "status"],
+      "modules": ["home", "tac", "jarvis", "crm", "projects", "agents", "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "learning-hub", "status"],
       "can_manage_team": false,
       "tier": "team_leads"
     },
@@ -105,6 +105,7 @@
     "/products": "products",
     "/hr": "hr",
     "/work-log": "work-log",
+    "/learning-hub": "learning-hub",
     "/agents": "agents",
     "/dashboard/create-pillar": "create-pillar",
     "/dashboard/ai-seo": "ai-seo",

@@ -50,3 +50,13 @@ yarn-error.log*
 # BulletsEye autonomous injection records (runtime; may contain client payloads)
 data/bulletseye_injections/*.json
 backend/data/bulletseye_injections/*.json
+
+# Autonomous memory / learning hub / orchestrate runtime state
+data/memory_namespaces/*.json
+backend/data/memory_namespaces/*.json
+data/learning_hub/*.json
+backend/data/learning_hub/*.json
+data/faos_orchestrate_state.json
+backend/data/faos_orchestrate_state.json
+!data/media_pipeline/queue.json
+!backend/data/media_pipeline/queue.json
