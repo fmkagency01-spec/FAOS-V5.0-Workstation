@@ -1,0 +1,153 @@
+{
+  "table": "faos_real_estate_hub",
+  "version": 1,
+  "module": "real-estate",
+  "clients": [
+    {
+      "id": "re_cli_seed_01",
+      "name": "Horizon Developers Ltd",
+      "type": "developer",
+      "contact_name": "Ayesha Rahman",
+      "email": "ayesha@horizon.dev",
+      "phone": "+8801711000001",
+      "city": "Dhaka",
+      "focus": "Residential mid-rise \u00b7 Gulshan / Bashundhara",
+      "status": "active",
+      "notes": "Primary PropTech pilot developer",
+      "created_at": "2026-07-01T10:00:00.000Z",
+      "updated_at": "2026-07-01T10:00:00.000Z"
+    },
+    {
+      "id": "re_cli_seed_02",
+      "name": "Skyline Agency BD",
+      "type": "agency",
+      "contact_name": "Karim Hossain",
+      "email": "karim@skyline.agency",
+      "phone": "+8801711000002",
+      "city": "Chattogram",
+      "focus": "Broker network \u00b7 coastal apartments",
+      "status": "active",
+      "notes": "Lead engine partner",
+      "created_at": "2026-07-05T10:00:00.000Z",
+      "updated_at": "2026-07-05T10:00:00.000Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "re_prj_seed_01",
+      "client_id": "re_cli_seed_01",
+      "client_name": "Horizon Developers Ltd",
+      "name": "Horizon Heights Phase 2",
+      "location": "Bashundhara R/A, Dhaka",
+      "asset_type": "Apartment",
+      "units_total": 120,
+      "units_available": 48,
+      "price_from": 8500000,
+      "currency": "BDT",
+      "status": "pre_launch",
+      "showcase_url": "https://example.com/horizon-heights",
+      "highlight": "Smart home + rooftop amenities",
+      "created_at": "2026-07-02T10:00:00.000Z",
+      "updated_at": "2026-07-20T10:00:00.000Z"
+    },
+    {
+      "id": "re_prj_seed_02",
+      "client_id": "re_cli_seed_02",
+      "client_name": "Skyline Agency BD",
+      "name": "Bayview Residences",
+      "location": "Agrabad, Chattogram",
+      "asset_type": "Apartment",
+      "units_total": 64,
+      "units_available": 22,
+      "price_from": 6200000,
+      "currency": "BDT",
+      "status": "under_construction",
+      "showcase_url": "",
+      "highlight": "Sea-facing inventory push",
+      "created_at": "2026-07-06T10:00:00.000Z",
+      "updated_at": "2026-07-18T10:00:00.000Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "re_lead_seed_01",
+      "project_id": "re_prj_seed_01",
+      "project_name": "Horizon Heights Phase 2",
+      "client_id": "re_cli_seed_01",
+      "name": "Nusrat Jahan",
+      "phone": "+8801811001111",
+      "email": "nusrat@email.com",
+      "channel": "facebook",
+      "campaign": "HH2 Awareness Jul",
+      "budget": 9000000,
+      "status": "qualified",
+      "notes": "Wants 3BHK \u00b7 weekend site visit",
+      "created_at": "2026-07-21T08:00:00.000Z",
+      "updated_at": "2026-07-22T08:00:00.000Z"
+    },
+    {
+      "id": "re_lead_seed_02",
+      "project_id": "re_prj_seed_01",
+      "project_name": "Horizon Heights Phase 2",
+      "client_id": "re_cli_seed_01",
+      "name": "Tanvir Ahmed",
+      "phone": "+8801811002222",
+      "email": "",
+      "channel": "google",
+      "campaign": "Search \u00b7 Bashundhara Flat",
+      "budget": 8000000,
+      "status": "site_visit",
+      "notes": "",
+      "created_at": "2026-07-22T09:00:00.000Z",
+      "updated_at": "2026-07-23T09:00:00.000Z"
+    },
+    {
+      "id": "re_lead_seed_03",
+      "project_id": "re_prj_seed_02",
+      "project_name": "Bayview Residences",
+      "client_id": "re_cli_seed_02",
+      "name": "Farhana Islam",
+      "phone": "+8801811003333",
+      "email": "farhana@email.com",
+      "channel": "referral",
+      "campaign": "Broker network",
+      "budget": 6500000,
+      "status": "negotiation",
+      "notes": "Unit B-12 interest",
+      "created_at": "2026-07-19T11:00:00.000Z",
+      "updated_at": "2026-07-25T11:00:00.000Z"
+    }
+  ],
+  "deals": [
+    {
+      "id": "re_deal_seed_01",
+      "project_id": "re_prj_seed_02",
+      "project_name": "Bayview Residences",
+      "lead_id": "re_lead_seed_03",
+      "buyer_name": "Farhana Islam",
+      "unit_label": "B-12",
+      "value": 6400000,
+      "currency": "BDT",
+      "ad_spend": 45000,
+      "status": "agreement",
+      "closed_at": "",
+      "created_at": "2026-07-26T12:00:00.000Z",
+      "updated_at": "2026-07-28T12:00:00.000Z"
+    },
+    {
+      "id": "re_deal_seed_02",
+      "project_id": "re_prj_seed_01",
+      "project_name": "Horizon Heights Phase 2",
+      "lead_id": "",
+      "buyer_name": "Rafiq Uddin",
+      "unit_label": "A-07",
+      "value": 9200000,
+      "currency": "BDT",
+      "ad_spend": 120000,
+      "status": "closed",
+      "closed_at": "2026-07-15T00:00:00.000Z",
+      "created_at": "2026-07-10T12:00:00.000Z",
+      "updated_at": "2026-07-15T12:00:00.000Z"
+    }
+  ]
+}
