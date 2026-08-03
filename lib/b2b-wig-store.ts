@@ -1,9 +1,13 @@
-import fs from "fs";
-import path from "path";
 import seedDb from "@/data/fmk_wig_b2b_db.json";
 import rrSeedDb from "@/data/rr_wigs_workspace_db.json";
 import migration001 from "@/data/migrations/001_fmk_wig_b2b_schema.json";
 import migration002 from "@/data/migrations/002_rr_wigs_tenant_schema.json";
+import {
+  resolveSeedDataFile,
+  resolveWritableDbFile,
+  safeReadJsonFile,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 export type B2bLead = (typeof seedDb.b2b_leads)[number];
 export type SalonOrder = (typeof seedDb.salon_orders)[number];
@@ -20,26 +24,16 @@ export type RrB2bInquiry = (typeof rrSeedDb.b2b_inquiries)[number];
 type FmkWigDb = typeof seedDb;
 type RrWigsDb = typeof rrSeedDb;
 
-function dataDir(): string {
-  const preferred = path.join(process.cwd(), "data");
-  if (fs.existsSync(preferred)) return preferred;
-  return path.join(process.cwd(), "backend", "data");
-}
-
 function readJson<T>(file: string, fallback: T): T {
-  const full = path.join(dataDir(), file);
-  if (!fs.existsSync(full)) return fallback;
-  try {
-    return JSON.parse(fs.readFileSync(full, "utf-8")) as T;
-  } catch {
-    return fallback;
-  }
+  const fromWritable = safeReadJsonFile<T>(resolveWritableDbFile(file));
+  if (fromWritable != null) return fromWritable;
+  const fromSeed = safeReadJsonFile<T>(resolveSeedDataFile(file));
+  if (fromSeed != null) return fromSeed;
+  return fallback;
 }
 
 function writeJson(file: string, data: unknown): void {
-  const full = path.join(dataDir(), file);
-  fs.mkdirSync(path.dirname(full), { recursive: true });
-  fs.writeFileSync(full, JSON.stringify(data, null, 2), "utf-8");
+  safeWriteJson(resolveWritableDbFile(file), data, file);
 }
 
 export function getMigrations() {

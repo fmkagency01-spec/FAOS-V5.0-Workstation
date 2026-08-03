@@ -131,13 +131,39 @@ export async function POST(request: NextRequest) {
   const action = body.action || "create";
 
   if (action === "create") {
-    const session = createChatSession({
-      user_id: gate.session.username,
-      username: gate.session.username,
-      user_name: gate.session.name,
-      source: body.source || "jarvis",
-    });
-    return NextResponse.json({ ok: true, session }, { status: 201 });
+    try {
+      const session = createChatSession({
+        user_id: gate.session.username,
+        username: gate.session.username,
+        user_name: gate.session.name,
+        source: body.source || "jarvis",
+      });
+      return NextResponse.json({ ok: true, session }, { status: 201 });
+    } catch (err) {
+      console.warn(
+        "JARVIS create session fallback:",
+        err instanceof Error ? err.message : err
+      );
+      return NextResponse.json(
+        {
+          ok: true,
+          ephemeral: true,
+          session: {
+            id: `ephemeral_${Date.now()}`,
+            user_id: gate.session.username,
+            username: gate.session.username,
+            user_name: gate.session.name,
+            source: body.source || "jarvis",
+            title: "New conversation",
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            messages: [],
+          },
+        },
+        { status: 201 }
+      );
+    }
   }
 
   if (action === "activate") {

@@ -3,8 +3,11 @@
  * Mirrors backend/router/learning_hub_routing.py
  */
 
-import fs from "fs";
-import path from "path";
+import {
+  resolveWritableDbFile,
+  safeReadJsonFile,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 export type LearningHubItem = {
   id: string;
@@ -28,31 +31,22 @@ type HubDb = {
   items: LearningHubItem[];
 };
 
-function dataDir(): string {
-  const preferred = path.join(process.cwd(), "data", "learning_hub");
-  if (fs.existsSync(path.join(process.cwd(), "data"))) return preferred;
-  return path.join(process.cwd(), "backend", "data", "learning_hub");
-}
-
 function dbPath(): string {
-  return path.join(dataDir(), "learning_hub_db.json");
+  return resolveWritableDbFile("learning_hub_db.json", "learning_hub");
 }
 
 function loadDb(): HubDb {
-  const file = dbPath();
-  if (!fs.existsSync(file)) {
-    return { table: "learning_hub", version: 1, items: [] };
-  }
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf-8")) as HubDb;
-  } catch {
-    return { table: "learning_hub", version: 1, items: [] };
-  }
+  const parsed = safeReadJsonFile<HubDb>(dbPath());
+  if (!parsed) return { table: "learning_hub", version: 1, items: [] };
+  return {
+    table: "learning_hub",
+    version: parsed.version || 1,
+    items: Array.isArray(parsed.items) ? parsed.items : [],
+  };
 }
 
 function saveDb(db: HubDb): void {
-  fs.mkdirSync(dataDir(), { recursive: true });
-  fs.writeFileSync(dbPath(), JSON.stringify(db, null, 2), "utf-8");
+  safeWriteJson(dbPath(), db, "learning_hub");
 }
 
 function newId(): string {
