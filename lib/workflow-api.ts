@@ -5,7 +5,9 @@ import {
 } from "@/lib/backend";
 import { ApiError } from "@/lib/api-errors";
 
-const TIMEOUT_MS = 60000;
+/** Default upstream wait — keep short so JARVIS never hangs on a sleeping Render free tier. */
+const DEFAULT_TIMEOUT_MS = 8000;
+const HEAVY_TIMEOUT_MS = 60000;
 
 export type WorkflowFetchResult<T> = {
   data: T | null;
@@ -14,26 +16,35 @@ export type WorkflowFetchResult<T> = {
   error?: string;
 };
 
+export type WorkflowFetchOptions = RequestInit & {
+  /** Override upstream abort timeout (ms). */
+  timeoutMs?: number;
+};
+
 /**
  * Single-shot upstream call — no retries, no loops.
  * Always attaches FAOS_BACKEND_API_KEY as X-FAOS-Api-Key when configured.
  */
 export async function fetchWorkflow<T>(
   path: string,
-  init?: RequestInit
+  init?: WorkflowFetchOptions
 ): Promise<WorkflowFetchResult<T>> {
   const base = getFaosBackendBaseUrl();
   if (!base) return { data: null, upstream: false };
 
+  const { timeoutMs, ...rest } = init || {};
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeoutMs ?? DEFAULT_TIMEOUT_MS
+  );
 
   try {
     const res = await fetch(joinBackendUrl(path), {
-      ...init,
+      ...rest,
       signal: controller.signal,
       cache: "no-store",
-      headers: getBackendAuthHeaders(init?.headers),
+      headers: getBackendAuthHeaders(rest.headers),
     });
 
     if (!res.ok) {
@@ -59,9 +70,12 @@ export async function fetchWorkflow<T>(
 /** Strict upstream — throws ApiError immediately on failure (no fallback path). */
 export async function fetchWorkflowStrict<T>(
   path: string,
-  init?: RequestInit
+  init?: WorkflowFetchOptions
 ): Promise<T> {
-  const result = await fetchWorkflow<T>(path, init);
+  const result = await fetchWorkflow<T>(path, {
+    ...init,
+    timeoutMs: init?.timeoutMs ?? HEAVY_TIMEOUT_MS,
+  });
   if (result.data) return result.data;
   if (!result.upstream) {
     throw ApiError.config("Backend URL is not configured.");

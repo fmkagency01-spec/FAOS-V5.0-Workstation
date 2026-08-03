@@ -130,10 +130,16 @@ export async function executeJarvisPlan(
   let actionResult: unknown;
 
   if (executeAction && plan.action.type !== "none") {
-    const outcome = await executeAction(plan.action);
-    if (outcome) {
-      actionTaken = outcome.label;
-      actionResult = outcome.result;
+    try {
+      const outcome = await executeAction(plan.action);
+      if (outcome) {
+        actionTaken = outcome.label;
+        actionResult = outcome.result;
+      }
+    } catch (actionErr) {
+      actionTaken = `Action ${plan.action.type} deferred: ${
+        actionErr instanceof Error ? actionErr.message.slice(0, 120) : "failed"
+      }`;
     }
   }
 
