@@ -5,8 +5,6 @@
  * Schema: data/migrations/004_faos_daily_work_log.json
  */
 
-import fs from "fs";
-import path from "path";
 import seed from "@/data/faos_daily_work_log.json";
 import type {
   DailyWorkLog,
@@ -15,6 +13,12 @@ import type {
   ProjectHealth,
   WorkLogDashboardStats,
 } from "@/lib/work-log-types";
+import {
+  resolveSeedDataFile,
+  resolveWritableDbFile,
+  safeReadJsonFile,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 type WorkLogDb = {
   table: "faos_daily_work_logs";
@@ -22,36 +26,34 @@ type WorkLogDb = {
   logs: DailyWorkLog[];
 };
 
-function dataDir(): string {
-  const preferred = path.join(process.cwd(), "data");
-  if (fs.existsSync(preferred)) return preferred;
-  return path.join(process.cwd(), "backend", "data");
-}
+const DB_FILE = "faos_daily_work_log.json";
 
 function dbPath(): string {
-  return path.join(dataDir(), "faos_daily_work_log.json");
+  return resolveWritableDbFile(DB_FILE);
 }
 
 function loadDb(): WorkLogDb {
-  const file = dbPath();
-  if (!fs.existsSync(file)) {
-    return { table: "faos_daily_work_logs", version: 1, logs: [] };
-  }
-  try {
-    const parsed = JSON.parse(fs.readFileSync(file, "utf-8")) as WorkLogDb;
+  const fromWritable = safeReadJsonFile<WorkLogDb>(dbPath());
+  if (fromWritable) {
     return {
       table: "faos_daily_work_logs",
-      version: parsed.version || 1,
-      logs: Array.isArray(parsed.logs) ? parsed.logs : [],
+      version: fromWritable.version || 1,
+      logs: Array.isArray(fromWritable.logs) ? fromWritable.logs : [],
     };
-  } catch {
-    return { ...(seed as WorkLogDb), logs: [] };
   }
+  const fromSeed = safeReadJsonFile<WorkLogDb>(resolveSeedDataFile(DB_FILE));
+  if (fromSeed) {
+    return {
+      table: "faos_daily_work_logs",
+      version: fromSeed.version || 1,
+      logs: Array.isArray(fromSeed.logs) ? fromSeed.logs : [],
+    };
+  }
+  return { ...(seed as WorkLogDb), logs: Array.isArray((seed as WorkLogDb).logs) ? (seed as WorkLogDb).logs : [] };
 }
 
 function saveDb(db: WorkLogDb): void {
-  fs.mkdirSync(dataDir(), { recursive: true });
-  fs.writeFileSync(dbPath(), JSON.stringify(db, null, 2), "utf-8");
+  safeWriteJson(dbPath(), db, "faos_daily_work_logs");
 }
 
 function newId(): string {

@@ -1,10 +1,8 @@
 /**
  * FAOS Real Estate & PropTech Hub — JSON file store.
- * Portable to SQLite / Postgres later. Vercel-safe: falls back to /tmp + memory.
+ * Portable to SQLite / Postgres later. Vercel-safe: writes under /tmp only.
  */
 
-import fs from "fs";
-import path from "path";
 import seed from "@/data/faos_real_estate_hub.json";
 import type {
   ReAnalytics,
@@ -17,6 +15,12 @@ import type {
   ReProject,
   ReProjectCreate,
 } from "@/lib/real-estate-types";
+import {
+  resolveSeedDataFile,
+  resolveWritableDbFile,
+  safeReadJsonFile,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 type ReDb = {
   table: "faos_real_estate_hub";
@@ -28,39 +32,12 @@ type ReDb = {
   deals: ReDeal[];
 };
 
+const DB_FILE = "faos_real_estate_hub.json";
+
 let memoryDb: ReDb | null = null;
 
-function isServerlessReadonlyFs(): boolean {
-  return Boolean(
-    process.env.VERCEL ||
-      process.env.AWS_LAMBDA_FUNCTION_NAME ||
-      process.env.VERCEL_ENV
-  );
-}
-
-function candidateDirs(): string[] {
-  const dirs: string[] = [];
-  if (isServerlessReadonlyFs()) dirs.push(path.join("/tmp", "faos-data"));
-  dirs.push(path.join(process.cwd(), "data"));
-  dirs.push(path.join(process.cwd(), "backend", "data"));
-  return dirs;
-}
-
-function resolveDbPath(): string {
-  for (const dir of candidateDirs()) {
-    const file = path.join(dir, "faos_real_estate_hub.json");
-    try {
-      if (fs.existsSync(file)) return file;
-      fs.mkdirSync(dir, { recursive: true });
-      const probe = path.join(dir, ".faos_write_probe");
-      fs.writeFileSync(probe, "ok", "utf-8");
-      fs.unlinkSync(probe);
-      return file;
-    } catch {
-      /* next */
-    }
-  }
-  return path.join("/tmp", "faos-data", "faos_real_estate_hub.json");
+function writePath(): string {
+  return resolveWritableDbFile(DB_FILE);
 }
 
 function cloneSeed(): ReDb {
@@ -76,43 +53,40 @@ function cloneSeed(): ReDb {
   };
 }
 
+function normalizeDb(parsed: Partial<ReDb>): ReDb {
+  return {
+    table: "faos_real_estate_hub",
+    version: parsed.version || 1,
+    module: "real-estate",
+    clients: Array.isArray(parsed.clients) ? parsed.clients : [],
+    projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+    leads: Array.isArray(parsed.leads) ? parsed.leads : [],
+    deals: Array.isArray(parsed.deals) ? parsed.deals : [],
+  };
+}
+
 function loadDb(): ReDb {
   if (memoryDb) return memoryDb;
-  const file = resolveDbPath();
-  if (!fs.existsSync(file)) {
-    memoryDb = cloneSeed();
+
+  const fromWritable = safeReadJsonFile<ReDb>(writePath());
+  if (fromWritable) {
+    memoryDb = normalizeDb(fromWritable);
     return memoryDb;
   }
-  try {
-    const parsed = JSON.parse(fs.readFileSync(file, "utf-8")) as ReDb;
-    memoryDb = {
-      table: "faos_real_estate_hub",
-      version: parsed.version || 1,
-      module: "real-estate",
-      clients: Array.isArray(parsed.clients) ? parsed.clients : [],
-      projects: Array.isArray(parsed.projects) ? parsed.projects : [],
-      leads: Array.isArray(parsed.leads) ? parsed.leads : [],
-      deals: Array.isArray(parsed.deals) ? parsed.deals : [],
-    };
-    return memoryDb;
-  } catch {
-    memoryDb = cloneSeed();
+
+  const fromSeed = safeReadJsonFile<ReDb>(resolveSeedDataFile(DB_FILE));
+  if (fromSeed) {
+    memoryDb = normalizeDb(fromSeed);
     return memoryDb;
   }
+
+  memoryDb = cloneSeed();
+  return memoryDb;
 }
 
 function saveDb(db: ReDb): void {
   memoryDb = db;
-  try {
-    const file = resolveDbPath();
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(db, null, 2), "utf-8");
-  } catch (err) {
-    console.warn(
-      "real-estate hub: disk persist skipped:",
-      err instanceof Error ? err.message : err
-    );
-  }
+  safeWriteJson(writePath(), db, "real-estate hub");
 }
 
 function uid(prefix: string): string {

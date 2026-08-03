@@ -2,6 +2,10 @@ import fs from "fs";
 import path from "path";
 import type { SchemaBlock } from "@/lib/ai-seo-geo";
 import { sanitizeSchemaBlocks } from "@/lib/schema-sanitize";
+import {
+  resolveWritableDataDir,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 export type StoredInjection = {
   id: string;
@@ -24,9 +28,8 @@ export type StoredInjection = {
 };
 
 function storeDir(): string {
-  const preferred = path.join(process.cwd(), "data", "bulletseye_injections");
-  if (fs.existsSync(path.join(process.cwd(), "data"))) return preferred;
-  return path.join(process.cwd(), "backend", "data", "bulletseye_injections");
+  // Vercel: /tmp/faos-data/bulletseye_injections — never /var/task/data
+  return resolveWritableDataDir("bulletseye_injections");
 }
 
 function slugify(input: string): string {
@@ -38,14 +41,12 @@ function slugify(input: string): string {
 }
 
 export function saveInjectionRecord(record: StoredInjection): string {
-  const dir = storeDir();
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `${record.id}.json`);
+  const file = path.join(storeDir(), `${record.id}.json`);
   const safe = {
     ...record,
     schema_blocks: sanitizeSchemaBlocks(record.schema_blocks),
   };
-  fs.writeFileSync(file, JSON.stringify(safe, null, 2), "utf-8");
+  safeWriteJson(file, safe, "bulletseye_injection");
   return file;
 }
 

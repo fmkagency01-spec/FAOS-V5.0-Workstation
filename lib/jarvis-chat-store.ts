@@ -6,13 +6,18 @@
  *
  * Privacy: Super Admin (owner / executive) only — never expose to team/clients.
  *
- * Vercel note: /var/task is read-only — we write under /tmp and keep an
- * in-memory mirror so history never 500s the JARVIS chat path.
+ * Vercel note: /var/task is read-only. Writes go to /tmp/faos-data only.
+ * Committed seed data/jarvis_chat_sessions.json is read-only input, never a
+ * write target (existsSync alone must not select it).
  */
 
-import fs from "fs";
-import path from "path";
 import seed from "@/data/jarvis_chat_sessions.json";
+import {
+  resolveSeedDataFile,
+  resolveWritableDbFile,
+  safeReadJsonFile,
+  safeWriteJson,
+} from "@/lib/writable-data-path";
 
 export type ChatMessageRole = "user" | "assistant" | "system" | "jarvis";
 
@@ -43,100 +48,52 @@ type ChatDb = {
   sessions: JarvisChatSession[];
 };
 
+const DB_FILE = "jarvis_chat_sessions.json";
+
 /** Process-local mirror — survives within a warm serverless instance. */
 let memoryDb: ChatDb | null = null;
 
-function isServerlessReadonlyFs(): boolean {
-  return Boolean(
-    process.env.VERCEL ||
-      process.env.AWS_LAMBDA_FUNCTION_NAME ||
-      process.env.VERCEL_ENV
-  );
-}
-
-function candidateDirs(): string[] {
-  const dirs: string[] = [];
-  if (isServerlessReadonlyFs()) {
-    dirs.push(path.join("/tmp", "faos-data"));
-  }
-  dirs.push(path.join(process.cwd(), "data"));
-  dirs.push(path.join(process.cwd(), "backend", "data"));
-  return dirs;
-}
-
-function resolveDbPath(): string {
-  for (const dir of candidateDirs()) {
-    const file = path.join(dir, "jarvis_chat_sessions.json");
-    try {
-      if (fs.existsSync(file)) return file;
-      fs.mkdirSync(dir, { recursive: true });
-      // Probe writability without leaving junk
-      const probe = path.join(dir, ".faos_write_probe");
-      fs.writeFileSync(probe, "ok", "utf-8");
-      fs.unlinkSync(probe);
-      return file;
-    } catch {
-      /* try next */
-    }
-  }
-  return path.join("/tmp", "faos-data", "jarvis_chat_sessions.json");
+function writePath(): string {
+  return resolveWritableDbFile(DB_FILE);
 }
 
 function emptyDb(): ChatDb {
   return { table: "jarvis_chat_sessions", version: 1, sessions: [] };
 }
 
+function normalizeDb(parsed: Partial<ChatDb> | null | undefined): ChatDb {
+  return {
+    table: "jarvis_chat_sessions",
+    version: parsed?.version || 1,
+    sessions: Array.isArray(parsed?.sessions) ? parsed.sessions : [],
+  };
+}
+
 function loadDb(): ChatDb {
   if (memoryDb) return memoryDb;
 
-  const file = resolveDbPath();
-  if (!fs.existsSync(file)) {
-    // Seed from committed JSON if present (read-only ok)
-    try {
-      const seedPath = path.join(process.cwd(), "data", "jarvis_chat_sessions.json");
-      if (fs.existsSync(seedPath)) {
-        const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as ChatDb;
-        memoryDb = {
-          table: "jarvis_chat_sessions",
-          version: parsed.version || 1,
-          sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
-        };
-        return memoryDb;
-      }
-    } catch {
-      /* ignore */
-    }
-    memoryDb = emptyDb();
+  // 1) Prefer prior writes under the writable root (/tmp on Vercel)
+  const fromWritable = safeReadJsonFile<ChatDb>(writePath());
+  if (fromWritable) {
+    memoryDb = normalizeDb(fromWritable);
     return memoryDb;
   }
 
-  try {
-    const parsed = JSON.parse(fs.readFileSync(file, "utf-8")) as ChatDb;
-    memoryDb = {
-      table: "jarvis_chat_sessions",
-      version: parsed.version || 1,
-      sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
-    };
-    return memoryDb;
-  } catch {
-    memoryDb = { ...(seed as ChatDb), sessions: [] };
+  // 2) Seed from bundled JSON (read-only on Vercel — never write here)
+  const fromSeedFile = safeReadJsonFile<ChatDb>(resolveSeedDataFile(DB_FILE));
+  if (fromSeedFile) {
+    memoryDb = normalizeDb(fromSeedFile);
     return memoryDb;
   }
+
+  memoryDb = normalizeDb(seed as ChatDb);
+  return memoryDb;
 }
 
 function saveDb(db: ChatDb): void {
   memoryDb = db;
-  try {
-    const file = resolveDbPath();
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(db, null, 2), "utf-8");
-  } catch (err) {
-    // Never crash chat — memory mirror still serves this warm instance
-    console.warn(
-      "jarvis_chat_sessions: disk persist skipped:",
-      err instanceof Error ? err.message : err
-    );
-  }
+  // Always write under /tmp on serverless — never /var/task/data
+  safeWriteJson(writePath(), db, "jarvis_chat_sessions");
 }
 
 function newId(prefix: string): string {
@@ -242,4 +199,9 @@ export function deleteChatSession(sessionId: string): boolean {
   if (db.sessions.length === before) return false;
   saveDb(db);
   return true;
+}
+
+/** Expose write path for diagnostics / tests (never /var/task on Vercel). */
+export function jarvisChatStoreWritePath(): string {
+  return writePath();
 }
