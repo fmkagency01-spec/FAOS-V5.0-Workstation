@@ -3,7 +3,12 @@ import { executeJarvisPlan, planJarvisCommand, type JarvisAction } from "@/lib/j
 import { OpenRouterGuardError, resolveClientKeyFromHeaders } from "@/lib/openrouter-guard";
 import { getAllShellAgents } from "@/lib/shell-agents";
 import { fetchWorkflow } from "@/lib/workflow-api";
-import { createInvoiceLocal, createInventoryLocal, createEmployeeLocal } from "@/lib/erp-store";
+import {
+  createInvoiceLocal,
+  createInventoryLocal,
+  createEmployeeLocal,
+} from "@/lib/erp-store";
+import { assignWorkflowLocal } from "@/lib/workflow-store";
 import { generateImage, generateVideoPlan } from "@/lib/media-generation";
 import { isTokenSavingMode } from "@/lib/token-saving";
 import {
@@ -22,6 +27,9 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** JARVIS interactive path — never wait long for a sleeping Render free tier. */
+const JARVIS_UPSTREAM_MS = 4000;
+
 async function executeJarvisAction(action: JarvisAction): Promise<{ label: string; result: unknown } | null> {
   switch (action.type) {
     case "create_invoice": {
@@ -29,6 +37,7 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
       const { data } = await fetchWorkflow<{ invoice: unknown }>("invoices", {
         method: "POST",
         body: JSON.stringify(p),
+        timeoutMs: JARVIS_UPSTREAM_MS,
       });
       const invoice = data?.invoice || createInvoiceLocal(p as Parameters<typeof createInvoiceLocal>[0]);
       return { label: `Invoice created: ${(invoice as { invoice_number?: string }).invoice_number}`, result: invoice };
@@ -38,6 +47,7 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
       const { data } = await fetchWorkflow<{ item: unknown }>("inventory", {
         method: "POST",
         body: JSON.stringify(p),
+        timeoutMs: JARVIS_UPSTREAM_MS,
       });
       const item = data?.item || createInventoryLocal(p as Parameters<typeof createInventoryLocal>[0]);
       return { label: `Stock item added: ${(item as { sku?: string }).sku}`, result: item };
@@ -47,16 +57,35 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
       const { data } = await fetchWorkflow<{ employee: unknown }>("employees", {
         method: "POST",
         body: JSON.stringify(p),
+        timeoutMs: JARVIS_UPSTREAM_MS,
       });
       const employee = data?.employee || createEmployeeLocal(p as Parameters<typeof createEmployeeLocal>[0]);
       return { label: `Employee added: ${(employee as { name?: string }).name}`, result: employee };
     }
     case "assign_agents": {
-      const { data } = await fetchWorkflow<{ tasks: unknown[] }>("agent-workflow/assign", {
-        method: "POST",
-        body: JSON.stringify({ ...action.payload, auto_execute: false }),
+      const { data } = await fetchWorkflow<{ tasks: unknown[]; project?: unknown }>(
+        "agent-workflow/assign",
+        {
+          method: "POST",
+          body: JSON.stringify({ ...action.payload, auto_execute: false }),
+          timeoutMs: JARVIS_UPSTREAM_MS,
+        }
+      );
+      if (data?.tasks) {
+        return {
+          label: `Agents queued: ${action.payload.agent_ids.join(", ")}`,
+          result: data,
+        };
+      }
+      const local = assignWorkflowLocal({
+        command: action.payload.command,
+        agent_ids: action.payload.agent_ids,
+        auto_execute: false,
       });
-      return { label: `Agents queued: ${action.payload.agent_ids.join(", ")}`, result: data };
+      return {
+        label: `Agents queued locally: ${action.payload.agent_ids.join(", ")}`,
+        result: local,
+      };
     }
     case "generate_image": {
       const img = await generateImage(action.payload.prompt);
@@ -118,29 +147,37 @@ export async function POST(request: NextRequest) {
 
     let chatSessionId: string | undefined;
     // Persist turns for Super Admin only — never store for team/client roles.
+    // Never let history I/O fail the live reply (Vercel /tmp + memory fallback).
     if (session && isSuperAdmin(session.role)) {
-      let chat =
-        (body.session_id ? getChatSession(body.session_id) : null) ||
-        getActiveSessionForUser(session.username) ||
-        createChatSession({
-          user_id: session.username,
-          username: session.username,
-          user_name: session.name,
-          source: "jarvis",
-        });
-      const meta = [
-        result.primary_agent ? `${result.primary_agent.icon} ${result.primary_agent.name}` : "",
-        plan.route.label,
-        result.action_taken,
-      ]
-        .filter(Boolean)
-        .join(" · ");
-      chat =
-        appendChatMessages(chat.id, [
-          { role: "user", text: body.command?.trim() || command, meta: body.voice ? "voice" : undefined },
-          { role: "jarvis", text: result.reply, meta },
-        ]) || chat;
-      chatSessionId = chat.id;
+      try {
+        let chat =
+          (body.session_id ? getChatSession(body.session_id) : null) ||
+          getActiveSessionForUser(session.username) ||
+          createChatSession({
+            user_id: session.username,
+            username: session.username,
+            user_name: session.name,
+            source: "jarvis",
+          });
+        const meta = [
+          result.primary_agent ? `${result.primary_agent.icon} ${result.primary_agent.name}` : "",
+          plan.route.label,
+          result.action_taken,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        chat =
+          appendChatMessages(chat.id, [
+            { role: "user", text: body.command?.trim() || command, meta: body.voice ? "voice" : undefined },
+            { role: "jarvis", text: result.reply, meta },
+          ]) || chat;
+        chatSessionId = chat.id;
+      } catch (persistErr) {
+        console.warn(
+          "JARVIS chat persist skipped:",
+          persistErr instanceof Error ? persistErr.message : persistErr
+        );
+      }
     }
 
     return NextResponse.json({

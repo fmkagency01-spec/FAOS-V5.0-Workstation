@@ -4,6 +4,7 @@ import {
   systemPromptForIntent,
   type AiIntent,
   type AiRoute,
+  AI_MODELS,
 } from "@/lib/ai-router";
 import {
   getTokenSavingDefaults,
@@ -112,7 +113,11 @@ async function callOpenRouterApi(
     } catch {
       /* ignore non-JSON */
     }
-    throw new Error(formatOpenRouterError(detail, response.status));
+    const err = new Error(formatOpenRouterError(detail, response.status));
+    (err as Error & { openrouter_status?: number; openrouter_detail?: string }).openrouter_status =
+      response.status;
+    (err as Error & { openrouter_detail?: string }).openrouter_detail = detail;
+    throw err;
   }
 
   const data = (await response.json()) as {
@@ -132,8 +137,13 @@ async function callOpenRouterApi(
   };
 }
 
+function isMissingEndpointError(message: string): boolean {
+  return /no endpoints found/i.test(message) || /model .+ not found/i.test(message);
+}
+
 /**
  * Safety wrapper for automation / harvest — daily cap + low-token loop breaker.
+ * Retries once with a known-live fallback model when OpenRouter retires a slug.
  */
 export async function safeOpenRouterCall(
   messages: ChatMessage[],
@@ -157,6 +167,29 @@ export async function safeOpenRouterCall(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown OpenRouter error";
     console.error("API Error caught in safety wrapper:", message);
+
+    const requested = options?.model || "";
+    if (
+      isMissingEndpointError(message) &&
+      requested !== AI_MODELS.safeFallback &&
+      requested !== AI_MODELS.geminiFlash
+    ) {
+      try {
+        const fallback = await callOpenRouterApi(messages, {
+          ...options,
+          model: AI_MODELS.safeFallback,
+        });
+        recordOpenRouterRequest(clientKey);
+        assertHealthyCompletionTokens(fallback.usage, clientKey);
+        return fallback;
+      } catch (fallbackErr) {
+        const fb =
+          fallbackErr instanceof Error ? fallbackErr.message : "Fallback model failed";
+        console.error("OpenRouter fallback also failed:", fb);
+        throw fallbackErr;
+      }
+    }
+
     throw error;
   }
 }

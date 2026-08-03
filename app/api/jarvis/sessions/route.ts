@@ -53,15 +53,46 @@ export async function GET(request: NextRequest) {
 
   const active = request.nextUrl.searchParams.get("active") === "1";
   if (active) {
-    const current =
-      getActiveSessionForUser(gate.session.username) ||
-      createChatSession({
-        user_id: gate.session.username,
-        username: gate.session.username,
-        user_name: gate.session.name,
-        source: "jarvis",
+    try {
+      const current =
+        getActiveSessionForUser(gate.session.username) ||
+        createChatSession({
+          user_id: gate.session.username,
+          username: gate.session.username,
+          user_name: gate.session.name,
+          source: "jarvis",
+        });
+      return NextResponse.json({ ok: true, session: current, table: "jarvis_chat_sessions" });
+    } catch (err) {
+      console.warn(
+        "JARVIS active session fallback:",
+        err instanceof Error ? err.message : err
+      );
+      return NextResponse.json({
+        ok: true,
+        session: {
+          id: "ephemeral",
+          user_id: gate.session.username,
+          username: gate.session.username,
+          user_name: gate.session.name,
+          source: "jarvis",
+          title: "New conversation",
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          messages: [
+            {
+              id: "boot",
+              role: "system",
+              text: "JARVIS online — history store warming up.",
+              created_at: new Date().toISOString(),
+            },
+          ],
+        },
+        table: "jarvis_chat_sessions",
+        ephemeral: true,
       });
-    return NextResponse.json({ ok: true, session: current, table: "jarvis_chat_sessions" });
+    }
   }
 
   return NextResponse.json({

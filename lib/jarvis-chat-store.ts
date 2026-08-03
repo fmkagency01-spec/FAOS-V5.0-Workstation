@@ -5,6 +5,9 @@
  * SQLite / PostgreSQL / MongoDB). Schema: data/migrations/003_jarvis_chat_sessions.json
  *
  * Privacy: Super Admin (owner / executive) only — never expose to team/clients.
+ *
+ * Vercel note: /var/task is read-only — we write under /tmp and keep an
+ * in-memory mirror so history never 500s the JARVIS chat path.
  */
 
 import fs from "fs";
@@ -40,31 +43,100 @@ type ChatDb = {
   sessions: JarvisChatSession[];
 };
 
-function dataDir(): string {
-  const preferred = path.join(process.cwd(), "data");
-  if (fs.existsSync(preferred)) return preferred;
-  return path.join(process.cwd(), "backend", "data");
+/** Process-local mirror — survives within a warm serverless instance. */
+let memoryDb: ChatDb | null = null;
+
+function isServerlessReadonlyFs(): boolean {
+  return Boolean(
+    process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.VERCEL_ENV
+  );
 }
 
-function dbPath(): string {
-  return path.join(dataDir(), "jarvis_chat_sessions.json");
+function candidateDirs(): string[] {
+  const dirs: string[] = [];
+  if (isServerlessReadonlyFs()) {
+    dirs.push(path.join("/tmp", "faos-data"));
+  }
+  dirs.push(path.join(process.cwd(), "data"));
+  dirs.push(path.join(process.cwd(), "backend", "data"));
+  return dirs;
+}
+
+function resolveDbPath(): string {
+  for (const dir of candidateDirs()) {
+    const file = path.join(dir, "jarvis_chat_sessions.json");
+    try {
+      if (fs.existsSync(file)) return file;
+      fs.mkdirSync(dir, { recursive: true });
+      // Probe writability without leaving junk
+      const probe = path.join(dir, ".faos_write_probe");
+      fs.writeFileSync(probe, "ok", "utf-8");
+      fs.unlinkSync(probe);
+      return file;
+    } catch {
+      /* try next */
+    }
+  }
+  return path.join("/tmp", "faos-data", "jarvis_chat_sessions.json");
+}
+
+function emptyDb(): ChatDb {
+  return { table: "jarvis_chat_sessions", version: 1, sessions: [] };
 }
 
 function loadDb(): ChatDb {
-  const file = dbPath();
+  if (memoryDb) return memoryDb;
+
+  const file = resolveDbPath();
   if (!fs.existsSync(file)) {
-    return { table: "jarvis_chat_sessions", version: 1, sessions: [] };
+    // Seed from committed JSON if present (read-only ok)
+    try {
+      const seedPath = path.join(process.cwd(), "data", "jarvis_chat_sessions.json");
+      if (fs.existsSync(seedPath)) {
+        const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as ChatDb;
+        memoryDb = {
+          table: "jarvis_chat_sessions",
+          version: parsed.version || 1,
+          sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+        };
+        return memoryDb;
+      }
+    } catch {
+      /* ignore */
+    }
+    memoryDb = emptyDb();
+    return memoryDb;
   }
+
   try {
-    return JSON.parse(fs.readFileSync(file, "utf-8")) as ChatDb;
+    const parsed = JSON.parse(fs.readFileSync(file, "utf-8")) as ChatDb;
+    memoryDb = {
+      table: "jarvis_chat_sessions",
+      version: parsed.version || 1,
+      sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+    };
+    return memoryDb;
   } catch {
-    return { ...(seed as ChatDb), sessions: [] };
+    memoryDb = { ...(seed as ChatDb), sessions: [] };
+    return memoryDb;
   }
 }
 
 function saveDb(db: ChatDb): void {
-  fs.mkdirSync(dataDir(), { recursive: true });
-  fs.writeFileSync(dbPath(), JSON.stringify(db, null, 2), "utf-8");
+  memoryDb = db;
+  try {
+    const file = resolveDbPath();
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(db, null, 2), "utf-8");
+  } catch (err) {
+    // Never crash chat — memory mirror still serves this warm instance
+    console.warn(
+      "jarvis_chat_sessions: disk persist skipped:",
+      err instanceof Error ? err.message : err
+    );
+  }
 }
 
 function newId(prefix: string): string {

@@ -23,7 +23,7 @@ export type AiRoute = {
   reason: string;
 };
 
-/** OpenRouter model slugs — verified family slugs (avoid retired 3.5-sonnet) */
+/** OpenRouter model slugs — keep only live endpoints (retired models break JARVIS) */
 export const AI_MODELS = {
   claudeSonnet: "anthropic/claude-sonnet-4.5",
   gpt4o: "openai/gpt-4o",
@@ -31,9 +31,11 @@ export const AI_MODELS = {
   geminiFlash: "google/gemini-2.0-flash-001",
   geminiPro: "google/gemini-2.5-pro-preview",
   hermes: "nousresearch/hermes-3-llama-3.1-405b",
-  /** Ultra-low-cost internal / chat paths */
-  gemma9b: "google/gemma-2-9b-it",
+  /** Ultra-low-cost internal / chat paths — gemma-2-9b-it retired on OpenRouter */
+  gemma9b: "google/gemini-2.0-flash-001",
   llama70b: "meta-llama/llama-3.3-70b-instruct",
+  /** Explicit fallback when a routed model has no live endpoints */
+  safeFallback: "openai/gpt-4o-mini",
 } as const;
 
 const STRATEGY = [
@@ -233,11 +235,11 @@ export function routeQuery(query: string, tokenSaving = true): AiRoute {
       reason: "Strong multilingual support",
     },
     chat: {
-      model: tokenSaving ? AI_MODELS.gemma9b : AI_MODELS.geminiFlash,
-      provider: tokenSaving ? "Gemma" : "Gemini",
-      label: tokenSaving ? "Quick chat · Gemma 2 9B" : "Quick chat · Gemini Flash",
+      model: tokenSaving ? AI_MODELS.geminiFlash : AI_MODELS.geminiFlash,
+      provider: "Gemini",
+      label: "Quick chat · Gemini Flash",
       maxTokens: tokenSaving ? 220 : 600,
-      reason: "Ultra-low-cost internal chat (Gemma) with Gemini fallback off saver",
+      reason: "Fast multilingual chat — retired Gemma 2 9B removed from OpenRouter",
     },
     automation: {
       model: tokenSaving ? AI_MODELS.llama70b : AI_MODELS.hermes,
