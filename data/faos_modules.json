@@ -123,6 +123,16 @@
       "description": "TAC / Aigorithm knowledge ingestion + JARVIS MATRIX autonomous ticks"
     },
     {
+      "id": "real-estate",
+      "name": "Real Estate Hub",
+      "icon": "🏢",
+      "route": "/real-estate",
+      "category": "sales",
+      "tier": "pro",
+      "enabled": true,
+      "description": "PropTech — developers, project lifecycle, lead engine & ROI analytics"
+    },
+    {
       "id": "agents",
       "name": "Agent Workflow",
       "icon": "🤖",

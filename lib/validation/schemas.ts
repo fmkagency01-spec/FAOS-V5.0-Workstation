@@ -139,6 +139,68 @@ export const workLogCreateSchema = z.object({
 
 export const workLogUpdateSchema = workLogCreateSchema.partial();
 
+export const reClientCreateSchema = z.object({
+  name: z.string().trim().min(1, "name is required").max(200),
+  type: z.enum(["developer", "agency", "broker", "investor"]).optional().default("developer"),
+  contact_name: z.string().trim().max(200).optional().default(""),
+  email: z.string().trim().max(200).optional().default(""),
+  phone: z.string().trim().max(40).optional().default(""),
+  city: z.string().trim().max(120).optional().default("Dhaka"),
+  focus: z.string().trim().max(300).optional().default("General"),
+  status: z.enum(["active", "prospect", "paused"]).optional().default("active"),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const reProjectCreateSchema = z.object({
+  client_id: z.string().trim().min(1, "client_id is required").max(80),
+  name: z.string().trim().min(1, "name is required").max(200),
+  location: z.string().trim().max(200).optional().default("TBD"),
+  asset_type: z.string().trim().max(120).optional().default("Apartment"),
+  units_total: z.coerce.number().int().min(0).optional().default(0),
+  units_available: z.coerce.number().int().min(0).optional(),
+  price_from: z.coerce.number().min(0).optional().default(0),
+  currency: z.string().trim().min(3).max(8).optional().default("BDT"),
+  status: z
+    .enum(["planning", "pre_launch", "under_construction", "ready", "sold_out"])
+    .optional()
+    .default("planning"),
+  showcase_url: z.string().trim().max(500).optional(),
+  highlight: z.string().trim().max(500).optional(),
+});
+
+export const reLeadCreateSchema = z.object({
+  project_id: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(200),
+  phone: z.string().trim().max(40).optional().default(""),
+  email: z.string().trim().max(200).optional(),
+  channel: z
+    .enum(["facebook", "google", "tiktok", "referral", "walk_in", "organic", "other"])
+    .optional()
+    .default("other"),
+  campaign: z.string().trim().max(200).optional(),
+  budget: z.coerce.number().min(0).optional(),
+  status: z
+    .enum(["new", "contacted", "qualified", "site_visit", "negotiation", "won", "lost"])
+    .optional()
+    .default("new"),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const reDealCreateSchema = z.object({
+  project_id: z.string().trim().min(1).max(80),
+  lead_id: z.string().trim().max(80).optional(),
+  buyer_name: z.string().trim().min(1).max(200),
+  unit_label: z.string().trim().max(80).optional().default("TBD"),
+  value: z.coerce.number().min(0).optional().default(0),
+  currency: z.string().trim().min(3).max(8).optional().default("BDT"),
+  ad_spend: z.coerce.number().min(0).optional().default(0),
+  status: z
+    .enum(["reserved", "booking", "agreement", "closed", "cancelled"])
+    .optional()
+    .default("reserved"),
+  closed_at: z.string().trim().max(32).optional(),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type OrderCreateInput = z.infer<typeof orderCreateSchema>;
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;

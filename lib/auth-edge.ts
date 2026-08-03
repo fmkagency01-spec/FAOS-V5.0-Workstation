@@ -34,6 +34,7 @@ const ROUTE_MODULES: Record<string, string> = {
   "/hr": "hr",
   "/work-log": "work-log",
   "/learning-hub": "learning-hub",
+  "/real-estate": "real-estate",
   "/agents": "agents",
   "/dashboard/create-pillar": "create-pillar",
   "/dashboard/ai-seo": "ai-seo",
@@ -54,13 +55,13 @@ const ROLE_MODULES: Record<string, string[]> = {
   manager: [
     "home", "tac", "jarvis", "crm", "projects", "agents", "inventory",
     "orders", "products", "command", "creative", "create-pillar", "ai-seo",
-    "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "learning-hub", "status",
+    "fmk-wig-b2b", "rr-wigs-workspace", "work-log", "learning-hub", "real-estate", "status",
   ],
   team_lead: [
     "home", "tac", "jarvis", "crm", "projects", "agents",
-    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "learning-hub", "status",
+    "command", "creative", "create-pillar", "ai-seo", "fmk-wig-b2b", "work-log", "learning-hub", "real-estate", "status",
   ],
-  sales: ["home", "crm", "projects", "orders", "command", "work-log", "status", "fmk-wig-b2b"],
+  sales: ["home", "crm", "projects", "orders", "command", "work-log", "real-estate", "status", "fmk-wig-b2b"],
   finance: ["home", "invoicing", "inventory", "work-log", "status"],
   hr: ["home", "hr", "work-log", "status"],
   creative: ["home", "creative", "agents", "command", "ai-seo", "work-log", "status"],
@@ -83,7 +84,7 @@ export function isProtectedPage(pathname: string): boolean {
   if (pathname === "/") return true;
   return [
     "/jarvis", "/tac", "/clients", "/projects", "/invoicing", "/inventory", "/orders", "/products", "/hr",
-    "/work-log", "/learning-hub",
+    "/work-log", "/learning-hub", "/real-estate",
     "/agents", "/creative", "/operations", "/settings", "/team", "/status", "/dashboard", "/apps", "/portal",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
@@ -97,7 +98,7 @@ export function isProtectedApiEdge(pathname: string): boolean {
     "/api/invoices", "/api/inventory", "/api/hr", "/api/work-log", "/api/orders", "/api/products", "/api/users",
     "/api/notifications", "/api/media", "/api/harvest",
     "/api/create-pillar", "/api/agent-trigger", "/api/ai-seo", "/api/bulletseye",
-    "/api/brain", "/api/harness", "/api/orchestrate", "/api/learning-hub",
+    "/api/brain", "/api/harness", "/api/orchestrate", "/api/learning-hub", "/api/real-estate",
     "/api/apps", "/api/attachments", "/api/jarvis/sessions",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
