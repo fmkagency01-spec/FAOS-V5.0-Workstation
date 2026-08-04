@@ -26,6 +26,8 @@ export type AiRoute = {
 /** OpenRouter model slugs — keep only live endpoints (retired models break JARVIS) */
 export const AI_MODELS = {
   claudeSonnet: "anthropic/claude-sonnet-4.5",
+  /** Explicit Claude 3.5 Sonnet for multi-model failover ladder */
+  claude35Sonnet: "anthropic/claude-3.5-sonnet",
   gpt4o: "openai/gpt-4o",
   gpt4oMini: "openai/gpt-4o-mini",
   geminiFlash: "google/gemini-2.0-flash-001",
@@ -37,6 +39,17 @@ export const AI_MODELS = {
   /** Explicit fallback when a routed model has no live endpoints */
   safeFallback: "openai/gpt-4o-mini",
 } as const;
+
+/**
+ * Cross-provider resilience ladder (Gemini Pro → Claude 3.5 → GPT-4o → Mini).
+ * Primary routed model is tried first; this chain covers downtime / token errors.
+ */
+export const MULTI_MODEL_FALLBACK_CHAIN: readonly string[] = [
+  AI_MODELS.geminiPro,
+  AI_MODELS.claude35Sonnet,
+  AI_MODELS.gpt4o,
+  AI_MODELS.gpt4oMini,
+];
 
 const STRATEGY = [
   "/strategy",

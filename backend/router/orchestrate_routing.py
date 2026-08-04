@@ -82,6 +82,7 @@ def secrets_status() -> Dict[str, Any]:
         "FAOS_BACKEND_API_KEY",
         "FAOS_AUTH_SECRET",
         "BULLETSEYE_INJECT_WEBHOOK_KEY",
+        "CRON_SECRET",
     ]
     return {
         k: ("configured" if os.getenv(k) else "missing") for k in keys
@@ -211,6 +212,123 @@ def _run_seo_geo_scans(use_llm: bool = False) -> Dict[str, Any]:
     return {"ok": True, "scans": results, "count": len(results)}
 
 
+def _run_bulletseye_lead_gen() -> Dict[str, Any]:
+    """Background BulletsEye lead stubs persisted to core memory (cron-safe)."""
+    core = load_group_core()
+    targets = list(core.get("seo_geo_targets") or [])[:3]
+    leads: List[Dict[str, Any]] = []
+    day = _now()[:10]
+    for idx, target in enumerate(targets):
+        company = f"{target.get('brand_name')} Prospect {day.replace('-', '')[4:]}-{idx + 1}"
+        lead_id = f"lead_cron_{uuid.uuid4().hex[:8]}"
+        ns = str(target.get("memory_ns") or "fmk_bulletseye_agency")
+        append_memory(
+            ns,
+            kind="lead_gen",
+            content=(
+                f"BulletsEye cron lead for {target.get('brand_name')}: {company} "
+                f"(query: {target.get('query_type')})"
+            ),
+            source="bulletseye_lead_gen_cron",
+            meta={"lead_id": lead_id, "brand_id": target.get("brand_id")},
+        )
+        leads.append(
+            {
+                "id": lead_id,
+                "brand": target.get("brand_name"),
+                "company": company,
+                "channel": "seo_inbound",
+            }
+        )
+    append_memory(
+        "fmk_bulletseye_agency",
+        kind="lead_gen_batch",
+        content=f"BulletsEye lead-gen cron created {len(leads)} prospects",
+        source="ops_revenue_engine",
+        meta={"count": len(leads)},
+    )
+    return {"ok": True, "generated": len(leads), "leads": leads, "engine": "bulletseye_lead_gen"}
+
+
+def _run_media_content_draft() -> Dict[str, Any]:
+    """FMK Media / Editing Hub draft stubs → memory namespaces."""
+    core = load_group_core()
+    targets = list(core.get("seo_geo_targets") or [])[:3]
+    drafts: List[Dict[str, Any]] = []
+    day = _now()[:10]
+    for target in targets:
+        draft_id = f"draft_{uuid.uuid4().hex[:8]}"
+        title = f"{target.get('brand_name')} · August Content Draft · {day}"
+        body = (
+            f"HOOK: {target.get('brand_name')} authority content\n"
+            f"ANGLE: {target.get('query_type')}\n"
+            "CTA: Inquire via FAOS / BulletsEye B2B desk\n"
+            "EDITING HUB: Caption + 15s reel cut + thumbnail brief ready for queue."
+        )
+        append_memory(
+            "fmk_editing_hub",
+            kind="content_draft",
+            content=f"{title}\n\n{body}",
+            source="fmk_media_content_draft_cron",
+            meta={"draft_id": draft_id, "brand_id": target.get("brand_id")},
+        )
+        append_memory(
+            "fmk_media",
+            kind="content_draft_handoff",
+            content=f"Draft queued for Editing Hub: {title}",
+            source="ops_revenue_engine",
+            meta={"draft_id": draft_id},
+        )
+        drafts.append(
+            {
+                "id": draft_id,
+                "brand": target.get("brand_name"),
+                "title": title,
+                "pipeline": "fmk_editing_hub",
+            }
+        )
+    return {
+        "ok": True,
+        "drafted": len(drafts),
+        "drafts": drafts,
+        "engine": "fmk_media_content_draft",
+    }
+
+
+def _run_hermes_openclaw() -> Dict[str, Any]:
+    """Hermes/OpenClaw-style dispatcher — rotate revenue jobs without LLM dependency."""
+    minute = datetime.now(timezone.utc).minute
+    pending = learning_hub.status().get("pending", 0)
+    if pending:
+        task = "ingest_pending"
+        payload = learning_hub.ingest_pending(limit=10)
+    elif minute % 30 < 10:
+        task = "lead_gen"
+        payload = _run_bulletseye_lead_gen()
+    elif minute % 30 < 20:
+        task = "content_draft"
+        payload = _run_media_content_draft()
+    else:
+        task = "harness_cycle"
+        payload = harness.run_cycle(None)
+
+    append_memory(
+        "fmk_aigorithm_ai_brain",
+        kind="hermes_openclaw_route",
+        content=f"OpenClaw routed → {task}",
+        source="hermes_openclaw",
+        meta={"task": task},
+    )
+    return {
+        "ok": True,
+        "engine": "hermes_openclaw",
+        "decided_task": task,
+        "reason": f"deterministic_router:{task}",
+        "used_hermes": False,
+        "payload": payload,
+    }
+
+
 class OrchestrateService:
     def status(self) -> Dict[str, Any]:
         disk = _load_json(_state_path(), {})
@@ -277,6 +395,9 @@ class OrchestrateService:
             or [
                 "harness_cycle",
                 "bulletseye_seo_geo_scan",
+                "bulletseye_lead_gen",
+                "fmk_media_content_draft",
+                "hermes_openclaw_router",
                 "media_pipeline_drain",
                 "tac_sync",
                 "learning_hub_ingest_pending",
@@ -345,6 +466,39 @@ class OrchestrateService:
                         "status": "completed",
                         "summary": f"Ingested {lh.get('processed', 0)} learning items",
                         "payload": lh,
+                    }
+                )
+
+            if "bulletseye_lead_gen" in selected:
+                lead = _run_bulletseye_lead_gen()
+                steps.append(
+                    {
+                        "job": "bulletseye_lead_gen",
+                        "status": "completed",
+                        "summary": f"Generated {lead.get('generated', 0)} BulletsEye leads",
+                        "payload": lead,
+                    }
+                )
+
+            if "fmk_media_content_draft" in selected:
+                draft = _run_media_content_draft()
+                steps.append(
+                    {
+                        "job": "fmk_media_content_draft",
+                        "status": "completed",
+                        "summary": f"Drafted {draft.get('drafted', 0)} Editing Hub assets",
+                        "payload": draft,
+                    }
+                )
+
+            if "hermes_openclaw_router" in selected:
+                routed = _run_hermes_openclaw()
+                steps.append(
+                    {
+                        "job": "hermes_openclaw_router",
+                        "status": "completed",
+                        "summary": f"OpenClaw → {routed.get('decided_task')}",
+                        "payload": routed,
                     }
                 )
 

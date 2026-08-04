@@ -23,6 +23,7 @@ import {
   getActiveSessionForUser,
   getChatSession,
 } from "@/lib/jarvis-chat-store";
+import { ingestToAigorithm } from "@/lib/aigorithm-ingest";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -178,6 +179,20 @@ export async function POST(request: NextRequest) {
           persistErr instanceof Error ? persistErr.message : persistErr
         );
       }
+
+      // Aigorithm: autocorrect + save voice/business commands to core memory (non-blocking)
+      void ingestToAigorithm({
+        text: body.command?.trim() || command,
+        source: body.voice ? "voice" : "jarvis",
+        use_llm: false,
+        mirror_learning_hub: true,
+        tags: ["jarvis", plan.route.intent],
+      }).catch((ingestErr) => {
+        console.warn(
+          "Aigorithm ingest skipped:",
+          ingestErr instanceof Error ? ingestErr.message : ingestErr
+        );
+      });
     }
 
     return NextResponse.json({

@@ -1,8 +1,11 @@
 /**
  * Learning Hub — local JSON fallback when Render is asleep.
  * Mirrors backend/router/learning_hub_routing.py
+ * Ingest now writes durable core-memory entries (Aigorithm brain).
  */
 
+import { autoCorrectInput } from "@/lib/text-autocorrect";
+import { appendCoreMemory } from "@/lib/core-memory";
 import {
   resolveWritableDbFile,
   safeReadJsonFile,
@@ -87,12 +90,12 @@ export function pushLearningHubLocal(input: {
   submitted_by?: string;
   auto_ingest?: boolean;
 }): LearningHubItem {
-  const title = input.title.trim();
+  const title = autoCorrectInput(input.title.trim());
   if (!title) throw new Error("title is required");
   const kind = (input.kind || "documentation").toLowerCase();
   if (!ALLOWED.has(kind)) throw new Error("invalid kind");
   const url = (input.url || "").trim();
-  const content = (input.content || "").trim();
+  const content = autoCorrectInput((input.content || "").trim());
   if (kind === "url" && !url) throw new Error("url is required when kind=url");
   if (kind !== "url" && !content && !url) throw new Error("content or url is required");
 
@@ -127,10 +130,27 @@ export function ingestLearningHubLocal(id: string): LearningHubItem {
   const db = loadDb();
   const row = db.items.find((i) => i.id === id);
   if (!row) throw new Error(`Learning hub item not found: ${id}`);
+
+  const summaryParts = [`[${row.kind}] ${row.title}`];
+  if (row.url) summaryParts.push(`URL: ${row.url}`);
+  if (row.content) summaryParts.push(row.content.slice(0, 4000));
+  const text = autoCorrectInput(summaryParts.join("\n"));
+
+  const mem = appendCoreMemory(row.memory_namespace || "fmk_aigorithm_ai_brain", {
+    kind: `learning_${row.kind}`,
+    content: text,
+    source: "learning_hub",
+    meta: {
+      learning_hub_id: row.id,
+      tags: row.tags,
+      url: row.url,
+    },
+  });
+
   row.status = "ingested";
   row.updated_at = new Date().toISOString();
   row.ingest_result = {
-    memory_entry_id: `mem_local_${Date.now()}`,
+    memory_entry_id: mem.id,
     namespace: row.memory_namespace,
   };
   saveDb(db);
