@@ -11,15 +11,15 @@
   "crons": [
     {
       "path": "/api/cron/lead-gen",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cron/content-draft",
-      "schedule": "30 */6 * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/orchestrate",
-      "schedule": "*/20 * * * *"
+      "schedule": "0 14 * * *"
     }
   ]
 }
