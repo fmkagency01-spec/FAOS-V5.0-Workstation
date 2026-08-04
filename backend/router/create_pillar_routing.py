@@ -20,10 +20,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = None  # resolved at call-time via os.getenv — never hardcode
 TAC_APPROVAL_URL = os.getenv(
     "TAC_CENTRAL_CORE_URL", "https://tac.fmk-ecosystem.internal/approve"
 )
+
+
+def _openrouter_configured() -> bool:
+    return bool(os.getenv("OPENROUTER_API_KEY", "").strip())
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("FAOS_Create_Pillar")
@@ -139,7 +143,7 @@ class CreatePillarOrchestrator:
             "isolated_memory": memory_report,
             "token_optimization": "Lean Context Active - History Trimmed",
             "gatekeeper_verification": "PENDING_TAC_APPROVAL",
-            "openrouter_configured": bool(OPENROUTER_API_KEY),
+            "openrouter_configured": _openrouter_configured(),
             "tac_approval_url": TAC_APPROVAL_URL,
         }
 

@@ -31,7 +31,7 @@ WINDOW_SEC = 60
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
-        if not request.url.path.startswith("/api/v5"):
+        if not request.url.path.startswith(("/api/v5", "/api/v1")):
             return await call_next(request)
 
         client = request.client.host if request.client else "unknown"

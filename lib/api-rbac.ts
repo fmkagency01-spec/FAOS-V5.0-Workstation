@@ -27,6 +27,7 @@ const API_MODULE_MAP: Record<string, string> = {
   "/api/orchestrate": "learning-hub",
   "/api/learning-hub": "learning-hub",
   "/api/aigorithm": "learning-hub",
+  "/api/pillar": "create-pillar",
   "/api/real-estate": "real-estate",
   "/api/apps/fmk-wig": "fmk-wig-b2b",
   "/api/apps/rr-wigs": "rr-wigs-workspace",
