@@ -1,6 +1,6 @@
 """API key gate for Render backend — blocks unauthenticated CRUD abuse.
 
-Requires header on every /api/v5/* route when FAOS_BACKEND_API_KEY is set:
+Requires header on every /api/v5/* and /api/v1/* route when FAOS_BACKEND_API_KEY is set:
   X-FAOS-Api-Key: <same value as Vercel FAOS_BACKEND_API_KEY>
   or Authorization: Bearer <same value>
 
@@ -17,7 +17,17 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-PUBLIC_PATHS = {"/", "/health", "/docs", "/openapi.json", "/redoc"}
+PUBLIC_PATHS = {
+    "/",
+    "/health",
+    "/docs",
+    "/openapi.json",
+    "/redoc",
+    "/api/v1/health",
+    "/api/v5/health",
+}
+
+PROTECTED_PREFIXES = ("/api/v5", "/api/v1")
 
 
 def _extract_provided_key(request: Request) -> str:
@@ -35,10 +45,16 @@ def _extract_provided_key(request: Request) -> str:
     return ""
 
 
+def _is_protected(path: str) -> bool:
+    if path in PUBLIC_PATHS:
+        return False
+    return any(path == p or path.startswith(p + "/") for p in PROTECTED_PREFIXES)
+
+
 class BackendAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
         path = request.url.path.rstrip("/") or "/"
-        if path in PUBLIC_PATHS or not path.startswith("/api/v5"):
+        if not _is_protected(path):
             return await call_next(request)
 
         expected = os.getenv("FAOS_BACKEND_API_KEY", "").strip()

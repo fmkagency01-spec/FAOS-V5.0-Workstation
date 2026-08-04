@@ -19,8 +19,7 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("FAOS_AI_SEO")
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+# Keys resolved at call-time via services.openrouter_client (never hardcode)
 BULLETSEYE_NAMESPACE = "fmk_bulletseye_core_namespace"
 DEFAULT_MODEL = "openai/gpt-4o-mini"
 
@@ -89,7 +88,7 @@ class AiSeoGeoEngine:
             "content_framework": self.ns.get("content_framework", {}),
             "delivery_channels": self.ns.get("delivery_channels", {}),
             "brands": self.list_brands(),
-            "openrouter_configured": bool(OPENROUTER_API_KEY),
+            "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
         }
 
     def _resolve_brand(
@@ -238,7 +237,9 @@ class AiSeoGeoEngine:
         ]
 
     def _call_openrouter(self, brand_name: str, topic: str, base: List[Dict[str, Any]]) -> Optional[List[Dict[str, Any]]]:
-        if not OPENROUTER_API_KEY:
+        from services.openrouter_client import chat_completions, get_openrouter_api_key
+
+        if not get_openrouter_api_key():
             return None
 
         prompt = f"""You are FAOS BulletsEye AI SEO Engine (GEO).
@@ -247,44 +248,20 @@ Return ONLY JSON with fan_out_queries (4 items: direct_intent, attribute_constra
 each having axis, query, recommended_h2, direct_answer, extractable_bullets.
 Seed: {json.dumps([{"axis": q["axis"], "query": q["query"]} for q in base])}"""
 
-        body = json.dumps(
-            {
-                "model": DEFAULT_MODEL,
-                "messages": [
+        try:
+            result = chat_completions(
+                [
                     {
                         "role": "system",
                         "content": "You are an expert GEO & AI SEO Architect. Reply with JSON only.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                "max_tokens": 900,
-                "temperature": 0.3,
-            }
-        ).encode("utf-8")
-
-        req = urllib.request.Request(
-            OPENROUTER_ENDPOINT,
-            data=body,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": os.getenv(
-                    "NEXT_PUBLIC_SITE_URL", "https://faos-v5-0-workstation.vercel.app"
-                ),
-                "X-Title": "FAOS BulletsEye AI SEO",
-            },
-            method="POST",
-        )
-
-        try:
-            with urllib.request.urlopen(req, timeout=45) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-            reply = (
-                payload.get("choices", [{}])[0]
-                .get("message", {})
-                .get("content", "")
-                .strip()
+                model=DEFAULT_MODEL,
+                max_tokens=900,
+                temperature=0.3,
             )
+            reply = result.get("reply") or ""
             cleaned = re.sub(r"^```json\s*|^```\s*|```$", "", reply, flags=re.I).strip()
             parsed = json.loads(cleaned)
             rows = parsed.get("fan_out_queries") or []
@@ -316,7 +293,7 @@ Seed: {json.dumps([{"axis": q["axis"], "query": q["query"]} for q in base])}"""
                     }
                 )
             return enriched
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError, IndexError) as exc:
+        except Exception as exc:  # noqa: BLE001 — fall back to deterministic GEO
             logger.warning("OpenRouter fan-out enrichment failed: %s", exc)
             return None
 
@@ -402,7 +379,7 @@ Seed: {json.dumps([{"axis": q["axis"], "query": q["query"]} for q in base])}"""
                     self.ns.get("delivery_channels", {}).get("external_b2b", [])
                 ),
             },
-            "openrouter_configured": bool(OPENROUTER_API_KEY),
+            "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
         }
 
 

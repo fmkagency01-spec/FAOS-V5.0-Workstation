@@ -30,7 +30,9 @@ from router.tac_routing import tac
 from router.workflow_routing import workflow
 from router.orchestrate_routing import orchestrate, enqueue_media_job
 from router.learning_hub_routing import learning_hub
+from router.pillar_routing import pillar_router
 from services.memory_namespaces import memory_status, load_memory, append_memory, list_namespace_ids
+from services.openrouter_client import get_openrouter_api_key
 from middleware.auth import BackendAuthMiddleware
 from middleware.errors import RequestIdMiddleware, register_exception_handlers
 from middleware.rate_limit import RateLimitMiddleware
@@ -105,6 +107,7 @@ async def lifespan(_app: FastAPI):
 
 DEFAULT_ORIGINS = [
     "https://faos-v5-0-workstation.vercel.app",
+    "https://faos-v5-0-workstation-fmk2.vercel.app",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
@@ -117,6 +120,10 @@ def _cors_origins() -> List[str]:
     if raw:
         origins.extend(o.strip().rstrip("/") for o in raw.split(",") if o.strip())
     origins.extend(DEFAULT_ORIGINS)
+    # Optional custom FAOS workstation domain
+    custom = os.getenv("FAOS_WORKSTATION_ORIGIN", "").strip().rstrip("/")
+    if custom:
+        origins.append(custom)
     # De-dupe, preserve order
     seen = set()
     unique: List[str] = []
@@ -142,11 +149,13 @@ _cors = _cors_origins()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors,
+    # Preview + production Vercel app hosts
     allow_origin_regex=r"https://.*\.vercel\.app",
     # Browsers reject credentials with wildcard origins; only enable when explicit.
     allow_credentials=("*" not in _cors),
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-Id", "X-FAOS-Upstream"],
 )
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(BackendAuthMiddleware)
@@ -169,8 +178,11 @@ async def root_health() -> Dict[str, Any]:
     modules = erp.health_modules()
     orch = orchestrate.status()
     return {
-        # Locked gateway contract (Render 404 / Cannot GET / fix)
-        "status": "active",
+        # Master prompt contract
+        "status": "FAOS v5.0 Central Core Operational",
+        "mode": "24/7 Active",
+        # Locked JARVIS MATRIX compatibility fields
+        "operational_status": "active",
         "engine": "JARVIS MATRIX V5.0",
         "system": "100% Autonomous",
         # Extended compatibility fields for FAOS workstation / TAC UI
@@ -178,10 +190,12 @@ async def root_health() -> Dict[str, Any]:
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
         "api_prefix": "/api/v5",
+        "api_prefixes": ["/api/v1", "/api/v5"],
         "docs_url": "/docs",
         "openapi_url": "/openapi.json",
         "core_namespace": FMK_GROUP_CORE,
         "pillars_bound": ["CREATE", "MEDIA", "SERVICE"],
+        "pillar_router": "/api/v1/pillar",
         "create_pillar_namespace": "fmk_create_pillar_retail_core",
         "bulletseye_namespace": "fmk_bulletseye_core_namespace",
         "ai_seo_module": "ENABLED",
@@ -193,8 +207,9 @@ async def root_health() -> Dict[str, Any]:
         "autonomous_loop": orch.get("autonomous_loop"),
         "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
-        "openrouter_configured": bool(os.getenv("OPENROUTER_API_KEY")),
+        "openrouter_configured": bool(get_openrouter_api_key()),
         "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
+        "meta_configured": bool(os.getenv("META_API_KEY")),
         "database_configured": bool(os.getenv("DATABASE_URL")),
         "modules": modules.get("modules"),
         "tac": modules.get("tac"),
@@ -216,6 +231,48 @@ async def api_v5_health() -> Dict[str, Any]:
         "version": "5.3.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@app.get("/api/v1/health")
+async def api_v1_health() -> Dict[str, Any]:
+    """v1 health alias for pillar-router clients."""
+    base = await root_health()
+    return {
+        "ok": True,
+        **base,
+        "version": "5.3.0",
+        "api": "v1",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/v1/pillar")
+async def pillar_catalog() -> Dict[str, Any]:
+    return pillar_router.catalog()
+
+
+@app.get("/api/v1/pillar/{pillar_id}")
+async def pillar_status(pillar_id: str) -> Dict[str, Any]:
+    try:
+        return pillar_router.status(pillar_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/pillar/{pillar_id}/agents")
+async def pillar_agents(pillar_id: str) -> Dict[str, Any]:
+    try:
+        return pillar_router.agents(pillar_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/pillar/{pillar_id}/route")
+async def pillar_route(pillar_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        return pillar_router.route(pillar_id, payload or {})
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/v5/agent-trigger")

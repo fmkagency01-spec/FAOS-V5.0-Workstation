@@ -138,7 +138,10 @@ async def not_found_handler(request: Request, exc: Any) -> JSONResponse:
             path=request.url.path,
             request_id=request_id,
             details={
-                "hint": "Use /, /health, /api/v5/orders, /api/v5/products, /api/v5/clients",
+                "hint": (
+                    "Use /, /health, /api/v1/pillar, /api/v1/health, "
+                    "/api/v5/orders, /api/v5/products, /api/v5/clients"
+                ),
             },
         ),
     )

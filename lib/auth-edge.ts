@@ -101,7 +101,7 @@ export function isProtectedApiEdge(pathname: string): boolean {
     "/api/notifications", "/api/media", "/api/harvest",
     "/api/create-pillar", "/api/agent-trigger", "/api/ai-seo", "/api/bulletseye",
     "/api/brain", "/api/harness", "/api/orchestrate", "/api/learning-hub", "/api/real-estate",
-    "/api/aigorithm",
+    "/api/aigorithm", "/api/pillar",
     "/api/apps", "/api/attachments", "/api/jarvis/sessions",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }

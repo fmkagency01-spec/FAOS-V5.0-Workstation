@@ -16,7 +16,9 @@ services:
       - key: CORS_ALLOW_ALL
         value: "true"
       - key: CORS_ALLOW_ORIGINS
-        value: https://faos-v5-0-workstation.vercel.app
+        value: https://faos-v5-0-workstation.vercel.app,https://faos-v5-0-workstation-fmk2.vercel.app
+      - key: FAOS_WORKSTATION_ORIGIN
+        sync: false
       - key: FAOS_AUTONOMOUS_LOOP
         value: "true"
       - key: FAOS_ORCHESTRATE_INTERVAL_SEC
