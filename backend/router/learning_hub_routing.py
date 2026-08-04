@@ -7,6 +7,7 @@ isolated memory namespaces under fmk_group_ltd_core.
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +16,23 @@ from typing import Any, Dict, List
 from services.memory_namespaces import append_memory, resolve_namespace
 
 ALLOWED_KINDS = {"documentation", "url", "course", "note", "policy"}
+
+_ASR_FIXES = [
+    (re.compile(r"\bjavis\b", re.I), "JARVIS"),
+    (re.compile(r"\bjar vies\b", re.I), "JARVIS"),
+    (re.compile(r"\bbullets?\s*eye\b", re.I), "BulletsEye"),
+    (re.compile(r"\bfmk\s+week\b", re.I), "FMK WIG"),
+    (re.compile(r"\bfmcg\s+wish\b", re.I), "FMK WIG"),
+    (re.compile(r"\baigorithm\b", re.I), "Aigorithm"),
+    (re.compile(r"\s{2,}"), " "),
+]
+
+
+def _auto_correct(text: str) -> str:
+    out = (text or "").strip()
+    for pattern, repl in _ASR_FIXES:
+        out = pattern.sub(repl, out)
+    return out[:20000]
 
 
 def _now() -> str:
@@ -78,7 +96,7 @@ class LearningHubService:
         ]
 
     def push(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        title = str(payload.get("title") or "").strip()
+        title = _auto_correct(str(payload.get("title") or "").strip())
         if not title:
             raise ValueError("title is required")
 
@@ -86,7 +104,9 @@ class LearningHubService:
         if kind not in ALLOWED_KINDS:
             raise ValueError(f"kind must be one of {sorted(ALLOWED_KINDS)}")
 
-        content = str(payload.get("content") or payload.get("body") or "").strip()
+        content = _auto_correct(
+            str(payload.get("content") or payload.get("body") or "").strip()
+        )
         url = str(payload.get("url") or "").strip()
         if kind == "url" and not url:
             raise ValueError("url is required when kind=url")

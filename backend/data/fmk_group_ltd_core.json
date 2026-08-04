@@ -199,10 +199,15 @@
     "jobs": [
       "harness_cycle",
       "bulletseye_seo_geo_scan",
+      "bulletseye_lead_gen",
+      "fmk_media_content_draft",
+      "hermes_openclaw_router",
       "media_pipeline_drain",
       "tac_sync",
       "learning_hub_ingest_pending"
-    ]
+    ],
+    "revenue_engine": "FAOS August Ops & Revenue",
+    "hermes_openclaw": true
   },
   "secrets_policy": {
     "read_from_env_only": [
@@ -210,7 +215,8 @@
       "GEMINI_API_KEY",
       "DATABASE_URL",
       "FAOS_BACKEND_API_KEY",
-      "FAOS_AUTH_SECRET"
+      "FAOS_AUTH_SECRET",
+      "CRON_SECRET"
     ],
     "never_hardcode": true
   }

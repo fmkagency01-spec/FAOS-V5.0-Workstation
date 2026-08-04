@@ -5,6 +5,7 @@ import {
   type AiIntent,
   type AiRoute,
   AI_MODELS,
+  MULTI_MODEL_FALLBACK_CHAIN,
 } from "@/lib/ai-router";
 import {
   getTokenSavingDefaults,
@@ -141,9 +142,36 @@ function isMissingEndpointError(message: string): boolean {
   return /no endpoints found/i.test(message) || /model .+ not found/i.test(message);
 }
 
+function isTransientProviderError(message: string, status?: number): boolean {
+  if (status && status >= 500) return true;
+  if (status === 429) return true;
+  return /timeout|temporar|unavailable|overloaded|rate.?limit|502|503|504/i.test(
+    message
+  );
+}
+
+function isTokenQuotaError(message: string, status?: number): boolean {
+  if (status === 402) return true;
+  return /insufficient.*(credit|fund|quota)|quota.?exceeded|billing|out of credits/i.test(
+    message
+  );
+}
+
+function buildFallbackChain(primary: string): string[] {
+  const ordered = [primary, ...MULTI_MODEL_FALLBACK_CHAIN, AI_MODELS.safeFallback];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const m of ordered) {
+    if (!m || seen.has(m)) continue;
+    seen.add(m);
+    out.push(m);
+  }
+  return out;
+}
+
 /**
- * Safety wrapper for automation / harvest — daily cap + low-token loop breaker.
- * Retries once with a known-live fallback model when OpenRouter retires a slug.
+ * Safety wrapper — daily cap + low-token breaker + multi-model cascade.
+ * Ladder: primary → Gemini Pro → Claude 3.5 Sonnet → GPT-4o → GPT-4o Mini.
  */
 export async function safeOpenRouterCall(
   messages: ChatMessage[],
@@ -159,39 +187,52 @@ export async function safeOpenRouterCall(
 
   assertOpenRouterRequestAllowed(clientKey);
 
-  try {
-    const result = await callOpenRouterApi(messages, options);
-    recordOpenRouterRequest(clientKey);
-    assertHealthyCompletionTokens(result.usage, clientKey);
-    return result;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown OpenRouter error";
-    console.error("API Error caught in safety wrapper:", message);
+  const saving = getTokenSavingDefaults();
+  const lastUser = [...messages].reverse().find((m) => m.role === "user");
+  const route = routeQuery(lastUser?.content || "", saving.tokenSavingMode);
+  const primary = options?.model || route.model;
+  const chain = buildFallbackChain(primary);
 
-    const requested = options?.model || "";
-    if (
-      isMissingEndpointError(message) &&
-      requested !== AI_MODELS.safeFallback &&
-      requested !== AI_MODELS.geminiFlash
-    ) {
-      try {
-        const fallback = await callOpenRouterApi(messages, {
-          ...options,
-          model: AI_MODELS.safeFallback,
-        });
-        recordOpenRouterRequest(clientKey);
-        assertHealthyCompletionTokens(fallback.usage, clientKey);
-        return fallback;
-      } catch (fallbackErr) {
-        const fb =
-          fallbackErr instanceof Error ? fallbackErr.message : "Fallback model failed";
-        console.error("OpenRouter fallback also failed:", fb);
-        throw fallbackErr;
+  let lastError: unknown = null;
+
+  for (let i = 0; i < chain.length; i += 1) {
+    const model = chain[i];
+    try {
+      const result = await callOpenRouterApi(messages, { ...options, model });
+      recordOpenRouterRequest(clientKey);
+      assertHealthyCompletionTokens(result.usage, clientKey);
+      if (i > 0) {
+        console.warn(
+          `OpenRouter multi-model fallback succeeded with ${model} (after ${chain[0]})`
+        );
       }
-    }
+      return result;
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : "Unknown OpenRouter error";
+      console.error("API Error caught in safety wrapper:", message);
 
-    throw error;
+      if (error instanceof OpenRouterGuardError) throw error;
+      if (/not configured/i.test(message) || /invalid.?api.?key/i.test(message)) {
+        throw error;
+      }
+
+      const status = (error as Error & { openrouter_status?: number }).openrouter_status;
+      const retryable =
+        isMissingEndpointError(message) ||
+        isTransientProviderError(message, status) ||
+        isTokenQuotaError(message, status);
+
+      if (!retryable || i === chain.length - 1) {
+        throw error;
+      }
+      console.warn(`OpenRouter retrying next model in chain (failed: ${model})`);
+    }
   }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("All OpenRouter models in fallback chain failed");
 }
 
 export async function chatWithOpenRouter(

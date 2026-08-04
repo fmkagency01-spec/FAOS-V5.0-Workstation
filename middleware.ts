@@ -8,9 +8,22 @@ import {
 } from "@/lib/auth-edge";
 import { roleCanAccessApi } from "@/lib/api-rbac";
 import { isClientPortalPath, postLoginRedirect } from "@/lib/rbac-guards";
+import { assertCronAuthorized, isCronApiPath } from "@/lib/cron-auth";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Zero-Trust cron: Bearer CRON_SECRET only — no session cookie
+  if (isCronApiPath(pathname)) {
+    const gate = assertCronAuthorized(request);
+    if (!gate.ok) {
+      return NextResponse.json({ ok: false, error: gate.error }, { status: gate.status });
+    }
+    const response = NextResponse.next();
+    response.headers.set("x-faos-cron", "1");
+    response.headers.set("x-faos-zero-trust", "cron");
+    return response;
+  }
 
   if (pathname === "/login") {
     const session = await getSessionFromCookieHeader(request.headers.get("cookie"));

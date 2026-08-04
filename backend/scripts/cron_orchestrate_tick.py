@@ -31,7 +31,21 @@ def main() -> int:
 
     req = urllib.request.Request(
         url,
-        data=json.dumps({"use_llm": False}).encode("utf-8"),
+        data=json.dumps(
+            {
+                "use_llm": False,
+                "jobs": [
+                    "harness_cycle",
+                    "bulletseye_seo_geo_scan",
+                    "bulletseye_lead_gen",
+                    "fmk_media_content_draft",
+                    "hermes_openclaw_router",
+                    "media_pipeline_drain",
+                    "tac_sync",
+                    "learning_hub_ingest_pending",
+                ],
+            }
+        ).encode("utf-8"),
         headers=headers,
         method="POST",
     )

@@ -7,5 +7,19 @@
     "NEXT_PUBLIC_FAOS_BACKEND_URL": "https://faos-backend.onrender.com/api/v5",
     "NEXT_PUBLIC_API_VERSION": "v5.3",
     "NEXT_PUBLIC_SITE_URL": "https://faos-v5-0-workstation.vercel.app"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/lead-gen",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/content-draft",
+      "schedule": "30 */6 * * *"
+    },
+    {
+      "path": "/api/cron/orchestrate",
+      "schedule": "*/20 * * * *"
+    }
+  ]
 }

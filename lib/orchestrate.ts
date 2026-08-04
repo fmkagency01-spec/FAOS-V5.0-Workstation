@@ -7,6 +7,11 @@ import { executeSeoGeoSquad } from "@/lib/bulletseye-squad";
 import { getSeoGeoTargets, getFmkGroupCore } from "@/lib/fmk-group-core";
 import { buildTacSyncStatus } from "@/lib/tac-ecosystem";
 import { ingestLearningHubLocal, listLearningHubLocal } from "@/lib/learning-hub-store";
+import { runHermesOpenClawRouter } from "@/lib/hermes-openclaw";
+import {
+  runBulletseyeLeadGeneration,
+  runFmkMediaContentDrafting,
+} from "@/lib/ops-revenue-engine";
 
 export type OrchestrateTickResult = {
   ok: true;
@@ -43,6 +48,7 @@ export function orchestrateStatusLocal() {
     autonomous_loop: {
       enabled: true,
       interval_sec: core.autonomous_loop.default_interval_sec,
+      jobs: core.autonomous_loop.jobs,
     },
     runtime: {
       running: LOOP_STATE.running,
@@ -50,6 +56,8 @@ export function orchestrateStatusLocal() {
       last_tick_id: LOOP_STATE.last_tick_id,
       ticks_completed: LOOP_STATE.ticks_completed,
     },
+    revenue_engine: "FAOS August Ops & Revenue",
+    hermes_openclaw: true,
     source: "vercel-local" as const,
   };
 }
@@ -88,11 +96,15 @@ export async function runOrchestrateTickLocal(opts?: {
     core.autonomous_loop.jobs || [
       "harness_cycle",
       "bulletseye_seo_geo_scan",
+      "bulletseye_lead_gen",
+      "fmk_media_content_draft",
+      "hermes_openclaw_router",
       "media_pipeline_drain",
       "tac_sync",
       "learning_hub_ingest_pending",
     ];
   const steps: OrchestrateTickResult["steps"] = [];
+  const useLlm = Boolean(opts?.use_llm);
 
   try {
     if (jobs.includes("harness_cycle")) {
@@ -116,7 +128,7 @@ export async function runOrchestrateTickLocal(opts?: {
             client_type:
               target.client_type === "external_b2b" ? "external_b2b" : "internal",
             auto_inject_flag: false,
-            use_llm: Boolean(opts?.use_llm),
+            use_llm: useLlm,
           });
           scans.push({
             brand_id: target.brand_id,
@@ -133,6 +145,36 @@ export async function runOrchestrateTickLocal(opts?: {
         status: "completed",
         summary: `${scans.length} brand scans`,
         payload: { scans },
+      });
+    }
+
+    if (jobs.includes("bulletseye_lead_gen")) {
+      const lead = await runBulletseyeLeadGeneration({ use_llm: useLlm });
+      steps.push({
+        job: "bulletseye_lead_gen",
+        status: "completed",
+        summary: `Generated ${lead.generated} BulletsEye leads`,
+        payload: lead as unknown as Record<string, unknown>,
+      });
+    }
+
+    if (jobs.includes("fmk_media_content_draft")) {
+      const draft = await runFmkMediaContentDrafting({ use_llm: useLlm });
+      steps.push({
+        job: "fmk_media_content_draft",
+        status: "completed",
+        summary: `Drafted ${draft.drafted} Editing Hub assets`,
+        payload: draft as unknown as Record<string, unknown>,
+      });
+    }
+
+    if (jobs.includes("hermes_openclaw_router")) {
+      const routed = await runHermesOpenClawRouter({ use_llm: useLlm });
+      steps.push({
+        job: "hermes_openclaw_router",
+        status: "completed",
+        summary: `OpenClaw → ${routed.decided_task}`,
+        payload: routed as unknown as Record<string, unknown>,
       });
     }
 

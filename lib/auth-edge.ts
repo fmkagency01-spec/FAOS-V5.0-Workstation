@@ -93,12 +93,15 @@ export function isProtectedApiEdge(pathname: string): boolean {
   if (pathname.startsWith("/api/auth")) return false;
   if (pathname === "/api/health") return false;
   if (pathname === "/api/manifest" || pathname === "/manifest.webmanifest") return false;
+  // Cron routes use CRON_SECRET (handled in middleware) — not session cookies
+  if (pathname === "/api/cron" || pathname.startsWith("/api/cron/")) return false;
   return [
     "/api/tac", "/api/jarvis", "/api/chat", "/api/agent-workflow", "/api/clients", "/api/projects",
     "/api/invoices", "/api/inventory", "/api/hr", "/api/work-log", "/api/orders", "/api/products", "/api/users",
     "/api/notifications", "/api/media", "/api/harvest",
     "/api/create-pillar", "/api/agent-trigger", "/api/ai-seo", "/api/bulletseye",
     "/api/brain", "/api/harness", "/api/orchestrate", "/api/learning-hub", "/api/real-estate",
+    "/api/aigorithm",
     "/api/apps", "/api/attachments", "/api/jarvis/sessions",
   ].some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
