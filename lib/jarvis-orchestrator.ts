@@ -28,7 +28,11 @@ export type JarvisAction =
       payload: { command: string; mode?: "plan" | "implement" | "review" | "fix" };
     }
   | { type: "activate_fleet"; payload: { reason: string } }
-  | { type: "run_pipeline"; payload: { details: string; brand?: string } };
+  | { type: "run_pipeline"; payload: { details: string; brand?: string } }
+  | {
+      type: "client_hunting";
+      payload: { brand?: string; brief: string; limit?: number };
+    };
 
 export type JarvisPlan = {
   command: string;
@@ -64,6 +68,21 @@ function detectErpAction(command: string): JarvisAction {
     )
   ) {
     return { type: "code_engineering", payload: { command } };
+  }
+  if (
+    /client hunt|lead scrap|lead gen|prospect|cold email|outreach|acquisition funnel|hunt leads|b2b lead/.test(
+      lower
+    )
+  ) {
+    let brand: string | undefined;
+    if (/fmk\s*wig|prosthetic|hair system/.test(lower)) brand = "fmk_wig";
+    else if (/fmk\s*agency|full[- ]stack/.test(lower)) brand = "fmk_agency";
+    else if (/bulletseye|performance marketing|meta ads|google ads/.test(lower))
+      brand = "bulletseye";
+    return {
+      type: "client_hunting",
+      payload: { brand, brief: command },
+    };
   }
   if (/brief|campaign|smm|deliverable|client task|design brief|video script/.test(lower)) {
     return {
@@ -185,15 +204,17 @@ export function planJarvisCommand(command: string): JarvisPlan {
         ? ("code_bridge" as const)
         : action.type === "run_pipeline"
           ? ("pipeline" as const)
-          : hubLead && !isRealErp
+          : action.type === "client_hunting"
             ? ("hub" as const)
-            : isRealErp
-              ? ("erp" as const)
-              : action.type === "none"
-                ? ("chat" as const)
-                : hubLead
-                  ? ("hub" as const)
-                  : ("chat" as const);
+            : hubLead && !isRealErp
+              ? ("hub" as const)
+              : isRealErp
+                ? ("erp" as const)
+                : action.type === "none"
+                  ? ("chat" as const)
+                  : hubLead
+                    ? ("hub" as const)
+                    : ("chat" as const);
 
   const connectivity = buildConnectivityPlan(trimmed, {
     path,

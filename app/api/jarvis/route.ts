@@ -31,6 +31,7 @@ import {
   hermesReviewCommand,
 } from "@/lib/hermes-cofounder";
 import { runClientTaskPipeline } from "@/faos_core/pipelines/client-task-pipeline";
+import { runClientHuntingPipeline } from "@/faos_core/pipelines/client-hunting-pipeline";
 import { FAOS_V6_VERSION } from "@/faos_core/types";
 
 export const runtime = "nodejs";
@@ -131,6 +132,17 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
       return {
         label: `Pipeline ${pipeline.pipeline_id} · ${pipeline.stage} · QA ${pipeline.qa?.score ?? "—"}`,
         result: pipeline,
+      };
+    }
+    case "client_hunting": {
+      const hunt = await runClientHuntingPipeline({
+        brand: action.payload.brand,
+        brief: action.payload.brief,
+        limit: action.payload.limit,
+      });
+      return {
+        label: `Client hunting ${hunt.status} · ${hunt.brand} · ${hunt.prospects_targeted.length} prospects · ${hunt.content_assets.length} assets`,
+        result: hunt,
       };
     }
     default:

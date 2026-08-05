@@ -97,6 +97,7 @@ export async function runOrchestrateTickLocal(opts?: {
       "harness_cycle",
       "bulletseye_seo_geo_scan",
       "bulletseye_lead_gen",
+      "jarvis_client_hunting",
       "fmk_media_content_draft",
       "hermes_openclaw_router",
       "media_pipeline_drain",
@@ -155,6 +156,32 @@ export async function runOrchestrateTickLocal(opts?: {
         status: "completed",
         summary: `Generated ${lead.generated} BulletsEye leads`,
         payload: lead as unknown as Record<string, unknown>,
+      });
+    }
+
+    if (jobs.includes("jarvis_client_hunting")) {
+      const { runClientHuntingPipeline } = await import(
+        "@/faos_core/pipelines/client-hunting-pipeline"
+      );
+      const brands = ["bulletseye", "fmk_agency", "fmk_wig"] as const;
+      const brand = brands[new Date().getUTCMinutes() % brands.length];
+      const hunt = await runClientHuntingPipeline({
+        brand,
+        brief: `Autonomous client hunting tick for ${brand}`,
+        limit: 3,
+      });
+      steps.push({
+        job: "jarvis_client_hunting",
+        status: hunt.ok ? "completed" : "failed",
+        summary: `${hunt.brand}: ${hunt.prospects_targeted.length} prospects · ${hunt.content_assets.length} assets`,
+        payload: {
+          brand: hunt.brand,
+          brand_id: hunt.brand_id,
+          task_id: hunt.task_id,
+          status: hunt.status,
+          prospects: hunt.prospects_targeted.length,
+          assets: hunt.content_assets.length,
+        },
       });
     }
 

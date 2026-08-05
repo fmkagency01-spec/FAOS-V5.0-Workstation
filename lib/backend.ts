@@ -122,7 +122,9 @@ export function getBackendAuthHeaders(
 
   const key = process.env.FAOS_BACKEND_API_KEY?.trim();
   if (key) {
+    // Canonical + alias (Hermes/Render/Vercel sync — some clients send FAOS-Api-Key)
     headers["X-FAOS-Api-Key"] = key;
+    headers["FAOS-Api-Key"] = key;
   }
 
   return headers;

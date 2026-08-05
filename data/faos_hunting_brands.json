@@ -1,0 +1,68 @@
+{
+  "version": "6.0.0",
+  "module": "jarvis_client_hunting",
+  "brands": {
+    "fmk_agency": {
+      "id": "fmk_agency",
+      "display_name": "FMK Agency",
+      "hub": "agency_outreach_hub",
+      "lead_agent_id": "agency_outreach_agent",
+      "namespace": "fmk_agency_services",
+      "target_audience": "SMBs, E-commerce Brands, Agencies needing AI Automation & Marketing Services",
+      "core_services": [
+        "AI Agent Setup",
+        "Full Funnel Marketing",
+        "Custom Software/Web Development"
+      ],
+      "outreach_channels": ["Email", "LinkedIn", "Direct Messaging"],
+      "icp_niches": [
+        "D2C brands needing automation",
+        "Boutique agencies outsourcing AI ops",
+        "SMB e-commerce needing full-funnel growth"
+      ]
+    },
+    "bulletseye": {
+      "id": "bulletseye",
+      "display_name": "BulletsEye",
+      "hub": "agency_outreach_hub",
+      "lead_agent_id": "agency_outreach_agent",
+      "namespace": "fmk_bulletseye_core_namespace",
+      "target_audience": "High-budget E-commerce, Local Businesses, High-Growth Startups",
+      "core_services": [
+        "Performance Marketing",
+        "Meta/Google Ads Audit",
+        "Conversion Rate Optimization (CRO)"
+      ],
+      "outreach_channels": ["Cold Email", "Ad Audits", "Inbound Lead Hooks"],
+      "icp_niches": [
+        "High-AOV e-commerce needing Meta/Google scale",
+        "Local multi-location businesses",
+        "Seed/Series-A startups with paid growth budget"
+      ]
+    },
+    "fmk_wig": {
+      "id": "fmk_wig",
+      "display_name": "FMK WIG",
+      "hub": "fmk_wig_hub",
+      "lead_agent_id": "fmk_wig_prosthetic_hair_agent",
+      "namespace": "fmk_wig_prosthetic_hair_agent",
+      "brand_lock": "FMK WIG",
+      "target_audience": "B2C Hair Replacement/Custom Wig Buyers, Salons, Wholesale Distributors",
+      "core_services": [
+        "Custom Wig Crafting",
+        "Wholesale Supply",
+        "Direct Retail Consultation"
+      ],
+      "outreach_channels": [
+        "Social Media Prospecting",
+        "Meta Lead Ads Pipeline",
+        "Email Nurturing"
+      ],
+      "icp_niches": [
+        "Salon groups sourcing prosthetic hair systems",
+        "Wholesale distributors (OEM/private label)",
+        "High-ticket B2C custom wig buyers in BD/export markets"
+      ]
+    }
+  }
+}

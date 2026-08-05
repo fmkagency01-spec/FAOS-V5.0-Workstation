@@ -14,6 +14,8 @@ import { runCodeEngineeringBridge } from "@/lib/code-engineering-bridge";
 import { opsBusStatus, runJarvisOpsBus } from "@/lib/jarvis-ops-bus";
 import { brainStatus } from "@/lib/jarvis-brain";
 import { jarvisBrainTopologySummary } from "@/lib/jarvis-brain-hubs";
+import { runClientHuntingPipeline } from "@/faos_core/pipelines/client-hunting-pipeline";
+import { huntingBrandsConfig } from "@/faos_core/config/brands";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,14 +57,23 @@ export const GET = withApiRoute(
       });
     }
 
+    if (view === "hunt" || view === "brands") {
+      return NextResponse.json({
+        ok: true,
+        version: FAOS_V6_VERSION,
+        hunting: huntingBrandsConfig(),
+      });
+    }
+
     return NextResponse.json({
       ...jarvisNetworkStatus(),
       ok: true,
       hermes: hermesOpsBrief(),
       brain: brainStatus(),
+      hunting: huntingBrandsConfig(),
       endpoints: {
-        GET: "?view=status|health|diagnostics|hermes|ops|brain|hubs",
-        POST: "{ action: diagnostics|pipeline|route|activate|code|ops, ... }",
+        GET: "?view=status|health|diagnostics|hermes|ops|brain|hubs|hunt|brands",
+        POST: "{ action: diagnostics|pipeline|route|activate|code|ops|hunt, ... }",
       },
     });
   },
@@ -70,7 +81,14 @@ export const GET = withApiRoute(
 );
 
 type PostBody = {
-  action?: "diagnostics" | "pipeline" | "route" | "activate" | "code" | "ops";
+  action?:
+    | "diagnostics"
+    | "pipeline"
+    | "route"
+    | "activate"
+    | "code"
+    | "ops"
+    | "hunt";
   details?: string;
   title?: string;
   brand?: string;
@@ -79,6 +97,8 @@ type PostBody = {
   mode?: "auto" | "chat" | "pipeline" | "graph";
   auto_approve?: boolean;
   input?: string;
+  limit?: number;
+  brief?: string;
 };
 
 export const POST = withApiRoute(
@@ -160,6 +180,35 @@ export const POST = withApiRoute(
         { auto_approve: body.auto_approve !== false, brand: body.brand }
       );
       return NextResponse.json({ ok: result.ok, version: FAOS_V6_VERSION, result });
+    }
+
+    if (action === "hunt") {
+      const result = await runClientHuntingPipeline({
+        brand: body.brand,
+        brief: body.brief || body.details || body.input,
+        limit: body.limit,
+      });
+      return NextResponse.json(
+        {
+          ok: result.ok,
+          version: FAOS_V6_VERSION,
+          result: {
+            brand: result.brand,
+            task_id: result.task_id,
+            prospects_targeted: result.prospects_targeted,
+            content_assets: result.content_assets,
+            action_items: result.action_items,
+            status: result.status,
+            brand_id: result.brand_id,
+            hub: result.hub,
+            lead_agent_id: result.lead_agent_id,
+            namespace: result.namespace,
+            connectivity: result.connectivity,
+            error: result.error,
+          },
+        },
+        { status: result.ok ? 200 : 400 }
+      );
     }
 
     // default: jarvis route
