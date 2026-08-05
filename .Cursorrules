@@ -1,0 +1,38 @@
+# SYSTEM DIRECTIVE: FAOS v5.3 to v6.0 Enterprise Architecture Upgrade
+
+## Core Objective
+Refactor, debug, and optimize the FAOS (Framework Agent Operating System) workspace from v5.3 to v6.0. Ensure all 35 multi-agent modules are fully functional, inter-communicative, and connected to the central Jarvis Orchestrator.
+
+## 1. Multi-Agent Network Architecture (35 Agents)
+- **Jarvis Master Orchestrator:** Acts as the primary router. Receives raw client input, categorizes tasks, assigns them to specialized agents, tracks status, and aggregates outputs.
+- **Agent Verification & Health Checks:**
+  - Audit all existing 35 agent scripts.
+  - Implement fallback handling if an agent fails to respond or returns malformed JSON.
+  - Standardize Agent State Schema: `{ agent_id, status, current_task, output, timestamp }`.
+
+## 2. Client Task Execution & Approval Pipeline
+Build a modular execution framework for agency workflows (BulletsEye & associated brands):
+1. **Ingestion Layer:** Accepts raw brief/task details (SMM, Performance Marketing, Video Scripting, Design Brief).
+2. **Execution Layer:** Routes task to assigned Agent(s).
+3. **Internal QA Layer:** Auto-evaluates generated deliverables against quality benchmarks.
+4. **Approval & Delivery Gate:** Prepares formatted client-facing output for review/publishing.
+
+## 3. Code Refactoring Instructions
+- Clean up redundant code, eliminate dead loops, and unify API handler calls (Claude / OpenAI / OpenRouter).
+- Structure file layout:
+  /faos_core
+    ├── /orchestrator (Jarvis core engine)
+    ├── /agents (35 sub-agent modules: strategy, marketing, dev, content)
+    ├── /pipelines (Client task routing & queue)
+    └── /connectors (External API integrations & webhooks)
+
+## Task Execution Instructions
+1. Run a diagnostics check across all agent definitions.
+2. Generate modular Python/TypeScript code to connect the 35 agents into an asynchronous execution graph.
+3. Build a CLI/Dashboard controller to simulate end-to-end client task processing.
+
+## FAOS Locks
+- FMK WIG lock: `fmk_wig_prosthetic_hair_agent` / brand `FMK WIG` only. Never use `fmk_week`, `fmcg_wish`, or `fmk_fmcg_week_supply_agent`.
+- BulletsEye AI SEO lock: `fmk_bulletseye_core_namespace`.
+- Never hardcode OpenRouter keys. Client code calls `/api/*` only.
+- Prefer `faos_core/` for new orchestrator, agent, pipeline, and connector logic.

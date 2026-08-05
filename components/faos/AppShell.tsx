@@ -114,7 +114,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="p-4 border-b border-[#2a3548] flex justify-between items-start">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-[#00f5d4] font-bold">
-              FAOS v5.3 TAC
+              FAOS v6.0
             </p>
             <p className="text-xs text-slate-400 mt-1">{roleInfo?.label || 'Business Suite'}</p>
           </div>

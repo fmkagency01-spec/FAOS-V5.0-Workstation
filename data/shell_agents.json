@@ -1,164 +1,281 @@
 {
-  "version": "5.3.0",
+  "version": "6.0.0",
   "orchestrator": "jarvis_core",
   "agents": [
     {
       "id": "jarvis_core",
       "name": "JARVIS Core",
-      "icon": "🧠",
+      "icon": "\ud83e\udde0",
       "domain": "orchestration",
-      "keywords": ["jarvis", "command", "orchestrate", "delegate", "coordinate"],
+      "keywords": [
+        "jarvis",
+        "command",
+        "orchestrate",
+        "delegate",
+        "coordinate"
+      ],
       "model_hint": "strategy",
-      "description": "Central orchestrator — routes commands to specialist shell agents"
+      "description": "Central orchestrator \u2014 routes commands to specialist shell agents"
     },
     {
       "id": "fmk_wig_prosthetic_hair_agent",
       "name": "FMK WIG Agent",
-      "icon": "💇",
+      "icon": "\ud83d\udc87",
       "domain": "brand",
-      "keywords": ["wig", "hair", "prosthetic", "toupee", "hair system"],
+      "keywords": [
+        "wig",
+        "hair",
+        "prosthetic",
+        "toupee",
+        "hair system"
+      ],
       "model_hint": "automation",
       "description": "Prosthetic hair systems, inventory, supply chain"
     },
     {
       "id": "fmk_shoes_footwear_wing",
       "name": "FMK Shoes Agent",
-      "icon": "👟",
+      "icon": "\ud83d\udc5f",
       "domain": "brand",
-      "keywords": ["shoe", "footwear", "sneaker", "boot", "sandal"],
+      "keywords": [
+        "shoe",
+        "footwear",
+        "sneaker",
+        "boot",
+        "sandal"
+      ],
       "model_hint": "automation",
       "description": "Footwear retail and wholesale operations"
     },
     {
       "id": "fmk_mk_kitchen_cloud_food_agent",
       "name": "MK Kitchen Agent",
-      "icon": "🍳",
+      "icon": "\ud83c\udf73",
       "domain": "brand",
-      "keywords": ["kitchen", "food", "recipe", "cloud food", "catering"],
+      "keywords": [
+        "kitchen",
+        "food",
+        "recipe",
+        "cloud food",
+        "catering"
+      ],
       "model_hint": "automation",
       "description": "MK Kitchen Cloud Food brand operations"
     },
     {
       "id": "fmk_mk_clothing_lifestyle_agent",
       "name": "MK Clothing Agent",
-      "icon": "👔",
+      "icon": "\ud83d\udc54",
       "domain": "brand",
-      "keywords": ["clothing", "apparel", "fashion", "lifestyle", "garment"],
+      "keywords": [
+        "clothing",
+        "apparel",
+        "fashion",
+        "lifestyle",
+        "garment"
+      ],
       "model_hint": "automation",
       "description": "MK Clothing & lifestyle retail"
     },
     {
       "id": "crm_client_agent",
       "name": "CRM Agent",
-      "icon": "👥",
+      "icon": "\ud83d\udc65",
       "domain": "sales",
-      "keywords": ["client", "customer", "crm", "lead", "contact", "prospect"],
+      "keywords": [
+        "client",
+        "customer",
+        "crm",
+        "lead",
+        "contact",
+        "prospect"
+      ],
       "model_hint": "analysis",
       "description": "Client profiles, leads, relationship management"
     },
     {
       "id": "sales_pipeline_agent",
       "name": "Sales Pipeline Agent",
-      "icon": "📈",
+      "icon": "\ud83d\udcc8",
       "domain": "sales",
-      "keywords": ["sales", "deal", "pipeline", "quote", "proposal", "close"],
+      "keywords": [
+        "sales",
+        "deal",
+        "pipeline",
+        "quote",
+        "proposal",
+        "close"
+      ],
       "model_hint": "strategy",
       "description": "Sales pipeline, quotes, and deal closing"
     },
     {
       "id": "invoicing_finance_agent",
       "name": "Invoicing Agent",
-      "icon": "🧾",
+      "icon": "\ud83e\uddfe",
       "domain": "finance",
-      "keywords": ["invoice", "bill", "payment", "receipt", "billing", "due"],
+      "keywords": [
+        "invoice",
+        "bill",
+        "payment",
+        "receipt",
+        "billing",
+        "due"
+      ],
       "model_hint": "analysis",
       "description": "Invoices, billing, payment tracking"
     },
     {
       "id": "accounting_agent",
       "name": "Accounting Agent",
-      "icon": "📊",
+      "icon": "\ud83d\udcca",
       "domain": "finance",
-      "keywords": ["accounting", "ledger", "tax", "expense", "profit", "balance"],
+      "keywords": [
+        "accounting",
+        "ledger",
+        "tax",
+        "expense",
+        "profit",
+        "balance"
+      ],
       "model_hint": "analysis",
       "description": "Financial records, expenses, tax prep"
     },
     {
       "id": "inventory_supply_agent",
       "name": "Inventory Agent",
-      "icon": "📦",
+      "icon": "\ud83d\udce6",
       "domain": "operations",
-      "keywords": ["inventory", "stock", "sku", "warehouse", "quantity", "reorder"],
+      "keywords": [
+        "inventory",
+        "stock",
+        "sku",
+        "warehouse",
+        "quantity",
+        "reorder"
+      ],
       "model_hint": "analysis",
       "description": "Stock levels, SKU management, reorder alerts"
     },
     {
       "id": "logistics_agent",
       "name": "Logistics Agent",
-      "icon": "🚚",
+      "icon": "\ud83d\ude9a",
       "domain": "operations",
-      "keywords": ["shipping", "delivery", "logistics", "freight", "courier", "tracking"],
+      "keywords": [
+        "shipping",
+        "delivery",
+        "logistics",
+        "freight",
+        "courier",
+        "tracking"
+      ],
       "model_hint": "automation",
       "description": "Shipping, delivery, supply chain logistics"
     },
     {
       "id": "hr_people_agent",
       "name": "HR Agent",
-      "icon": "🧑‍💼",
+      "icon": "\ud83e\uddd1\u200d\ud83d\udcbc",
       "domain": "hr",
-      "keywords": ["hr", "employee", "hire", "payroll", "leave", "staff", "team"],
+      "keywords": [
+        "hr",
+        "employee",
+        "hire",
+        "payroll",
+        "leave",
+        "staff",
+        "team"
+      ],
       "model_hint": "analysis",
       "description": "HR records, hiring, payroll, leave management"
     },
     {
       "id": "recruitment_agent",
       "name": "Recruitment Agent",
-      "icon": "🎯",
+      "icon": "\ud83c\udfaf",
       "domain": "hr",
-      "keywords": ["recruit", "interview", "candidate", "job", "hiring", "resume"],
+      "keywords": [
+        "recruit",
+        "interview",
+        "candidate",
+        "job",
+        "hiring",
+        "resume"
+      ],
       "model_hint": "strategy",
       "description": "Job posts, candidate screening, interviews"
     },
     {
       "id": "creative_design_agent",
       "name": "Creative Design Agent",
-      "icon": "🎨",
+      "icon": "\ud83c\udfa8",
       "domain": "marketing",
-      "keywords": ["design", "graphic", "logo", "banner", "brand", "visual", "creative"],
+      "keywords": [
+        "design",
+        "graphic",
+        "logo",
+        "banner",
+        "brand",
+        "visual",
+        "creative"
+      ],
       "model_hint": "creative",
       "description": "Graphics, branding, visual assets"
     },
     {
       "id": "video_production_agent",
       "name": "Video Production Agent",
-      "icon": "🎬",
+      "icon": "\ud83c\udfac",
       "domain": "marketing",
-      "keywords": ["video", "edit", "reel", "youtube", "tiktok", "storyboard", "capcut"],
+      "keywords": [
+        "video",
+        "edit",
+        "reel",
+        "youtube",
+        "tiktok",
+        "storyboard",
+        "capcut"
+      ],
       "model_hint": "video",
       "description": "Video scripts, edit plans, storyboards"
     },
     {
       "id": "social_media_agent",
       "name": "Social Media Agent",
-      "icon": "📱",
+      "icon": "\ud83d\udcf1",
       "domain": "marketing",
-      "keywords": ["social", "instagram", "facebook", "post", "hashtag", "engagement"],
+      "keywords": [
+        "social",
+        "instagram",
+        "facebook",
+        "post",
+        "hashtag",
+        "engagement"
+      ],
       "model_hint": "creative",
       "description": "Social content, scheduling, engagement"
     },
     {
       "id": "marketing_strategy_agent",
       "name": "Marketing Strategy Agent",
-      "icon": "📣",
+      "icon": "\ud83d\udce3",
       "domain": "marketing",
-      "keywords": ["marketing", "campaign", "ads", "promotion", "launch", "audience"],
+      "keywords": [
+        "marketing",
+        "campaign",
+        "ads",
+        "promotion",
+        "launch",
+        "audience"
+      ],
       "model_hint": "strategy",
       "description": "Campaign strategy, ads, go-to-market"
     },
     {
       "id": "bulletseye_ai_seo_agent",
       "name": "BulletsEye AI SEO Agent",
-      "icon": "🎯",
+      "icon": "\ud83c\udfaf",
       "domain": "marketing",
       "keywords": [
         "seo",
@@ -180,155 +297,278 @@
     {
       "id": "fmk_seo_lead_agent",
       "name": "BulletsEye SEO Lead Agent",
-      "icon": "🔀",
+      "icon": "\ud83d\udd00",
       "domain": "marketing",
-      "keywords": ["fan-out", "h2", "sub-query", "cluster", "seo lead", "bulletseye"],
+      "keywords": [
+        "fan-out",
+        "h2",
+        "sub-query",
+        "cluster",
+        "seo lead",
+        "bulletseye"
+      ],
       "model_hint": "strategy",
       "description": "Fan-Out sub-query decomposition & H2 structure generator"
     },
     {
       "id": "fmk_geo_engine_agent",
       "name": "BulletsEye GEO Engine Agent",
-      "icon": "🌐",
+      "icon": "\ud83c\udf10",
       "domain": "marketing",
-      "keywords": ["json-ld", "schema", "geo", "perplexity", "chatgpt", "ai overview"],
+      "keywords": [
+        "json-ld",
+        "schema",
+        "geo",
+        "perplexity",
+        "chatgpt",
+        "ai overview"
+      ],
       "model_hint": "strategy",
       "description": "JSON-LD fact schema packages for generative search engines"
     },
     {
       "id": "fmk_schema_backend_agent",
       "name": "BulletsEye Schema Backend Agent",
-      "icon": "📄",
+      "icon": "\ud83d\udcc4",
       "domain": "marketing",
-      "keywords": ["metadata", "head", "next.js", "json-ld", "schema backend"],
+      "keywords": [
+        "metadata",
+        "head",
+        "next.js",
+        "json-ld",
+        "schema backend"
+      ],
       "model_hint": "automation",
       "description": "Next.js Metadata + HTML head JSON-LD injection pack manager"
     },
     {
       "id": "fmk_website_injector_agent",
       "name": "BulletsEye Website Injector Agent",
-      "icon": "💉",
+      "icon": "\ud83d\udc89",
       "domain": "marketing",
-      "keywords": ["inject", "webhook", "rest", "content api", "auto-inject"],
+      "keywords": [
+        "inject",
+        "webhook",
+        "rest",
+        "content api",
+        "auto-inject"
+      ],
       "model_hint": "automation",
       "description": "Pushes H2, direct answers & schema to connected client/shell sites"
     },
     {
       "id": "fmk_wig_internal_engine",
       "name": "FMK Wig B2B Internal Engine",
-      "icon": "🏢",
+      "icon": "\ud83c\udfe2",
       "domain": "sales",
-      "keywords": ["b2b", "salon", "export", "import", "catalog", "buyer", "wholesale", "fmk wig"],
+      "keywords": [
+        "b2b",
+        "salon",
+        "export",
+        "import",
+        "catalog",
+        "buyer",
+        "wholesale",
+        "fmk wig"
+      ],
       "model_hint": "automation",
       "description": "Internal B2B lead pipelines, global salon orders, export/import catalogs"
     },
     {
       "id": "rr_wigs_client_workspace",
       "name": "RR Wigs Client Workspace",
-      "icon": "🏭",
+      "icon": "\ud83c\udfed",
       "domain": "sales",
-      "keywords": ["rr wigs", "tenant", "client workspace", "factory", "oem", "linkedin", "analytics"],
+      "keywords": [
+        "rr wigs",
+        "tenant",
+        "client workspace",
+        "factory",
+        "oem",
+        "linkedin",
+        "analytics"
+      ],
       "model_hint": "strategy",
-      "description": "Isolated tenant dashboard — web, SEO, ads, factory inventory for RR Wigs"
+      "description": "Isolated tenant dashboard \u2014 web, SEO, ads, factory inventory for RR Wigs"
     },
     {
       "id": "harness_alpha_web_engineering",
-      "name": "Harness Alpha — Web Engineering",
-      "icon": "⚙️",
+      "name": "Harness Alpha \u2014 Web Engineering",
+      "icon": "\u2699\ufe0f",
       "domain": "automation",
-      "keywords": ["harness", "web", "node", "react", "inquiry api", "rr wigs"],
+      "keywords": [
+        "harness",
+        "web",
+        "node",
+        "react",
+        "inquiry api",
+        "rr wigs"
+      ],
       "model_hint": "automation",
-      "description": "24/7 worker — RR Wigs Node.js web backend & B2B inquiry endpoints"
+      "description": "24/7 worker \u2014 RR Wigs Node.js web backend & B2B inquiry endpoints"
     },
     {
       "id": "harness_beta_marketing_automation",
-      "name": "Harness Beta — Marketing Automation",
-      "icon": "📣",
+      "name": "Harness Beta \u2014 Marketing Automation",
+      "icon": "\ud83d\udce3",
       "domain": "marketing",
-      "keywords": ["harness", "linkedin", "google ads", "aio", "lead gen", "rr wigs"],
+      "keywords": [
+        "harness",
+        "linkedin",
+        "google ads",
+        "aio",
+        "lead gen",
+        "rr wigs"
+      ],
       "model_hint": "strategy",
-      "description": "24/7 worker — LinkedIn outreach, ad pixels, AIO schema generation"
+      "description": "24/7 worker \u2014 LinkedIn outreach, ad pixels, AIO schema generation"
     },
     {
       "id": "harness_gamma_inventory_sync",
-      "name": "Harness Gamma — Inventory Sync",
-      "icon": "🔄",
+      "name": "Harness Gamma \u2014 Inventory Sync",
+      "icon": "\ud83d\udd04",
       "domain": "operations",
-      "keywords": ["harness", "inventory", "catalog sync", "factory", "fmk wig", "rr wigs"],
+      "keywords": [
+        "harness",
+        "inventory",
+        "catalog sync",
+        "factory",
+        "fmk wig",
+        "rr wigs"
+      ],
       "model_hint": "automation",
-      "description": "24/7 worker — RR factory inventory sync to FMK Wig B2B sourcing panel"
+      "description": "24/7 worker \u2014 RR factory inventory sync to FMK Wig B2B sourcing panel"
     },
     {
       "id": "project_ops_agent",
       "name": "Project Ops Agent",
-      "icon": "📋",
+      "icon": "\ud83d\udccb",
       "domain": "operations",
-      "keywords": ["project", "milestone", "task", "deadline", "sprint", "kanban"],
+      "keywords": [
+        "project",
+        "milestone",
+        "task",
+        "deadline",
+        "sprint",
+        "kanban"
+      ],
       "model_hint": "automation",
       "description": "Project boards, milestones, task routing"
     },
     {
       "id": "support_service_agent",
       "name": "Support Agent",
-      "icon": "🎧",
+      "icon": "\ud83c\udfa7",
       "domain": "support",
-      "keywords": ["support", "ticket", "complaint", "help", "refund", "warranty"],
+      "keywords": [
+        "support",
+        "ticket",
+        "complaint",
+        "help",
+        "refund",
+        "warranty"
+      ],
       "model_hint": "chat",
       "description": "Customer support tickets and resolutions"
     },
     {
       "id": "legal_compliance_agent",
       "name": "Legal Agent",
-      "icon": "⚖️",
+      "icon": "\u2696\ufe0f",
       "domain": "legal",
-      "keywords": ["legal", "contract", "compliance", "terms", "policy", "regulation"],
+      "keywords": [
+        "legal",
+        "contract",
+        "compliance",
+        "terms",
+        "policy",
+        "regulation"
+      ],
       "model_hint": "strategy",
       "description": "Contracts, compliance, policy review"
     },
     {
       "id": "it_devops_agent",
       "name": "IT DevOps Agent",
-      "icon": "🖥️",
+      "icon": "\ud83d\udda5\ufe0f",
       "domain": "tech",
-      "keywords": ["deploy", "server", "api", "devops", "infrastructure", "vercel", "render"],
+      "keywords": [
+        "deploy",
+        "server",
+        "api",
+        "devops",
+        "infrastructure",
+        "vercel",
+        "render"
+      ],
       "model_hint": "code",
       "description": "Infrastructure, deployments, API health"
     },
     {
       "id": "code_engineering_agent",
       "name": "Code Engineering Agent",
-      "icon": "💻",
+      "icon": "\ud83d\udcbb",
       "domain": "tech",
-      "keywords": ["code", "debug", "typescript", "python", "bug", "feature", "build"],
+      "keywords": [
+        "code",
+        "debug",
+        "typescript",
+        "python",
+        "bug",
+        "feature",
+        "build"
+      ],
       "model_hint": "code",
       "description": "Software development and debugging"
     },
     {
       "id": "research_analytics_agent",
       "name": "Research Agent",
-      "icon": "🔬",
+      "icon": "\ud83d\udd2c",
       "domain": "analytics",
-      "keywords": ["research", "market", "competitor", "trend", "data", "report"],
+      "keywords": [
+        "research",
+        "market",
+        "competitor",
+        "trend",
+        "data",
+        "report"
+      ],
       "model_hint": "analysis",
       "description": "Market research, competitor analysis, reports"
     },
     {
       "id": "executive_strategy_agent",
       "name": "Executive Strategy Agent",
-      "icon": "👑",
+      "icon": "\ud83d\udc51",
       "domain": "executive",
-      "keywords": ["strategy", "vision", "roadmap", "kpi", "okr", "executive", "ceo"],
+      "keywords": [
+        "strategy",
+        "vision",
+        "roadmap",
+        "kpi",
+        "okr",
+        "executive",
+        "ceo"
+      ],
       "model_hint": "strategy",
       "description": "Executive planning, KPIs, 10x growth strategy"
     },
     {
       "id": "bengali_localization_agent",
       "name": "Bengali Agent",
-      "icon": "🇧🇩",
+      "icon": "\ud83c\udde7\ud83c\udde9",
       "domain": "localization",
-      "keywords": ["bangla", "bengali", "বাংলা", "translate", "local"],
+      "keywords": [
+        "bangla",
+        "bengali",
+        "\u09ac\u09be\u0982\u09b2\u09be",
+        "translate",
+        "local"
+      ],
       "model_hint": "bengali",
       "description": "Bengali language support and localization"
     }
-  ]
+  ],
+  "platform": "FAOS v6.0"
 }
