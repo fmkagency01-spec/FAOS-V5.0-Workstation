@@ -44,13 +44,18 @@ export default function SystemStatusPage() {
         });
 
         const renderStatus = health.backend?.render?.status;
+        const renderMessage = health.backend?.render?.message;
         next.push({
           label: 'Render Backend',
           status: renderStatus === 'online' ? 'ok' : renderStatus === 'not_configured' ? 'warn' : 'fail',
           detail:
             renderStatus === 'online'
-              ? health.backend?.render?.message || 'Backend connected'
-              : 'Backend not reachable — wait 60 seconds and refresh (free tier wake-up)',
+              ? renderMessage || 'Backend connected'
+              : renderStatus === 'not_configured'
+                ? 'Backend URL not configured — set NEXT_PUBLIC_BACKEND_URL in Vercel'
+                : renderMessage
+                  ? `${renderMessage} — wait 60 seconds and refresh (free tier wake-up)`
+                  : 'Backend not reachable — wait 60 seconds and refresh (free tier wake-up)',
         });
 
         const orStatus = health.gateway?.openrouter;
