@@ -207,7 +207,8 @@ async def root_health() -> Dict[str, Any]:
         "orchestrate": "ENABLED",
         "learning_hub": "ENABLED",
         "faos_v6": "ENABLED",
-        "shell_agents": 35,
+        "shell_agents": 36,
+        "hermes_cofounder": "hermes_cofounder_agent",
         "autonomous_loop": orch.get("autonomous_loop"),
         "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
@@ -270,6 +271,11 @@ async def faos_v6_post(request: Request) -> Dict[str, Any]:
     action = str(body.get("action") or "route")
     if action == "diagnostics":
         return faos_v6.diagnostics()
+
+    if action == "activate":
+        return faos_v6.activate(
+            str(body.get("details") or body.get("input") or "api_activate")[:120]
+        )
 
     if action == "pipeline":
         details = str(body.get("details") or body.get("input") or "").strip()

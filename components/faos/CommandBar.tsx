@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { routeQuery } from '@/lib/ai-router';
+import {
+  loadJarvisSessionCache,
+  saveJarvisSessionCache,
+} from '@/lib/jarvis-session-cache';
 
 type ChatEntry = {
   role: 'user' | 'assistant' | 'system';
@@ -18,16 +22,67 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [history, setHistory] = useState<ChatEntry[]>([
     {
       role: 'system',
-      text: 'JARVIS Gateway — ask anything. Best AI auto-routed · token-saving ON · TTS via JARVIS panel.',
+      text: 'JARVIS v6 Gateway + Hermes Co-Founder — ask anything. History auto-saves · TTS via JARVIS panel.',
     },
   ]);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const preview = input.trim() ? routeQuery(input.trim(), true) : null;
+
+  useEffect(() => {
+    const cached = loadJarvisSessionCache();
+    if (cached?.session_id) setSessionId(cached.session_id);
+    if (cached?.messages?.length) {
+      setHistory(
+        cached.messages.map((m) => ({
+          role: (m.role === 'jarvis' ? 'assistant' : m.role) as ChatEntry['role'],
+          text: m.text,
+          meta: m.meta,
+        }))
+      );
+    }
+    // Soft hydrate from server when Super Admin
+    void (async () => {
+      try {
+        const res = await fetch('/api/jarvis/sessions?active=1', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          session?: {
+            id: string;
+            messages: Array<{ role: string; text: string; meta?: string }>;
+          };
+        };
+        if (!data.session) return;
+        setSessionId(data.session.id);
+        const msgs = data.session.messages.map((m) => ({
+          role: (m.role === 'jarvis' ? 'assistant' : m.role) as ChatEntry['role'],
+          text: m.text,
+          meta: m.meta,
+        }));
+        if (msgs.length) {
+          setHistory(msgs);
+          saveJarvisSessionCache({
+            session_id: data.session.id,
+            messages: msgs.map((m) => ({
+              role: m.role === 'assistant' ? 'jarvis' : m.role,
+              text: m.text,
+              meta: m.meta,
+            })),
+          });
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, []);
 
   const send = useCallback(async () => {
     const q = input.trim();
@@ -42,7 +97,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ command: q }),
+        body: JSON.stringify({ command: q, session_id: sessionId || undefined }),
       });
       const data = (await res.json()) as {
         reply?: string;
@@ -53,8 +108,11 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
         primary_agent?: { icon?: string; name?: string };
         action_taken?: string;
         usage?: { total_tokens?: number };
+        session_id?: string;
       };
       if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+
+      if (data.session_id) setSessionId(data.session_id);
 
       const meta = [
         data.primary_agent ? `${data.primary_agent.icon} ${data.primary_agent.name}` : data.route_label,
@@ -65,10 +123,21 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
         .filter(Boolean)
         .join(' · ');
 
-      setHistory((h) => [
-        ...h,
-        { role: 'assistant', text: data.reply || '(empty)', meta },
-      ]);
+      setHistory((h) => {
+        const next = [...h, { role: 'assistant' as const, text: data.reply || '(empty)', meta }];
+        const sid = data.session_id || sessionId;
+        if (sid) {
+          saveJarvisSessionCache({
+            session_id: sid,
+            messages: next.map((m) => ({
+              role: m.role === 'assistant' ? 'jarvis' : m.role,
+              text: m.text,
+              meta: m.meta,
+            })),
+          });
+        }
+        return next;
+      });
     } catch (e) {
       setHistory((h) => [
         ...h,
@@ -81,7 +150,7 @@ export function CommandBar({ variant = 'bar' }: CommandBarProps) {
     } finally {
       setLoading(false);
     }
-  }, [input, loading]);
+  }, [input, loading, sessionId]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -36,3 +36,9 @@ Build a modular execution framework for agency workflows (BulletsEye & associate
 - BulletsEye AI SEO lock: `fmk_bulletseye_core_namespace`.
 - Never hardcode OpenRouter keys. Client code calls `/api/*` only.
 - Prefer `faos_core/` for new orchestrator, agent, pipeline, and connector logic.
+
+## Jarvis Brain (v6)
+- Hermes Co-Founder (`hermes_cofounder_agent`) monitors/operates all shell-agent teams under Jarvis.
+- Chat history must persist (server store + browser cache) for Super Admin.
+- Software/dev commands route through `code_engineering_agent` + Cursor bridge (`CURSOR_AGENT_WEBHOOK_URL`).
+- One-stop ops bus: `lib/jarvis-ops-bus.ts` — activate / pipeline / code / chat interconnect.

@@ -16,12 +16,17 @@ import {
 } from "@/lib/ops-revenue-engine";
 import { getOpenRouterApiKey, safeOpenRouterCall } from "@/lib/openrouter";
 import { runHarnessCycle } from "@/lib/harness-agents";
+import {
+  activateAllAgentTeams,
+  hermesOpsBrief,
+} from "@/lib/hermes-cofounder";
 
 export type OpenClawTask =
   | "lead_gen"
   | "content_draft"
   | "ingest_pending"
   | "harness_cycle"
+  | "agent_monitor"
   | "idle";
 
 export type HermesOpenClawResult = {
@@ -37,15 +42,25 @@ export type HermesOpenClawResult = {
 function decideDeterministic(): { task: OpenClawTask; reason: string } {
   const pending = listLearningHubLocal(20).filter((i) => i.status === "pending").length;
   const minute = new Date().getUTCMinutes();
+  const brief = hermesOpsBrief();
 
+  if (!brief.ok || brief.live.failed > 0) {
+    return {
+      task: "agent_monitor",
+      reason: `Hermes Co-Founder fleet alert (${brief.issues.length || brief.live.failed})`,
+    };
+  }
   if (pending > 0) {
     return { task: "ingest_pending", reason: `${pending} learning-hub items pending` };
   }
-  // Rotate revenue engines across the hour so cron + tick stay balanced
-  if (minute % 30 < 10) {
+  // Rotate revenue engines + agent monitor across the hour
+  if (minute % 30 < 8) {
+    return { task: "agent_monitor", reason: "Hermes Co-Founder fleet health window" };
+  }
+  if (minute % 30 < 14) {
     return { task: "lead_gen", reason: "BulletsEye lead-gen window" };
   }
-  if (minute % 30 < 20) {
+  if (minute % 30 < 22) {
     return { task: "content_draft", reason: "FMK Media / Editing Hub draft window" };
   }
   return { task: "harness_cycle", reason: "Hermes default → harness Alpha/Beta/Gamma" };
@@ -64,8 +79,8 @@ async function decideWithHermes(): Promise<{ task: OpenClawTask; reason: string;
         {
           role: "system",
           content:
-            "You are Hermes OpenClaw for FAOS JARVIS MATRIX. Reply with ONE token only: " +
-            "lead_gen | content_draft | ingest_pending | harness_cycle | idle",
+            "You are Hermes Co-Founder / OpenClaw for FAOS JARVIS MATRIX. Reply with ONE token only: " +
+            "agent_monitor | lead_gen | content_draft | ingest_pending | harness_cycle | idle",
         },
         {
           role: "user",
@@ -82,6 +97,7 @@ async function decideWithHermes(): Promise<{ task: OpenClawTask; reason: string;
     );
     const token = result.reply.trim().toLowerCase().replace(/[^a-z_]/g, "");
     const allowed: OpenClawTask[] = [
+      "agent_monitor",
       "lead_gen",
       "content_draft",
       "ingest_pending",
@@ -113,6 +129,12 @@ export async function runHermesOpenClawRouter(opts?: {
   let payload: Record<string, unknown> = {};
 
   switch (decision.task) {
+    case "agent_monitor": {
+      const activation = activateAllAgentTeams("hermes_openclaw_monitor");
+      const brief = hermesOpsBrief();
+      payload = { activation, brief };
+      break;
+    }
     case "lead_gen": {
       const out = await runBulletseyeLeadGeneration({ use_llm: Boolean(opts?.use_llm) });
       payload = out as unknown as Record<string, unknown>;

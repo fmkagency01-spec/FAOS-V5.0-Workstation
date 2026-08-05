@@ -95,5 +95,7 @@ export type DiagnosticsReport = {
 };
 
 export const FAOS_V6_VERSION = "6.0.0" as const;
-export const EXPECTED_SHELL_AGENT_COUNT = 35;
+/** 35 specialists + Hermes Co-Founder (reports to jarvis_core) */
+export const EXPECTED_SHELL_AGENT_COUNT = 36;
 export const ORCHESTRATOR_ID = "jarvis_core";
+export const HERMES_COFOUNDER_ID = "hermes_cofounder_agent";

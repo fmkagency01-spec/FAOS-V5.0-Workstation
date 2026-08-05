@@ -59,12 +59,12 @@ export default function SettingsPage() {
       </div>
 
       <div className="rounded-xl border border-[#00f5d4]/30 bg-[#00f5d4]/5 p-5 text-sm text-[#00f5d4]">
-        <p className="font-bold">FAOS v6.0 — Jarvis + 35 shell agents</p>
+        <p className="font-bold">FAOS v6.0 — Jarvis + Hermes Co-Founder + 36 agents</p>
         <ul className="mt-2 text-xs space-y-1 text-[#00f5d4]/80 list-disc pl-4">
-          <li>Jarvis Master Orchestrator · async execution graph · QA approval gate</li>
-          <li>Voice command (Chrome) · ⌘⇧J opens JARVIS panel</li>
+          <li>Hermes Co-Founder monitors & operates all agent teams under Jarvis</li>
+          <li>Chat history auto-saves (server + browser cache) for Super Admin</li>
+          <li>Cursor/code bridge via code_engineering_agent · client task pipeline</li>
           <li>Controller UI at /faos-v6 · CLI: npm run faos:v6:diagnostics</li>
-          <li>ERP: Invoicing, Inventory, HR — voice-create via JARVIS</li>
         </ul>
       </div>
 

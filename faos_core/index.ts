@@ -6,6 +6,7 @@ export {
   FAOS_V6_VERSION,
   EXPECTED_SHELL_AGENT_COUNT,
   ORCHESTRATOR_ID,
+  HERMES_COFOUNDER_ID,
   type AgentState,
   type AgentStatus,
   type ClientBrief,

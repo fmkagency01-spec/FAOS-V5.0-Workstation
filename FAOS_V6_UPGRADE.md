@@ -98,4 +98,7 @@ Dashboard: `/faos-v6` · API: `GET/POST /api/faos-v6`
 ## Version
 - Target: **FAOS v6.0**
 - Previous: **FAOS v5.3**
-- Agent roster: **35** shell agents (incl. `jarvis_core`)
+- Agent roster: **36** (35 specialists + `hermes_cofounder_agent`)
+- Jarvis Brain Co-Founder: **Hermes** — monitors/operates all agent teams
+- Chat history: server JSON + browser cache (`faos.jarvis.active_session.v1`)
+- Cursor bridge: `lib/code-engineering-bridge.ts` via `CURSOR_AGENT_WEBHOOK_URL`

@@ -42,6 +42,7 @@ const LANE_BY_DOMAIN: Record<string, AgentLane> = {
 /** Explicit overrides for agency workflow lanes */
 const LANE_OVERRIDES: Record<string, AgentLane> = {
   jarvis_core: "orchestration",
+  hermes_cofounder_agent: "orchestration",
   social_media_agent: "marketing_strategy",
   marketing_strategy_agent: "marketing_strategy",
   creative_design_agent: "tech_content",

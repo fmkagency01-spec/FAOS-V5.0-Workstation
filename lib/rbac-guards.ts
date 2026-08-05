@@ -3,7 +3,7 @@ import { normalizeRole } from "@/lib/auth-edge";
 /** Super Admin (Mahirul / Executive Alpha) — sole viewers of internal JARVIS chat logs. */
 export function isSuperAdmin(role: string): boolean {
   const r = normalizeRole(role);
-  return r === "owner";
+  return r === "owner" || r === "executive";
 }
 
 /** Default home route after login based on tenant role. */
