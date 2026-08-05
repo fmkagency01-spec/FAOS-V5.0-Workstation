@@ -8,6 +8,11 @@ import {
   matchShellAgents,
   type ShellAgent,
 } from "@/lib/shell-agents";
+import {
+  buildConnectivityPlan,
+  formatConnectivityForReply,
+  type ConnectivityPlan,
+} from "@/lib/agent-connectivity";
 
 export type JarvisAction =
   | { type: "none" }
@@ -31,6 +36,7 @@ export type JarvisPlan = {
   route: ReturnType<typeof routeQuery>;
   action: JarvisAction;
   system_context: string;
+  connectivity: ConnectivityPlan;
 };
 
 export type JarvisResult = {
@@ -42,6 +48,7 @@ export type JarvisResult = {
   action_taken?: string;
   action_result?: unknown;
   usage?: { total_tokens?: number };
+  connectivity?: ConnectivityPlan;
 };
 
 function detectErpAction(command: string): JarvisAction {
@@ -150,20 +157,47 @@ export function planJarvisCommand(command: string): JarvisPlan {
 
   const agentList = [primary, ...supporting].map((a) => `${a.icon} ${a.name} (${a.domain})`).join(", ");
 
+  const path =
+    action.type === "activate_fleet"
+      ? ("activate" as const)
+      : action.type === "code_engineering"
+        ? ("code_bridge" as const)
+        : action.type === "run_pipeline"
+          ? ("pipeline" as const)
+          : action.type === "none"
+            ? ("chat" as const)
+            : ("erp" as const);
+
+  const connectivity = buildConnectivityPlan(trimmed, {
+    path,
+    primary_id: primary.id,
+    supporting_ids: supporting.map((s) => s.id),
+  });
+
   const system_context = [
     "You are JARVIS — FMK Group FAOS v6.0 executive AI orchestrator (Jarvis Brain).",
     "Hermes Co-Founder monitors and operates all shell-agent teams under your command.",
     `Primary shell agent: ${primary.name} — ${primary.description}`,
     supporting.length ? `Supporting agents: ${supporting.map((a) => a.name).join(", ")}` : "",
     `Dispatched team: ${agentList}`,
+    `Connectivity chain: ${connectivity.summary_line}`,
+    "When answering, briefly name which agents will handle each part of a multi-step request.",
     "Coordinate as one unified one-stop workstation. Be concise. Deliver actionable results before deadlines.",
-    "Never violate FMK WIG / BulletsEye namespace locks. Never expose API keys.",
+    "Never violate FMK WIG / BulletsEye namespace locks. Never expose API keys or .env contents.",
     "If ERP, pipeline, fleet activation, or Cursor/code bridge action was triggered, confirm what was done.",
   ]
     .filter(Boolean)
     .join("\n");
 
-  return { command: trimmed, primary_agent: primary, supporting_agents: supporting, route, action, system_context };
+  return {
+    command: trimmed,
+    primary_agent: primary,
+    supporting_agents: supporting,
+    route,
+    action,
+    system_context,
+    connectivity,
+  };
 }
 
 export async function executeJarvisPlan(
@@ -206,28 +240,39 @@ export async function executeJarvisPlan(
       intent: plan.route.intent,
     });
 
+    const reply = `${ai.reply}${formatConnectivityForReply(plan.connectivity)}`;
     return {
-      reply: ai.reply,
+      reply,
       model: ai.model,
       intent: ai.intent,
       primary_agent: plan.primary_agent,
-      agents_dispatched: [plan.primary_agent.id, ...plan.supporting_agents.map((a) => a.id)],
+      agents_dispatched: [
+        plan.primary_agent.id,
+        ...plan.supporting_agents.map((a) => a.id),
+        "hermes_cofounder_agent",
+      ],
       action_taken: actionTaken,
       action_result: actionResult,
       usage: ai.usage,
+      connectivity: plan.connectivity,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "JARVIS gateway failed";
     const offline = jarvisOfflineReply(plan, message);
     if (offline) {
       return {
-        reply: offline,
+        reply: `${offline}${formatConnectivityForReply(plan.connectivity)}`,
         model: "jarvis-offline",
         intent: plan.route.intent,
         primary_agent: plan.primary_agent,
-        agents_dispatched: [plan.primary_agent.id, ...plan.supporting_agents.map((a) => a.id)],
+        agents_dispatched: [
+          plan.primary_agent.id,
+          ...plan.supporting_agents.map((a) => a.id),
+          "hermes_cofounder_agent",
+        ],
         action_taken: actionTaken,
         action_result: actionResult,
+        connectivity: plan.connectivity,
       };
     }
     if (isOpenRouterAuthError(message)) {

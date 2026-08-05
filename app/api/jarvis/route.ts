@@ -293,6 +293,7 @@ export async function POST(request: NextRequest) {
         prefer_code_bridge: hermes.prefer_code_bridge,
         prefer_pipeline: hermes.prefer_pipeline,
       },
+      connectivity: result.connectivity || plan.connectivity,
       usage: result.usage ?? null,
       session_id: chatSessionId,
     });

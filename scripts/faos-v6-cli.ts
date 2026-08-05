@@ -7,6 +7,9 @@
  *   npx tsx scripts/faos-v6-cli.ts route "Check inventory for FMK WIG"
  */
 
+import { loadEnvLocal } from "./load-env-local";
+loadEnvLocal();
+
 import { auditAgentDefinitions } from "../faos_core/orchestrator/health";
 import { jarvisRoute, jarvisNetworkStatus } from "../faos_core/orchestrator/jarvis-engine";
 import { runClientTaskPipeline } from "../faos_core/pipelines/client-task-pipeline";

@@ -3,6 +3,9 @@
  * Usage: npx tsx scripts/faos-v6-diagnostics.ts
  */
 
+import { loadEnvLocal } from "./load-env-local";
+loadEnvLocal();
+
 import { auditAgentDefinitions } from "../faos_core/orchestrator/health";
 import { registryStats, listAgents } from "../faos_core/orchestrator/agent-registry";
 import { llmConnectorStatus } from "../faos_core/connectors/llm";

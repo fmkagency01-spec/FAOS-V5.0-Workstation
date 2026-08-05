@@ -180,7 +180,7 @@ export async function GET() {
     {
       ok: true,
       service: "faos-v5-workstation-api",
-      version: "5.3.0",
+      version: "6.0.0",
       status: overall,
       timestamp: new Date().toISOString(),
       modules: {
