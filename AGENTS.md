@@ -3,15 +3,19 @@
 ## Cursor Cloud specific instructions
 
 This repository is a **Next.js 15 App Router** app for the
-"FAOS v5.0 — Central Operating Dashboard".
+"FAOS v6.0 — Central Operating Dashboard".
 
 - UI: `app/page.tsx`, Create Pillar console at `app/dashboard/create-pillar/page.tsx`
+- FAOS v6 controller: `app/(platform)/faos-v6/page.tsx` · API `app/api/faos-v6/route.ts`
+- Core engine: `faos_core/` (Jarvis orchestrator, 35 agents, pipelines, connectors)
+- Directive: `FAOS_V6_UPGRADE.md` · Cursor rules: `.Cursorrules`
 - BulletsEye AI SEO / GEO: `app/dashboard/ai-seo/page.tsx`
 - Backend: `app/api/*/route.ts` (deployed with the same Vercel project)
 - OpenRouter helper: `lib/openrouter.ts` (server-only)
 - Create Pillar: `lib/create-pillar.ts`, namespace `data/fmk_create_pillar_retail_core.json`
 - AI SEO / GEO: `lib/ai-seo-geo.ts`, namespace `data/fmk_bulletseye_core_namespace.json`
 - Python FastAPI: `backend/main.py` (Render entry; `/` must return JSON health)
+- Python FAOS v6: `backend/faos_core/` · router `backend/router/faos_v6_routing.py`
 - Python router: `backend/router/create_pillar_routing.py`
 - Python AI SEO router: `backend/router/ai_seo_routing.py`
 

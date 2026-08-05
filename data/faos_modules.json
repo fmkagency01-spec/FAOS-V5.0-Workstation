@@ -1,6 +1,6 @@
 {
-  "platform": "FAOS v5.3 TAC Masterpiece",
-  "tagline": "TAC Central Brain — 3 Pillars · JARVIS · 26 Agents · AI SEO/GEO · Secure ERP",
+  "platform": "FAOS v6.0 Enterprise",
+  "tagline": "Jarvis Orchestrator — 35 Agents · Client Task Pipeline · AI SEO/GEO · Secure ERP",
   "modules": [
     {
       "id": "home",
@@ -11,6 +11,16 @@
       "tier": "core",
       "enabled": true,
       "description": "Apps launcher and executive overview"
+    },
+    {
+      "id": "faos_v6",
+      "name": "FAOS v6",
+      "icon": "⚡",
+      "route": "/faos-v6",
+      "category": "core",
+      "tier": "enterprise",
+      "enabled": true,
+      "description": "Jarvis v6 controller — 35-agent diagnostics + client task pipeline simulation"
     },
     {
       "id": "tac",
@@ -30,7 +40,7 @@
       "category": "core",
       "tier": "core",
       "enabled": true,
-      "description": "Voice & chat command center — 26 shell agents orchestrated"
+      "description": "Voice & chat command center — 35 shell agents orchestrated by Jarvis v6"
     },
     {
       "id": "crm",

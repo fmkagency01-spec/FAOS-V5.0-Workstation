@@ -1,9 +1,10 @@
 """
-FAOS v5.0 Backend Core — FastAPI apex entry for Render (GitHub integration).
+FAOS v6.0 Backend Core — FastAPI apex entry for Render (GitHub integration).
 
 - GET / always returns JSON health (fixes Render "Cannot GET /" / 404 probes)
 - CORS enabled for Vercel + localhost cross-origin dashboard calls
 - Automation routes live under /api/v5/*
+- FAOS v6 Jarvis + 35-agent network under /api/v5/faos-v6
 - Autonomous 24/7 orchestrate loop (JARVIS MATRIX) via FastAPI lifespan
 """
 
@@ -31,6 +32,7 @@ from router.workflow_routing import workflow
 from router.orchestrate_routing import orchestrate, enqueue_media_job
 from router.learning_hub_routing import learning_hub
 from router.pillar_routing import pillar_router
+from router.faos_v6_routing import faos_v6
 from services.memory_namespaces import memory_status, load_memory, append_memory, list_namespace_ids
 from services.openrouter_client import get_openrouter_api_key
 from middleware.auth import BackendAuthMiddleware
@@ -139,7 +141,7 @@ def _cors_origins() -> List[str]:
 
 app = FastAPI(
     title="FAOS Backend Core",
-    version="5.3",
+    version="6.0.0",
     # Avoid silent 307 redirects that break POST when clients add a trailing slash.
     redirect_slashes=False,
     lifespan=lifespan,
@@ -179,14 +181,14 @@ async def root_health() -> Dict[str, Any]:
     orch = orchestrate.status()
     return {
         # Master prompt contract
-        "status": "FAOS v5.0 Central Core Operational",
+        "status": "FAOS v6.0 Central Core Operational",
         "mode": "24/7 Active",
         # Locked JARVIS MATRIX compatibility fields
         "operational_status": "active",
-        "engine": "JARVIS MATRIX V5.0",
+        "engine": "JARVIS MATRIX V6.0",
         "system": "100% Autonomous",
         # Extended compatibility fields for FAOS workstation / TAC UI
-        "message": "FAOS v5.3 Backend serving on Render cluster",
+        "message": "FAOS v6.0 Backend serving on Render cluster",
         "health_check": "100% Functional",
         "gateway": "Zero-Trust API Routing Secure",
         "api_prefix": "/api/v5",
@@ -204,6 +206,8 @@ async def root_health() -> Dict[str, Any]:
         "harness_workers": "ENABLED",
         "orchestrate": "ENABLED",
         "learning_hub": "ENABLED",
+        "faos_v6": "ENABLED",
+        "shell_agents": 35,
         "autonomous_loop": orch.get("autonomous_loop"),
         "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],
         "fmk_wig_namespace": FMK_WIG_NAMESPACE,
@@ -228,7 +232,7 @@ async def api_v5_health() -> Dict[str, Any]:
     return {
         "ok": True,
         **base,
-        "version": "5.3.0",
+        "version": "6.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -240,10 +244,56 @@ async def api_v1_health() -> Dict[str, Any]:
     return {
         "ok": True,
         **base,
-        "version": "5.3.0",
+        "version": "6.0.0",
         "api": "v1",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@app.get("/api/v5/faos-v6")
+async def faos_v6_get(view: str = Query("status")) -> Dict[str, Any]:
+    """FAOS v6.0 diagnostics / health / Jarvis network status."""
+    if view == "diagnostics":
+        return faos_v6.diagnostics()
+    if view == "health":
+        return faos_v6.health()
+    return faos_v6.status()
+
+
+@app.post("/api/v5/faos-v6")
+async def faos_v6_post(request: Request) -> Dict[str, Any]:
+    """FAOS v6.0 pipeline + Jarvis route controller."""
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="JSON object required")
+
+    action = str(body.get("action") or "route")
+    if action == "diagnostics":
+        return faos_v6.diagnostics()
+
+    if action == "pipeline":
+        details = str(body.get("details") or body.get("input") or "").strip()
+        if not details:
+            raise HTTPException(status_code=400, detail="details or input required")
+        return await faos_v6.pipeline(
+            details=details,
+            title=body.get("title"),
+            brand=body.get("brand"),
+            category=body.get("category"),
+            agent_ids=body.get("agent_ids"),
+            auto_approve=body.get("auto_approve", True) is not False,
+        )
+
+    input_text = str(body.get("input") or body.get("details") or "").strip()
+    if not input_text:
+        raise HTTPException(status_code=400, detail="input or details required")
+    return await faos_v6.route(
+        input_text=input_text,
+        mode=str(body.get("mode") or "auto"),
+        agent_ids=body.get("agent_ids"),
+        brand=body.get("brand"),
+        auto_approve=body.get("auto_approve", True) is not False,
+    )
 
 
 @app.get("/api/v1/pillar")

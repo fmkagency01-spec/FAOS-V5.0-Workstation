@@ -211,7 +211,7 @@ export async function GET() {
         })),
       },
       jarvis: {
-        shell_agents: 26,
+        shell_agents: 35,
         voice: true,
         erp_modules: ["invoicing", "inventory", "hr", "orders", "products"],
       },
