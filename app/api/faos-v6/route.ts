@@ -50,9 +50,9 @@ export const GET = withApiRoute(
 
     if (view === "brain" || view === "hubs") {
       return NextResponse.json({
+        ...brainStatus(),
         ok: true,
         version: FAOS_V6_VERSION,
-        ...brainStatus(),
         topology: jarvisBrainTopologySummary(),
       });
     }
