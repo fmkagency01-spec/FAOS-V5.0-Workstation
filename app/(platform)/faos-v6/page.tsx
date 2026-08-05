@@ -42,6 +42,17 @@ type StatusPayload = {
     agents_total?: number;
     ok?: boolean;
   };
+  brain?: {
+    label?: string;
+    heritage?: string;
+    ascii?: string;
+    hubs?: Array<{
+      id: string;
+      title: string;
+      lead_agent_id: string;
+      capabilities: string[];
+    }>;
+  };
 };
 
 export default function FaosV6Page() {
@@ -126,9 +137,43 @@ export default function FaosV6Page() {
       <div>
         <h1 className="text-2xl font-bold text-white">FAOS v6.0 Controller</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Jarvis orchestrator · 35-agent network · ingest → execute → QA → approval
+          Jarvis Brain + Hermes Engine · 3 hubs · 38 agents · ingest → execute → QA → approval
         </p>
       </div>
+
+      {status?.brain?.hubs && (
+        <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-5 space-y-3">
+          <div>
+            <h2 className="text-sm font-bold text-white">
+              {status.brain.label || 'JARVIS BRAIN + HERMES ENGINE'}
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Heritage layout: {status.brain.heritage || 'FAOS v5.3 + HERMES ENGINE'}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-3">
+            {status.brain.hubs.map((hub) => (
+              <div
+                key={hub.id}
+                className="rounded-lg border border-[#2a3548] bg-[#0b1220] p-3 space-y-2"
+              >
+                <p className="text-xs font-bold text-[#00f5d4]">{hub.title}</p>
+                <p className="text-[10px] font-mono text-slate-500">{hub.lead_agent_id}</p>
+                <ul className="text-[11px] text-slate-300 space-y-1">
+                  {hub.capabilities.map((cap) => (
+                    <li key={cap}>· {cap}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          {status.brain.ascii && (
+            <pre className="text-[10px] text-slate-400 whitespace-pre overflow-x-auto rounded-lg border border-[#2a3548] bg-[#0b1220] p-3">
+              {status.brain.ascii}
+            </pre>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-4 gap-3 text-xs">
         <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-4">

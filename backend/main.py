@@ -207,7 +207,7 @@ async def root_health() -> Dict[str, Any]:
         "orchestrate": "ENABLED",
         "learning_hub": "ENABLED",
         "faos_v6": "ENABLED",
-        "shell_agents": 36,
+        "shell_agents": 38,
         "hermes_cofounder": "hermes_cofounder_agent",
         "autonomous_loop": orch.get("autonomous_loop"),
         "jarvis_brain_nodes": ["fmk_wig_internal_engine", "rr_wigs_client_workspace"],

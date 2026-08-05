@@ -12,6 +12,8 @@ import {
 } from "@/lib/hermes-cofounder";
 import { runCodeEngineeringBridge } from "@/lib/code-engineering-bridge";
 import { opsBusStatus, runJarvisOpsBus } from "@/lib/jarvis-ops-bus";
+import { brainStatus } from "@/lib/jarvis-brain";
+import { jarvisBrainTopologySummary } from "@/lib/jarvis-brain-hubs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,12 +46,22 @@ export const GET = withApiRoute(
       return NextResponse.json({ ...opsBusStatus(), ok: true });
     }
 
+    if (view === "brain" || view === "hubs") {
+      return NextResponse.json({
+        ok: true,
+        version: FAOS_V6_VERSION,
+        ...brainStatus(),
+        topology: jarvisBrainTopologySummary(),
+      });
+    }
+
     return NextResponse.json({
       ...jarvisNetworkStatus(),
       ok: true,
       hermes: hermesOpsBrief(),
+      brain: brainStatus(),
       endpoints: {
-        GET: "?view=status|health|diagnostics|hermes|ops",
+        GET: "?view=status|health|diagnostics|hermes|ops|brain|hubs",
         POST: "{ action: diagnostics|pipeline|route|activate|code|ops, ... }",
       },
     });

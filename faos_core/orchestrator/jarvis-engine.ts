@@ -20,6 +20,7 @@ import {
   planJarvisCommand,
   type JarvisResult,
 } from "@/lib/jarvis-orchestrator";
+import { matchJarvisBrainHub, jarvisBrainTopologySummary } from "@/lib/jarvis-brain-hubs";
 
 export type JarvisV6RouteResult = {
   version: typeof FAOS_V6_VERSION;
@@ -60,14 +61,19 @@ export async function jarvisRoute(
 
   const category = detectTaskCategory(command);
   const matches = matchAgents(command, 4);
+  const hubMatch = matchJarvisBrainHub(command);
   const orch = getOrchestratorId();
   const primary =
     options?.agent_ids?.[0] ||
+    (hubMatch && hubMatch.score >= 3 ? hubMatch.hub.lead_agent_id : undefined) ||
     matches[0]?.id ||
     orch;
-  const supporting = (options?.agent_ids?.slice(1) || matches.slice(1).map((m) => m.id)).filter(
-    (id) => id !== primary
-  );
+  const supporting = (
+    options?.agent_ids?.slice(1) ||
+    (hubMatch && hubMatch.score >= 3
+      ? hubMatch.hub.supporting_agent_ids.filter((id) => Boolean(getAgent(id)))
+      : matches.slice(1).map((m) => m.id))
+  ).filter((id) => id !== primary);
 
   setAgentState(orch, {
     status: "running",
@@ -171,11 +177,13 @@ export async function jarvisRoute(
 
 export function jarvisNetworkStatus() {
   const health = healthSnapshot();
+  const topology = jarvisBrainTopologySummary();
   return {
     version: FAOS_V6_VERSION,
     orchestrator: getOrchestratorId(),
     agents_total: listAgents().length,
     health,
-    message: "Jarvis v6 master orchestrator online",
+    brain: topology,
+    message: "Jarvis Brain + Hermes Engine online — 3 hubs routed",
   };
 }

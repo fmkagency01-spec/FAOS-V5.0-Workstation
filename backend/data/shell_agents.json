@@ -5,7 +5,7 @@
     {
       "id": "jarvis_core",
       "name": "JARVIS Core",
-      "icon": "\ud83e\udde0",
+      "icon": "🧠",
       "domain": "orchestration",
       "keywords": [
         "jarvis",
@@ -15,12 +15,12 @@
         "coordinate"
       ],
       "model_hint": "strategy",
-      "description": "Central orchestrator \u2014 routes commands to specialist shell agents"
+      "description": "Central orchestrator — routes commands to specialist shell agents"
     },
     {
       "id": "hermes_cofounder_agent",
       "name": "Hermes Co-Founder",
-      "icon": "\ud83d\udef0\ufe0f",
+      "icon": "🛰️",
       "domain": "orchestration",
       "keywords": [
         "hermes",
@@ -33,29 +33,74 @@
         "deadline"
       ],
       "model_hint": "automation",
-      "description": "Jarvis Brain co-founder \u2014 monitors & operates all shell agents/teams, deadline QA, Cursor/dev bridge oversight",
+      "description": "Jarvis Brain co-founder — monitors & operates all shell agents/teams, deadline QA, Cursor/dev bridge oversight",
       "role": "co_founder",
       "reports_to": "jarvis_core"
     },
     {
       "id": "fmk_wig_prosthetic_hair_agent",
       "name": "FMK WIG Agent",
-      "icon": "\ud83d\udc87",
+      "icon": "💇",
       "domain": "brand",
+      "hub": "fmk_wig_hub",
       "keywords": [
         "wig",
         "hair",
         "prosthetic",
         "toupee",
-        "hair system"
+        "hair system",
+        "order management",
+        "inbound lead",
+        "ad performance",
+        "fmk wig"
       ],
       "model_hint": "automation",
-      "description": "Prosthetic hair systems, inventory, supply chain"
+      "description": "FMK WIG hub lead — order management, inbound lead qualification, ad performance monitoring (brand lock: FMK WIG)"
+    },
+    {
+      "id": "agency_outreach_agent",
+      "name": "Agency Outreach Agent",
+      "icon": "📨",
+      "domain": "sales",
+      "hub": "agency_outreach_hub",
+      "keywords": [
+        "outreach",
+        "b2b lead",
+        "lead scraping",
+        "proposal",
+        "auto-proposal",
+        "client communication",
+        "linkedin outreach",
+        "agency"
+      ],
+      "model_hint": "strategy",
+      "description": "Agency Outreach hub lead — B2B lead scraping, auto-proposal & outreach, client communication sync"
+    },
+    {
+      "id": "shell_brands_hub_agent",
+      "name": "Shell Brands Agent Hub",
+      "icon": "🏭",
+      "domain": "brand",
+      "hub": "shell_brands_hub",
+      "keywords": [
+        "shell brand",
+        "shell brands",
+        "create pillar",
+        "media",
+        "records",
+        "socialistic",
+        "editing hub",
+        "g&a",
+        "shoes",
+        "clothing"
+      ],
+      "model_hint": "automation",
+      "description": "Shell Brands hub — FMK Create/Media/Records, Socialistic/Editing Hub, Shoes/Clothing/G&A sync"
     },
     {
       "id": "fmk_shoes_footwear_wing",
       "name": "FMK Shoes Agent",
-      "icon": "\ud83d\udc5f",
+      "icon": "👟",
       "domain": "brand",
       "keywords": [
         "shoe",
@@ -70,7 +115,7 @@
     {
       "id": "fmk_mk_kitchen_cloud_food_agent",
       "name": "MK Kitchen Agent",
-      "icon": "\ud83c\udf73",
+      "icon": "🍳",
       "domain": "brand",
       "keywords": [
         "kitchen",
@@ -85,7 +130,7 @@
     {
       "id": "fmk_mk_clothing_lifestyle_agent",
       "name": "MK Clothing Agent",
-      "icon": "\ud83d\udc54",
+      "icon": "👔",
       "domain": "brand",
       "keywords": [
         "clothing",
@@ -100,7 +145,7 @@
     {
       "id": "crm_client_agent",
       "name": "CRM Agent",
-      "icon": "\ud83d\udc65",
+      "icon": "👥",
       "domain": "sales",
       "keywords": [
         "client",
@@ -116,7 +161,7 @@
     {
       "id": "sales_pipeline_agent",
       "name": "Sales Pipeline Agent",
-      "icon": "\ud83d\udcc8",
+      "icon": "📈",
       "domain": "sales",
       "keywords": [
         "sales",
@@ -132,7 +177,7 @@
     {
       "id": "invoicing_finance_agent",
       "name": "Invoicing Agent",
-      "icon": "\ud83e\uddfe",
+      "icon": "🧾",
       "domain": "finance",
       "keywords": [
         "invoice",
@@ -148,7 +193,7 @@
     {
       "id": "accounting_agent",
       "name": "Accounting Agent",
-      "icon": "\ud83d\udcca",
+      "icon": "📊",
       "domain": "finance",
       "keywords": [
         "accounting",
@@ -164,7 +209,7 @@
     {
       "id": "inventory_supply_agent",
       "name": "Inventory Agent",
-      "icon": "\ud83d\udce6",
+      "icon": "📦",
       "domain": "operations",
       "keywords": [
         "inventory",
@@ -180,7 +225,7 @@
     {
       "id": "logistics_agent",
       "name": "Logistics Agent",
-      "icon": "\ud83d\ude9a",
+      "icon": "🚚",
       "domain": "operations",
       "keywords": [
         "shipping",
@@ -196,7 +241,7 @@
     {
       "id": "hr_people_agent",
       "name": "HR Agent",
-      "icon": "\ud83e\uddd1\u200d\ud83d\udcbc",
+      "icon": "🧑‍💼",
       "domain": "hr",
       "keywords": [
         "hr",
@@ -213,7 +258,7 @@
     {
       "id": "recruitment_agent",
       "name": "Recruitment Agent",
-      "icon": "\ud83c\udfaf",
+      "icon": "🎯",
       "domain": "hr",
       "keywords": [
         "recruit",
@@ -229,7 +274,7 @@
     {
       "id": "creative_design_agent",
       "name": "Creative Design Agent",
-      "icon": "\ud83c\udfa8",
+      "icon": "🎨",
       "domain": "marketing",
       "keywords": [
         "design",
@@ -246,7 +291,7 @@
     {
       "id": "video_production_agent",
       "name": "Video Production Agent",
-      "icon": "\ud83c\udfac",
+      "icon": "🎬",
       "domain": "marketing",
       "keywords": [
         "video",
@@ -263,7 +308,7 @@
     {
       "id": "social_media_agent",
       "name": "Social Media Agent",
-      "icon": "\ud83d\udcf1",
+      "icon": "📱",
       "domain": "marketing",
       "keywords": [
         "social",
@@ -279,7 +324,7 @@
     {
       "id": "marketing_strategy_agent",
       "name": "Marketing Strategy Agent",
-      "icon": "\ud83d\udce3",
+      "icon": "📣",
       "domain": "marketing",
       "keywords": [
         "marketing",
@@ -295,7 +340,7 @@
     {
       "id": "bulletseye_ai_seo_agent",
       "name": "BulletsEye AI SEO Agent",
-      "icon": "\ud83c\udfaf",
+      "icon": "🎯",
       "domain": "marketing",
       "keywords": [
         "seo",
@@ -317,7 +362,7 @@
     {
       "id": "fmk_seo_lead_agent",
       "name": "BulletsEye SEO Lead Agent",
-      "icon": "\ud83d\udd00",
+      "icon": "🔀",
       "domain": "marketing",
       "keywords": [
         "fan-out",
@@ -333,7 +378,7 @@
     {
       "id": "fmk_geo_engine_agent",
       "name": "BulletsEye GEO Engine Agent",
-      "icon": "\ud83c\udf10",
+      "icon": "🌐",
       "domain": "marketing",
       "keywords": [
         "json-ld",
@@ -349,7 +394,7 @@
     {
       "id": "fmk_schema_backend_agent",
       "name": "BulletsEye Schema Backend Agent",
-      "icon": "\ud83d\udcc4",
+      "icon": "📄",
       "domain": "marketing",
       "keywords": [
         "metadata",
@@ -364,7 +409,7 @@
     {
       "id": "fmk_website_injector_agent",
       "name": "BulletsEye Website Injector Agent",
-      "icon": "\ud83d\udc89",
+      "icon": "💉",
       "domain": "marketing",
       "keywords": [
         "inject",
@@ -379,7 +424,7 @@
     {
       "id": "fmk_wig_internal_engine",
       "name": "FMK Wig B2B Internal Engine",
-      "icon": "\ud83c\udfe2",
+      "icon": "🏢",
       "domain": "sales",
       "keywords": [
         "b2b",
@@ -397,7 +442,7 @@
     {
       "id": "rr_wigs_client_workspace",
       "name": "RR Wigs Client Workspace",
-      "icon": "\ud83c\udfed",
+      "icon": "🏭",
       "domain": "sales",
       "keywords": [
         "rr wigs",
@@ -409,12 +454,12 @@
         "analytics"
       ],
       "model_hint": "strategy",
-      "description": "Isolated tenant dashboard \u2014 web, SEO, ads, factory inventory for RR Wigs"
+      "description": "Isolated tenant dashboard — web, SEO, ads, factory inventory for RR Wigs"
     },
     {
       "id": "harness_alpha_web_engineering",
-      "name": "Harness Alpha \u2014 Web Engineering",
-      "icon": "\u2699\ufe0f",
+      "name": "Harness Alpha — Web Engineering",
+      "icon": "⚙️",
       "domain": "automation",
       "keywords": [
         "harness",
@@ -425,12 +470,12 @@
         "rr wigs"
       ],
       "model_hint": "automation",
-      "description": "24/7 worker \u2014 RR Wigs Node.js web backend & B2B inquiry endpoints"
+      "description": "24/7 worker — RR Wigs Node.js web backend & B2B inquiry endpoints"
     },
     {
       "id": "harness_beta_marketing_automation",
-      "name": "Harness Beta \u2014 Marketing Automation",
-      "icon": "\ud83d\udce3",
+      "name": "Harness Beta — Marketing Automation",
+      "icon": "📣",
       "domain": "marketing",
       "keywords": [
         "harness",
@@ -441,12 +486,12 @@
         "rr wigs"
       ],
       "model_hint": "strategy",
-      "description": "24/7 worker \u2014 LinkedIn outreach, ad pixels, AIO schema generation"
+      "description": "24/7 worker — LinkedIn outreach, ad pixels, AIO schema generation"
     },
     {
       "id": "harness_gamma_inventory_sync",
-      "name": "Harness Gamma \u2014 Inventory Sync",
-      "icon": "\ud83d\udd04",
+      "name": "Harness Gamma — Inventory Sync",
+      "icon": "🔄",
       "domain": "operations",
       "keywords": [
         "harness",
@@ -457,12 +502,12 @@
         "rr wigs"
       ],
       "model_hint": "automation",
-      "description": "24/7 worker \u2014 RR factory inventory sync to FMK Wig B2B sourcing panel"
+      "description": "24/7 worker — RR factory inventory sync to FMK Wig B2B sourcing panel"
     },
     {
       "id": "project_ops_agent",
       "name": "Project Ops Agent",
-      "icon": "\ud83d\udccb",
+      "icon": "📋",
       "domain": "operations",
       "keywords": [
         "project",
@@ -478,7 +523,7 @@
     {
       "id": "support_service_agent",
       "name": "Support Agent",
-      "icon": "\ud83c\udfa7",
+      "icon": "🎧",
       "domain": "support",
       "keywords": [
         "support",
@@ -494,7 +539,7 @@
     {
       "id": "legal_compliance_agent",
       "name": "Legal Agent",
-      "icon": "\u2696\ufe0f",
+      "icon": "⚖️",
       "domain": "legal",
       "keywords": [
         "legal",
@@ -510,7 +555,7 @@
     {
       "id": "it_devops_agent",
       "name": "IT DevOps Agent",
-      "icon": "\ud83d\udda5\ufe0f",
+      "icon": "🖥️",
       "domain": "tech",
       "keywords": [
         "deploy",
@@ -527,7 +572,7 @@
     {
       "id": "code_engineering_agent",
       "name": "Code Engineering Agent",
-      "icon": "\ud83d\udcbb",
+      "icon": "💻",
       "domain": "tech",
       "keywords": [
         "code",
@@ -544,7 +589,7 @@
     {
       "id": "research_analytics_agent",
       "name": "Research Agent",
-      "icon": "\ud83d\udd2c",
+      "icon": "🔬",
       "domain": "analytics",
       "keywords": [
         "research",
@@ -560,7 +605,7 @@
     {
       "id": "executive_strategy_agent",
       "name": "Executive Strategy Agent",
-      "icon": "\ud83d\udc51",
+      "icon": "👑",
       "domain": "executive",
       "keywords": [
         "strategy",
@@ -577,12 +622,12 @@
     {
       "id": "bengali_localization_agent",
       "name": "Bengali Agent",
-      "icon": "\ud83c\udde7\ud83c\udde9",
+      "icon": "🇧🇩",
       "domain": "localization",
       "keywords": [
         "bangla",
         "bengali",
-        "\u09ac\u09be\u0982\u09b2\u09be",
+        "বাংলা",
         "translate",
         "local"
       ],

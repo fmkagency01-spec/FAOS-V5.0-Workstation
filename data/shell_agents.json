@@ -42,15 +42,60 @@
       "name": "FMK WIG Agent",
       "icon": "\ud83d\udc87",
       "domain": "brand",
+      "hub": "fmk_wig_hub",
       "keywords": [
         "wig",
         "hair",
         "prosthetic",
         "toupee",
-        "hair system"
+        "hair system",
+        "order management",
+        "inbound lead",
+        "ad performance",
+        "fmk wig"
       ],
       "model_hint": "automation",
-      "description": "Prosthetic hair systems, inventory, supply chain"
+      "description": "FMK WIG hub lead — order management, inbound lead qualification, ad performance monitoring (brand lock: FMK WIG)"
+    },
+    {
+      "id": "agency_outreach_agent",
+      "name": "Agency Outreach Agent",
+      "icon": "\ud83d\udce8",
+      "domain": "sales",
+      "hub": "agency_outreach_hub",
+      "keywords": [
+        "outreach",
+        "b2b lead",
+        "lead scraping",
+        "proposal",
+        "auto-proposal",
+        "client communication",
+        "linkedin outreach",
+        "agency"
+      ],
+      "model_hint": "strategy",
+      "description": "Agency Outreach hub lead — B2B lead scraping, auto-proposal & outreach, client communication sync"
+    },
+    {
+      "id": "shell_brands_hub_agent",
+      "name": "Shell Brands Agent Hub",
+      "icon": "\ud83c\udfed",
+      "domain": "brand",
+      "hub": "shell_brands_hub",
+      "keywords": [
+        "shell brand",
+        "shell brands",
+        "create pillar",
+        "media",
+        "records",
+        "socialistic",
+        "editing hub",
+        "g&a",
+        "shoes",
+        "clothing"
+      ],
+      "model_hint": "automation",
+      "description": "Shell Brands hub — FMK Create/Media/Records, Socialistic/Editing Hub, Shoes/Clothing/G&A sync"
     },
     {
       "id": "fmk_shoes_footwear_wing",

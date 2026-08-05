@@ -13,6 +13,11 @@ import {
 import { rosterSummary } from "@/faos_core/agents/roster";
 import { appendCoreMemory } from "@/lib/core-memory";
 import { FAOS_V6_VERSION } from "@/faos_core/types";
+import {
+  formatJarvisBrainAscii,
+  matchJarvisBrainHub,
+  jarvisBrainTopologySummary,
+} from "@/lib/jarvis-brain-hubs";
 
 export const HERMES_COFOUNDER_ID = "hermes_cofounder_agent";
 
@@ -105,6 +110,7 @@ export function hermesReviewCommand(command: string): {
   should_activate: boolean;
   prefer_code_bridge: boolean;
   prefer_pipeline: boolean;
+  prefer_hub: ReturnType<typeof matchJarvisBrainHub>;
   context_block: string;
 } {
   const lower = command.toLowerCase();
@@ -116,16 +122,24 @@ export function hermesReviewCommand(command: string): {
     );
   const prefer_pipeline =
     /brief|campaign|smm|seo|ads?|script|design|deliverable|client task/.test(lower);
+  const prefer_hub = matchJarvisBrainHub(command);
 
   if (should_activate) {
     activateAllAgentTeams(`jarvis_command:${command.slice(0, 80)}`);
   }
 
   const brief = hermesOpsBrief();
+  const topology = jarvisBrainTopologySummary();
   const context_block = [
-    "=== HERMES CO-FOUNDER (Jarvis Brain Officer) ===",
+    "=== HERMES ENGINE (Jarvis Brain Co-Founder) ===",
     brief.summary,
     `Fleet: ${brief.agents_active}/${brief.agents_total} · failed=${brief.live.failed}`,
+    `Topology: ${topology.label}`,
+    prefer_hub
+      ? `Directive: route via ${prefer_hub.hub.title} (${prefer_hub.hub.lead_agent_id}) — ${prefer_hub.hub.capabilities
+          .map((c) => c.label)
+          .join(" · ")}.`
+      : "",
     prefer_code_bridge
       ? "Directive: route software/dev work through code_engineering_agent + Cursor bridge."
       : "",
@@ -133,6 +147,8 @@ export function hermesReviewCommand(command: string): {
       ? "Directive: treat as client brief — run FAOS v6 ingest→execute→QA→approval pipeline."
       : "",
     brief.issues.length ? `Issues: ${brief.issues.join("; ")}` : "No fleet issues.",
+    "",
+    formatJarvisBrainAscii(),
   ]
     .filter(Boolean)
     .join("\n");
@@ -143,10 +159,18 @@ export function hermesReviewCommand(command: string): {
     output: {
       prefer_code_bridge,
       prefer_pipeline,
+      prefer_hub: prefer_hub?.hub.id || null,
       should_activate,
       brief_ok: brief.ok,
     },
   });
 
-  return { brief, should_activate, prefer_code_bridge, prefer_pipeline, context_block };
+  return {
+    brief,
+    should_activate,
+    prefer_code_bridge,
+    prefer_pipeline,
+    prefer_hub,
+    context_block,
+  };
 }

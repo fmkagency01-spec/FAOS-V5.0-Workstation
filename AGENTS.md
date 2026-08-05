@@ -7,7 +7,8 @@ This repository is a **Next.js 15 App Router** app for the
 
 - UI: `app/page.tsx`, Create Pillar console at `app/dashboard/create-pillar/page.tsx`
 - FAOS v6 controller: `app/(platform)/faos-v6/page.tsx` · API `app/api/faos-v6/route.ts`
-- Core engine: `faos_core/` (Jarvis orchestrator, 36 agents, pipelines, connectors)
+- Core engine: `faos_core/` (Jarvis Brain + Hermes Engine, 3 hubs, 38 agents, pipelines, connectors)
+- Jarvis Brain hubs: FMK WIG · Agency Outreach · Shell Brands (`lib/jarvis-brain-hubs.ts`)
 - Hermes Co-Founder: `lib/hermes-cofounder.ts` · Ops bus: `lib/jarvis-ops-bus.ts`
 - Cursor/code bridge: `lib/code-engineering-bridge.ts` (env `CURSOR_AGENT_WEBHOOK_URL`)
 - Chat history: `lib/jarvis-chat-store.ts` + browser cache `lib/jarvis-session-cache.ts`

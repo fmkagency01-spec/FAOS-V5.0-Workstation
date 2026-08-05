@@ -39,7 +39,7 @@ type JarvisPanelProps = {
 
 const BOOT_MESSAGE: JarvisEntry = {
   role: 'system',
-  text: 'JARVIS v6 + Hermes Co-Founder online — 36 agents ready. History auto-saves for Super Admin.',
+  text: 'JARVIS BRAIN (v6 + HERMES ENGINE) — 3 hubs · 38 agents ready. History auto-saves for Super Admin.',
 };
 
 export function JarvisPanel({ compact = false, showHistory = false }: JarvisPanelProps) {
