@@ -29,6 +29,39 @@ type ModuleState = {
   source: "render" | "vercel-local" | "unknown";
 };
 
+type RenderHealthPayload = {
+  ok?: boolean;
+  status?: string;
+  operational_status?: string;
+  message?: string;
+  health_check?: string;
+  modules?: Record<string, { status?: string; records?: number }>;
+  tac?: {
+    status?: string;
+    last_sync?: string | null;
+    commands?: number;
+    intelligence_logs?: number;
+  };
+};
+
+/**
+ * Render root/v5 health uses a human-readable `status` string
+ * (e.g. "FAOS v6.0 Central Core Operational") plus
+ * `operational_status: "active"`. Never require status === "active".
+ */
+function isRenderHealthOnline(data: RenderHealthPayload): boolean {
+  if (data.operational_status === "active") return true;
+  if (data.ok === true) return true;
+  const status = (data.status || "").trim().toLowerCase();
+  if (status === "active" || status === "online" || status === "ok") return true;
+  if (status.includes("operational")) return true;
+  const healthCheck = (data.health_check || "").toLowerCase();
+  if (healthCheck.includes("functional") || healthCheck.includes("100%")) {
+    return true;
+  }
+  return false;
+}
+
 async function probeRenderBackend(): Promise<{
   configured: boolean;
   status: "online" | "offline" | "not_configured";
@@ -72,21 +105,15 @@ async function probeRenderBackend(): Promise<{
           docs_url: getBackendDocsUrl() || undefined,
         };
       }
-      const data = (await res.json()) as {
-        status?: string;
-        message?: string;
-        modules?: Record<string, { status?: string; records?: number }>;
-        tac?: {
-          status?: string;
-          last_sync?: string | null;
-          commands?: number;
-          intelligence_logs?: number;
-        };
-      };
+      const data = (await res.json()) as RenderHealthPayload;
+      const online = isRenderHealthOnline(data);
       return {
         configured: true,
-        status: data.status === "active" ? ("online" as const) : ("offline" as const),
-        message: data.message,
+        status: online ? ("online" as const) : ("offline" as const),
+        message:
+          data.message ||
+          data.status ||
+          (online ? "Backend connected" : "Backend responded but not marked active"),
         docs_url: getBackendDocsUrl() || undefined,
         modules: data.modules,
         tac: data.tac,
