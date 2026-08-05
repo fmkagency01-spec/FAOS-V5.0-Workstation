@@ -18,6 +18,26 @@
       "description": "Central orchestrator \u2014 routes commands to specialist shell agents"
     },
     {
+      "id": "hermes_cofounder_agent",
+      "name": "Hermes Co-Founder",
+      "icon": "\ud83d\udef0\ufe0f",
+      "domain": "orchestration",
+      "keywords": [
+        "hermes",
+        "cofounder",
+        "co-founder",
+        "monitor",
+        "oversee",
+        "ops lead",
+        "agent health",
+        "deadline"
+      ],
+      "model_hint": "automation",
+      "description": "Jarvis Brain co-founder \u2014 monitors & operates all shell agents/teams, deadline QA, Cursor/dev bridge oversight",
+      "role": "co_founder",
+      "reports_to": "jarvis_core"
+    },
+    {
       "id": "fmk_wig_prosthetic_hair_agent",
       "name": "FMK WIG Agent",
       "icon": "\ud83d\udc87",
@@ -570,5 +590,6 @@
       "description": "Bengali language support and localization"
     }
   ],
-  "platform": "FAOS v6.0"
+  "platform": "FAOS v6.0",
+  "co_founder": "hermes_cofounder_agent"
 }

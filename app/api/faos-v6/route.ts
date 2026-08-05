@@ -6,6 +6,12 @@ import { runClientTaskPipeline } from "@/faos_core/pipelines/client-task-pipelin
 import { llmConnectorStatus } from "@/faos_core/connectors/llm";
 import { FAOS_V6_VERSION } from "@/faos_core/types";
 import type { TaskCategory } from "@/faos_core/types";
+import {
+  activateAllAgentTeams,
+  hermesOpsBrief,
+} from "@/lib/hermes-cofounder";
+import { runCodeEngineeringBridge } from "@/lib/code-engineering-bridge";
+import { opsBusStatus, runJarvisOpsBus } from "@/lib/jarvis-ops-bus";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,21 +26,31 @@ export const GET = withApiRoute(
         ok: true,
         version: FAOS_V6_VERSION,
         diagnostics: auditAgentDefinitions(),
+        hermes: hermesOpsBrief(),
         llm: llmConnectorStatus(),
       });
     }
 
     if (view === "health") {
       const snap = healthSnapshot();
-      return NextResponse.json({ ...snap, ok: snap.ok });
+      return NextResponse.json({
+        ...snap,
+        ok: snap.ok,
+        hermes: hermesOpsBrief(),
+      });
+    }
+
+    if (view === "hermes" || view === "ops") {
+      return NextResponse.json({ ...opsBusStatus(), ok: true });
     }
 
     return NextResponse.json({
       ...jarvisNetworkStatus(),
       ok: true,
+      hermes: hermesOpsBrief(),
       endpoints: {
-        GET: "?view=status|health|diagnostics",
-        POST: "{ action: diagnostics|pipeline|route, ... }",
+        GET: "?view=status|health|diagnostics|hermes|ops",
+        POST: "{ action: diagnostics|pipeline|route|activate|code|ops, ... }",
       },
     });
   },
@@ -42,7 +58,7 @@ export const GET = withApiRoute(
 );
 
 type PostBody = {
-  action?: "diagnostics" | "pipeline" | "route";
+  action?: "diagnostics" | "pipeline" | "route" | "activate" | "code" | "ops";
   details?: string;
   title?: string;
   brand?: string;
@@ -64,8 +80,53 @@ export const POST = withApiRoute(
         ok: report.ok,
         version: FAOS_V6_VERSION,
         diagnostics: report,
+        hermes: hermesOpsBrief(),
         llm: llmConnectorStatus(),
       });
+    }
+
+    if (action === "activate") {
+      const activation = activateAllAgentTeams(
+        (body.details || body.input || "api_activate").slice(0, 120)
+      );
+      return NextResponse.json({
+        ok: true,
+        version: FAOS_V6_VERSION,
+        activation,
+        hermes: hermesOpsBrief(),
+      });
+    }
+
+    if (action === "code") {
+      const details = (body.details || body.input || "").trim();
+      if (!details) {
+        return NextResponse.json(
+          { ok: false, error: "details or input required" },
+          { status: 400 }
+        );
+      }
+      const code = await runCodeEngineeringBridge({
+        command: details,
+        brand: body.brand || "FAOS",
+        agent_ids: body.agent_ids,
+      });
+      return NextResponse.json({ ok: code.ok, version: FAOS_V6_VERSION, result: code });
+    }
+
+    if (action === "ops") {
+      const details = (body.details || body.input || "").trim();
+      if (!details) {
+        return NextResponse.json(
+          { ok: false, error: "details or input required" },
+          { status: 400 }
+        );
+      }
+      const ops = await runJarvisOpsBus(details, {
+        brand: body.brand,
+        auto_approve: body.auto_approve !== false,
+        force_activate: false,
+      });
+      return NextResponse.json({ ok: ops.ok, version: FAOS_V6_VERSION, result: ops });
     }
 
     if (action === "pipeline") {

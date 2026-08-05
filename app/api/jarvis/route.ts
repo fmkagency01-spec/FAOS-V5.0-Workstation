@@ -24,6 +24,14 @@ import {
   getChatSession,
 } from "@/lib/jarvis-chat-store";
 import { ingestToAigorithm } from "@/lib/aigorithm-ingest";
+import { runCodeEngineeringBridge } from "@/lib/code-engineering-bridge";
+import {
+  activateAllAgentTeams,
+  hermesOpsBrief,
+  hermesReviewCommand,
+} from "@/lib/hermes-cofounder";
+import { runClientTaskPipeline } from "@/faos_core/pipelines/client-task-pipeline";
+import { FAOS_V6_VERSION } from "@/faos_core/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,20 +104,70 @@ async function executeJarvisAction(action: JarvisAction): Promise<{ label: strin
       const vid = await generateVideoPlan(action.payload.brief);
       return { label: "Video plan generated", result: vid };
     }
+    case "code_engineering": {
+      const code = await runCodeEngineeringBridge({
+        command: action.payload.command,
+        mode: action.payload.mode,
+        brand: "FAOS",
+      });
+      return { label: code.summary, result: code };
+    }
+    case "activate_fleet": {
+      const activation = activateAllAgentTeams(action.payload.reason);
+      const brief = hermesOpsBrief();
+      return {
+        label: `Hermes activated ${activation.activated} agents`,
+        result: { activation, brief },
+      };
+    }
+    case "run_pipeline": {
+      const pipeline = await runClientTaskPipeline(
+        {
+          details: action.payload.details,
+          brand: action.payload.brand || "BulletsEye",
+        },
+        { auto_approve: true, brand: action.payload.brand }
+      );
+      return {
+        label: `Pipeline ${pipeline.pipeline_id} · ${pipeline.stage} · QA ${pipeline.qa?.score ?? "—"}`,
+        result: pipeline,
+      };
+    }
     default:
       return null;
   }
 }
 
 export async function GET() {
+  const brief = hermesOpsBrief();
   return NextResponse.json({
     ok: true,
-    version: "5.3.0",
-    name: "JARVIS Orchestrator",
+    version: FAOS_V6_VERSION,
+    name: "JARVIS Orchestrator v6",
     shell_agents: getAllShellAgents().length,
-    agents: getAllShellAgents().map((a) => ({ id: a.id, name: a.name, domain: a.domain, icon: a.icon })),
+    hermes_cofounder: brief,
+    agents: getAllShellAgents().map((a) => ({
+      id: a.id,
+      name: a.name,
+      domain: a.domain,
+      icon: a.icon,
+    })),
     token_saving_mode: isTokenSavingMode(),
-    capabilities: ["voice", "chat", "erp", "creative", "video", "multi-agent", "multimodal", "tts"],
+    capabilities: [
+      "voice",
+      "chat",
+      "erp",
+      "creative",
+      "video",
+      "multi-agent",
+      "multimodal",
+      "tts",
+      "hermes_cofounder",
+      "code_engineering_bridge",
+      "client_pipeline",
+      "fleet_activation",
+      "chat_history",
+    ],
   });
 }
 
@@ -139,7 +197,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "command is required" }, { status: 400 });
   }
 
+  const hermes = hermesReviewCommand(command);
   const plan = planJarvisCommand(command);
+  // Inject Hermes co-founder oversight into the LLM system context
+  plan.system_context = `${plan.system_context}\n\n${hermes.context_block}`;
   const clientKey = resolveClientKeyFromHeaders(request.headers);
   const session = await getSessionFromRequest(request);
 
@@ -147,12 +208,16 @@ export async function POST(request: NextRequest) {
     const result = await executeJarvisPlan(plan, clientKey, executeJarvisAction);
 
     let chatSessionId: string | undefined;
-    // Persist turns for Super Admin only — never store for team/client roles.
+    // Persist turns for Super Admin (owner/executive) — never store for team/client roles.
     // Never let history I/O fail the live reply (Vercel /tmp + memory fallback).
     if (session && isSuperAdmin(session.role)) {
       try {
+        const requested =
+          body.session_id && body.session_id !== "ephemeral"
+            ? getChatSession(body.session_id)
+            : null;
         let chat =
-          (body.session_id ? getChatSession(body.session_id) : null) ||
+          requested ||
           getActiveSessionForUser(session.username) ||
           createChatSession({
             user_id: session.username,
@@ -164,12 +229,17 @@ export async function POST(request: NextRequest) {
           result.primary_agent ? `${result.primary_agent.icon} ${result.primary_agent.name}` : "",
           plan.route.label,
           result.action_taken,
+          "Hermes Co-Founder",
         ]
           .filter(Boolean)
           .join(" · ");
         chat =
           appendChatMessages(chat.id, [
-            { role: "user", text: body.command?.trim() || command, meta: body.voice ? "voice" : undefined },
+            {
+              role: "user",
+              text: body.command?.trim() || command,
+              meta: body.voice ? "voice" : undefined,
+            },
             { role: "jarvis", text: result.reply, meta },
           ]) || chat;
         chatSessionId = chat.id;
@@ -186,7 +256,7 @@ export async function POST(request: NextRequest) {
         source: body.voice ? "voice" : "jarvis",
         use_llm: false,
         mirror_learning_hub: true,
-        tags: ["jarvis", plan.route.intent],
+        tags: ["jarvis", "hermes", plan.route.intent, plan.action.type],
       }).catch((ingestErr) => {
         console.warn(
           "Aigorithm ingest skipped:",
@@ -197,7 +267,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      version: "5.3.0",
+      version: FAOS_V6_VERSION,
       reply: result.reply,
       model: result.model,
       intent: result.intent,
@@ -210,10 +280,19 @@ export async function POST(request: NextRequest) {
         name: result.primary_agent.name,
         icon: result.primary_agent.icon,
       },
-      agents_dispatched: result.agents_dispatched,
+      agents_dispatched: Array.from(
+        new Set([...result.agents_dispatched, "hermes_cofounder_agent"])
+      ),
       route_label: plan.route.label,
       action_taken: result.action_taken,
       action_result: result.action_result ?? null,
+      hermes: {
+        ok: hermes.brief.ok,
+        summary: hermes.brief.summary,
+        agents_active: hermes.brief.agents_active,
+        prefer_code_bridge: hermes.prefer_code_bridge,
+        prefer_pipeline: hermes.prefer_pipeline,
+      },
       usage: result.usage ?? null,
       session_id: chatSessionId,
     });

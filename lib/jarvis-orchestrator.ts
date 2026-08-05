@@ -16,7 +16,13 @@ export type JarvisAction =
   | { type: "add_employee"; payload: Record<string, unknown> }
   | { type: "assign_agents"; payload: { command: string; agent_ids: string[] } }
   | { type: "generate_image"; payload: { prompt: string } }
-  | { type: "generate_video_plan"; payload: { brief: string } };
+  | { type: "generate_video_plan"; payload: { brief: string } }
+  | {
+      type: "code_engineering";
+      payload: { command: string; mode?: "plan" | "implement" | "review" | "fix" };
+    }
+  | { type: "activate_fleet"; payload: { reason: string } }
+  | { type: "run_pipeline"; payload: { details: string; brand?: string } };
 
 export type JarvisPlan = {
   command: string;
@@ -41,6 +47,25 @@ export type JarvisResult = {
 function detectErpAction(command: string): JarvisAction {
   const lower = command.toLowerCase();
 
+  if (/activate|wake (all )?agents|boot fleet|fleet status|agent health|monitor (all )?agents/.test(lower)) {
+    return { type: "activate_fleet", payload: { reason: command.slice(0, 120) } };
+  }
+  if (
+    /code|cursor|typescript|refactor|bug|deploy|pull request|\bpr\b|software|dev agent|engineering|fix (the )?build/.test(
+      lower
+    )
+  ) {
+    return { type: "code_engineering", payload: { command } };
+  }
+  if (/brief|campaign|smm|deliverable|client task|design brief|video script/.test(lower)) {
+    return {
+      type: "run_pipeline",
+      payload: {
+        details: command,
+        brand: /fmk wig|bulletseye|rr wig/i.test(command) ? undefined : "BulletsEye",
+      },
+    };
+  }
   if (/invoice|bill|billing|payment due/.test(lower)) {
     return {
       type: "create_invoice",
@@ -99,21 +124,41 @@ export function planJarvisCommand(command: string): JarvisPlan {
   const trimmed = command.trim();
   const route = routeQuery(trimmed, true);
   const matches = matchShellAgents(trimmed, 4);
-  const primary =
+  const hermes = getShellAgent("hermes_cofounder_agent");
+  const action = detectErpAction(trimmed);
+
+  let primary =
     matches.find((a) => a.id !== getOrchestratorId()) ||
     getShellAgent(getOrchestratorId())!;
-  const supporting = matches.filter((a) => a.id !== primary.id && a.id !== getOrchestratorId()).slice(0, 3);
-  const action = detectErpAction(trimmed);
+
+  // Prefer code engineering agent for software/Cursor bridge actions
+  if (action.type === "code_engineering") {
+    primary = getShellAgent("code_engineering_agent") || primary;
+  }
+  if (action.type === "activate_fleet" && hermes) {
+    primary = hermes;
+  }
+
+  const supporting: ShellAgent[] = matches
+    .filter((a) => a.id !== primary.id && a.id !== getOrchestratorId())
+    .slice(0, 3);
+  // Always include Hermes Co-Founder in the support lane when available
+  if (hermes && hermes.id !== primary.id && !supporting.some((a) => a.id === hermes.id)) {
+    supporting.unshift(hermes);
+    if (supporting.length > 3) supporting.pop();
+  }
 
   const agentList = [primary, ...supporting].map((a) => `${a.icon} ${a.name} (${a.domain})`).join(", ");
 
   const system_context = [
-    "You are JARVIS — FMK Group FAOS v5.3 executive AI orchestrator.",
+    "You are JARVIS — FMK Group FAOS v6.0 executive AI orchestrator (Jarvis Brain).",
+    "Hermes Co-Founder monitors and operates all shell-agent teams under your command.",
     `Primary shell agent: ${primary.name} — ${primary.description}`,
     supporting.length ? `Supporting agents: ${supporting.map((a) => a.name).join(", ")}` : "",
     `Dispatched team: ${agentList}`,
-    "Coordinate as one unified assistant. Be concise. Deliver actionable results.",
-    "If ERP action was triggered, confirm what was done.",
+    "Coordinate as one unified one-stop workstation. Be concise. Deliver actionable results before deadlines.",
+    "Never violate FMK WIG / BulletsEye namespace locks. Never expose API keys.",
+    "If ERP, pipeline, fleet activation, or Cursor/code bridge action was triggered, confirm what was done.",
   ]
     .filter(Boolean)
     .join("\n");

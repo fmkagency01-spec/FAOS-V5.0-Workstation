@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 from faos_core.orchestrator.health import audit_agent_definitions, health_snapshot
+from faos_core.orchestrator.hermes_cofounder import (
+    activate_all_agent_teams,
+    hermes_ops_brief,
+)
 from faos_core.orchestrator.jarvis_engine import jarvis_network_status, jarvis_route
 from faos_core.pipelines.client_task_pipeline import run_client_task_pipeline
 from faos_core.types import FAOS_V6_VERSION
@@ -17,9 +21,10 @@ class FaosV6Router:
         return {
             "ok": True,
             **jarvis_network_status(),
+            "hermes": hermes_ops_brief(),
             "endpoints": {
-                "GET": "/api/v5/faos-v6?view=status|health|diagnostics",
-                "POST": "{ action: diagnostics|pipeline|route, ... }",
+                "GET": "/api/v5/faos-v6?view=status|health|diagnostics|hermes",
+                "POST": "{ action: diagnostics|pipeline|route|activate, ... }",
             },
         }
 
@@ -29,10 +34,20 @@ class FaosV6Router:
             "ok": report["ok"],
             "version": FAOS_V6_VERSION,
             "diagnostics": report,
+            "hermes": hermes_ops_brief(),
         }
 
     def health(self) -> Dict[str, Any]:
-        return {"ok": True, **health_snapshot()}
+        return {"ok": True, **health_snapshot(), "hermes": hermes_ops_brief()}
+
+    def activate(self, reason: str = "api_activate") -> Dict[str, Any]:
+        activation = activate_all_agent_teams(reason)
+        return {
+            "ok": True,
+            "version": FAOS_V6_VERSION,
+            "activation": activation,
+            "hermes": hermes_ops_brief(),
+        }
 
     async def pipeline(
         self,

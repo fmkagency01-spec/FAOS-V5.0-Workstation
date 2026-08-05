@@ -5,8 +5,9 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, TypedDict
 
 FAOS_V6_VERSION = "6.0.0"
-EXPECTED_SHELL_AGENT_COUNT = 35
+EXPECTED_SHELL_AGENT_COUNT = 36  # 35 specialists + Hermes Co-Founder
 ORCHESTRATOR_ID = "jarvis_core"
+HERMES_COFOUNDER_ID = "hermes_cofounder_agent"
 
 AgentStatus = Literal[
     "idle", "queued", "running", "completed", "failed", "fallback", "timeout"

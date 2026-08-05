@@ -36,6 +36,12 @@ type StatusPayload = {
   agents_total?: number;
   orchestrator?: string;
   message?: string;
+  hermes?: {
+    summary?: string;
+    agents_active?: number;
+    agents_total?: number;
+    ok?: boolean;
+  };
 };
 
 export default function FaosV6Page() {
@@ -124,7 +130,7 @@ export default function FaosV6Page() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3 text-xs">
+      <div className="grid md:grid-cols-4 gap-3 text-xs">
         <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-4">
           <p className="text-slate-500 uppercase tracking-wide">Version</p>
           <p className="text-[#00f5d4] font-mono mt-1">{status?.version || '6.0.0'}</p>
@@ -137,6 +143,47 @@ export default function FaosV6Page() {
           <p className="text-slate-500 uppercase tracking-wide">Orchestrator</p>
           <p className="text-white font-mono mt-1">{status?.orchestrator || 'jarvis_core'}</p>
         </div>
+        <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-4">
+          <p className="text-slate-500 uppercase tracking-wide">Hermes Co-Founder</p>
+          <p className={`font-mono mt-1 ${status?.hermes?.ok === false ? 'text-amber-300' : 'text-emerald-300'}`}>
+            {status?.hermes?.agents_active != null
+              ? `${status.hermes.agents_active}/${status.hermes.agents_total ?? '—'}`
+              : 'online'}
+          </p>
+        </div>
+      </div>
+
+      {status?.hermes?.summary && (
+        <p className="text-xs text-slate-400">{status.hermes.summary}</p>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={loading}
+          className="btn-faos-primary text-xs"
+          onClick={async () => {
+            setLoading(true);
+            try {
+              const res = await fetch('/api/faos-v6', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'activate', details: 'dashboard_activate_all' }),
+              });
+              const data = (await res.json()) as { hermes?: StatusPayload['hermes']; activation?: { activated?: number }; error?: string };
+              if (!res.ok) throw new Error(data.error || 'Activate failed');
+              setMsg(`Activated ${data.activation?.activated ?? '—'} agents · Hermes monitoring`);
+              await loadStatus();
+              await runDiagnostics();
+            } catch (e) {
+              setMsg(e instanceof Error ? e.message : 'Activate error');
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          Activate all agents (Hermes)
+        </button>
       </div>
 
       <div className="rounded-xl border border-[#2a3548] bg-[#111827] p-5 space-y-3">

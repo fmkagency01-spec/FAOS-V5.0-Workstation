@@ -20,6 +20,10 @@ import {
   revokeAttachmentPreview,
   type PromptAttachment,
 } from '@/lib/attachments';
+import {
+  loadJarvisSessionCache,
+  saveJarvisSessionCache,
+} from '@/lib/jarvis-session-cache';
 
 type JarvisEntry = {
   role: 'user' | 'jarvis' | 'system';
@@ -35,7 +39,7 @@ type JarvisPanelProps = {
 
 const BOOT_MESSAGE: JarvisEntry = {
   role: 'system',
-  text: 'JARVIS online — shell agents ready. Speak or type any command. History auto-saves for Super Admin.',
+  text: 'JARVIS v6 + Hermes Co-Founder online — 36 agents ready. History auto-saves for Super Admin.',
 };
 
 export function JarvisPanel({ compact = false, showHistory = false }: JarvisPanelProps) {
@@ -60,11 +64,25 @@ export function JarvisPanel({ compact = false, showHistory = false }: JarvisPane
     setTts(loadTtsPreferences());
   }, []);
 
-  // Hydrate active session on mount (Super Admin) — survives browser refresh
+  // Always hydrate active session (compact + full) — localStorage fallback if API empty
   useEffect(() => {
-    if (!showHistory) return;
     let cancelled = false;
     (async () => {
+      // Instant UX: restore browser cache first
+      const cached = loadJarvisSessionCache();
+      if (cached?.messages?.length && !cancelled) {
+        setSessionId(cached.session_id);
+        setHistory(
+          cached.messages
+            .filter((m) => m.role === 'user' || m.role === 'jarvis' || m.role === 'system')
+            .map((m) => ({
+              role: (m.role === 'assistant' ? 'jarvis' : m.role) as JarvisEntry['role'],
+              text: m.text,
+              meta: m.meta,
+            }))
+        );
+      }
+
       try {
         const res = await fetch('/api/jarvis/sessions?active=1', {
           credentials: 'include',
@@ -91,15 +109,18 @@ export function JarvisPanel({ compact = false, showHistory = false }: JarvisPane
             text: m.text,
             meta: m.meta,
           }));
-        if (msgs.length) setHistory(msgs);
+        if (msgs.length) {
+          setHistory(msgs);
+          saveJarvisSessionCache({ session_id: data.session.id, messages: msgs });
+        }
       } catch {
-        /* offline — keep local boot message */
+        /* offline — keep cache / boot message */
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [showHistory]);
+  }, []);
 
   const preview = input.trim() ? routeQuery(input.trim(), true) : null;
   const agentPreview = input.trim() ? matchShellAgents(input.trim(), 2) : [];
@@ -227,7 +248,12 @@ export function JarvisPanel({ compact = false, showHistory = false }: JarvisPane
           .join(' · ');
 
         const reply = data.reply || '(empty)';
-        setHistory((h) => [...h, { role: 'jarvis', text: reply, meta }]);
+        setHistory((h) => {
+          const next = [...h, { role: 'jarvis' as const, text: reply, meta }];
+          const sid = data.session_id || sessionId;
+          if (sid) saveJarvisSessionCache({ session_id: sid, messages: next });
+          return next;
+        });
         speakIfEnabled(reply, tts);
       } catch (e) {
         setHistory((h) => [

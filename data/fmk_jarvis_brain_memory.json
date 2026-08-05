@@ -1,8 +1,37 @@
 {
   "fmk_jarvis_brain_memory": {
-    "version": "5.3.0",
+    "version": "6.0.0",
     "parent_hub": "Jarvis Central Brain & TAC Common Center",
     "sync_target": "fmk_tac_ecosystem",
+    "orchestrator": "jarvis_core",
+    "co_founder": {
+      "agent_id": "hermes_cofounder_agent",
+      "role": "co_founder",
+      "title": "Hermes Co-Founder",
+      "authority": [
+        "monitor_all_shell_agents",
+        "activate_agent_teams",
+        "deadline_qa",
+        "cursor_code_bridge_oversight",
+        "client_pipeline_oversight"
+      ],
+      "reports_to": "jarvis_core",
+      "fleet_size": 36
+    },
+    "officers": {
+      "jarvis_core": {
+        "role": "master_orchestrator",
+        "receives_commands_from": "executive_alpha"
+      },
+      "hermes_cofounder_agent": {
+        "role": "co_founder",
+        "monitors": "all_shell_agents"
+      },
+      "aigorithm": {
+        "role": "connectivity_intelligence",
+        "purpose": "autocorrect + core memory ingest + workflow interconnect"
+      }
+    },
     "nodes": {
       "fmk_wig_internal_engine": {
         "type": "internal_b2b_engine",
@@ -11,6 +40,7 @@
         "purpose": "B2B lead generation pipelines, global salon orders, export/import catalog management",
         "integration": {
           "jarvis_core": true,
+          "hermes_cofounder_agent": true,
           "tac_common_center": true,
           "create_pillar": "fmk_create_pillar_retail_core",
           "connect_pillar": "fmk_connect_commerce_core"
@@ -63,6 +93,13 @@
           "harness_beta_marketing_automation"
         ]
       }
+    },
+    "interconnect": {
+      "ops_bus": "lib/jarvis-ops-bus.ts",
+      "code_bridge": "lib/code-engineering-bridge.ts",
+      "chat_store": "lib/jarvis-chat-store.ts",
+      "faos_v6_api": "/api/faos-v6",
+      "jarvis_api": "/api/jarvis"
     }
   }
 }
