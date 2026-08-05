@@ -10,7 +10,11 @@
     "harvest:safe": "npx tsx scripts/safe-harvest.ts",
     "faos:v6:diagnostics": "npx tsx scripts/faos-v6-diagnostics.ts",
     "faos:v6:cli": "npx tsx scripts/faos-v6-cli.ts",
-    "faos:v6:pipeline": "npx tsx scripts/faos-v6-cli.ts pipeline"
+    "faos:v6:pipeline": "npx tsx scripts/faos-v6-cli.ts pipeline",
+    "faos:hunt": "npx tsx scripts/run-client-hunting.ts",
+    "faos:hunt:agency": "npx tsx scripts/run-client-hunting.ts --brand fmk_agency",
+    "faos:hunt:bulletseye": "npx tsx scripts/run-client-hunting.ts --brand bulletseye",
+    "faos:hunt:wig": "npx tsx scripts/run-client-hunting.ts --brand fmk_wig"
   },
   "dependencies": {
     "next": "^15.3.3",

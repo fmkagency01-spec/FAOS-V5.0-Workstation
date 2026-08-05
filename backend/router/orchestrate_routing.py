@@ -212,6 +212,88 @@ def _run_seo_geo_scans(use_llm: bool = False) -> Dict[str, Any]:
     return {"ok": True, "scans": results, "count": len(results)}
 
 
+def _run_jarvis_client_hunting() -> Dict[str, Any]:
+    """Rotate FMK Agency / BulletsEye / FMK WIG hunting stubs (cron-safe)."""
+    brands = [
+        {
+            "id": "fmk_agency",
+            "name": "FMK Agency",
+            "ns": "fmk_agency_services",
+            "service": "AI Agent Setup",
+        },
+        {
+            "id": "bulletseye",
+            "name": "BulletsEye",
+            "ns": "fmk_bulletseye_agency",
+            "service": "Performance Marketing",
+        },
+        {
+            "id": "fmk_wig",
+            "name": "FMK WIG",
+            "ns": "fmk_wig_prosthetic_hair_agent",
+            "service": "Custom Wig Crafting",
+        },
+    ]
+    brand = brands[datetime.now(timezone.utc).minute % len(brands)]
+    day = _now()[:10].replace("-", "")
+    prospects: List[Dict[str, Any]] = []
+    for idx in range(3):
+        pid = f"prospect_{brand['id']}_{day}_{idx + 1}"
+        prospects.append(
+            {
+                "id": pid,
+                "niche": f"{brand['name']} ICP niche #{idx + 1}",
+                "channel": ["Email", "LinkedIn", "Social Media"][idx % 3],
+                "brand": brand["name"],
+            }
+        )
+        append_memory(
+            brand["ns"],
+            kind="client_hunting_prospect",
+            content=(
+                f"{brand['name']} hunting prospect {pid} · focus {brand['service']}"
+            ),
+            source="jarvis_client_hunting",
+            meta={"prospect_id": pid, "brand_id": brand["id"]},
+        )
+
+    task_id = f"hunt_{uuid.uuid4().hex[:10]}"
+    append_memory(
+        "fmk_aigorithm_ai_brain",
+        kind="client_hunting",
+        content=(
+            f"Jarvis hunting tick for {brand['name']}: "
+            f"{len(prospects)} prospects · task {task_id}"
+        ),
+        source="jarvis_client_hunting",
+        meta={"task_id": task_id, "brand_id": brand["id"], "count": len(prospects)},
+    )
+    return {
+        "ok": True,
+        "brand": brand["name"],
+        "brand_id": brand["id"],
+        "task_id": task_id,
+        "prospects_targeted": prospects,
+        "content_assets": [
+            {
+                "id": f"asset_{task_id}",
+                "type": "cold_email",
+                "title": f"{brand['name']} · cold hook",
+                "body": f"Quick idea on {brand['service']} — 12-min audit?",
+            }
+        ],
+        "action_items": [
+            {
+                "id": f"{task_id}_queue",
+                "label": f"Queue {len(prospects)} day-0 outreach sends",
+                "status": "queued",
+            }
+        ],
+        "status": "COMPLETED",
+        "engine": "jarvis_client_hunting",
+    }
+
+
 def _run_bulletseye_lead_gen() -> Dict[str, Any]:
     """Background BulletsEye lead stubs persisted to core memory (cron-safe)."""
     core = load_group_core()
@@ -396,6 +478,7 @@ class OrchestrateService:
                 "harness_cycle",
                 "bulletseye_seo_geo_scan",
                 "bulletseye_lead_gen",
+                "jarvis_client_hunting",
                 "fmk_media_content_draft",
                 "hermes_openclaw_router",
                 "media_pipeline_drain",
@@ -477,6 +560,20 @@ class OrchestrateService:
                         "status": "completed",
                         "summary": f"Generated {lead.get('generated', 0)} BulletsEye leads",
                         "payload": lead,
+                    }
+                )
+
+            if "jarvis_client_hunting" in selected:
+                hunt = _run_jarvis_client_hunting()
+                steps.append(
+                    {
+                        "job": "jarvis_client_hunting",
+                        "status": "completed" if hunt.get("ok") else "failed",
+                        "summary": (
+                            f"{hunt.get('brand')}: "
+                            f"{len(hunt.get('prospects_targeted') or [])} prospects"
+                        ),
+                        "payload": hunt,
                     }
                 )
 

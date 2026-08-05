@@ -2,6 +2,7 @@
 
 Requires header on every /api/v5/* and /api/v1/* route when FAOS_BACKEND_API_KEY is set:
   X-FAOS-Api-Key: <same value as Vercel FAOS_BACKEND_API_KEY>
+  or FAOS-Api-Key: <same value>
   or Authorization: Bearer <same value>
 
 If the env key is set and the request does not match → 401 immediately.
@@ -33,6 +34,7 @@ PROTECTED_PREFIXES = ("/api/v5", "/api/v1")
 def _extract_provided_key(request: Request) -> str:
     header_key = (
         request.headers.get("x-faos-api-key")
+        or request.headers.get("faos-api-key")
         or request.headers.get("x-faos-backend-key")
         or ""
     ).strip()
@@ -84,7 +86,7 @@ class BackendAuthMiddleware(BaseHTTPMiddleware):
                     "ok": False,
                     "error": "Invalid or missing backend API key",
                     "code": "UNAUTHORIZED",
-                    "hint": "Send X-FAOS-Api-Key with the same FAOS_BACKEND_API_KEY as Vercel.",
+                    "hint": "Send X-FAOS-Api-Key (or FAOS-Api-Key) with the same FAOS_BACKEND_API_KEY as Vercel.",
                 },
             )
         return await call_next(request)
