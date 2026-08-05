@@ -14,6 +14,11 @@ import {
 import { runCodeEngineeringBridge } from "@/lib/code-engineering-bridge";
 import { runClientTaskPipeline } from "@/faos_core/pipelines/client-task-pipeline";
 import { FAOS_V6_VERSION } from "@/faos_core/types";
+import {
+  buildConnectivityPlan,
+  formatConnectivityForReply,
+  type ConnectivityPlan,
+} from "@/lib/agent-connectivity";
 
 export type OpsBusResult = {
   ok: boolean;
@@ -23,6 +28,7 @@ export type OpsBusResult = {
   path: "activate" | "code_bridge" | "pipeline" | "graph" | "chat";
   result: unknown;
   reply: string;
+  connectivity: ConnectivityPlan;
 };
 
 /**
@@ -49,6 +55,7 @@ export async function runJarvisOpsBus(
 
   // Ensure Hermes is always in the supporting set for oversight
   if (review.prefer_code_bridge) {
+    const connectivity = buildConnectivityPlan(command, { path: "code_bridge" });
     const code = await runCodeEngineeringBridge({
       command,
       brand: options?.brand || "FAOS",
@@ -61,6 +68,7 @@ export async function runJarvisOpsBus(
       activation,
       path: "code_bridge",
       result: code,
+      connectivity,
       reply: [
         code.summary,
         "",
@@ -70,11 +78,13 @@ export async function runJarvisOpsBus(
           (code.mode === "dry_run"
             ? "is dry-run (set CURSOR_AGENT_WEBHOOK_URL for live dispatch)."
             : `mode=${code.mode}.`),
+        formatConnectivityForReply(connectivity),
       ].join("\n"),
     };
   }
 
   if (review.prefer_pipeline) {
+    const connectivity = buildConnectivityPlan(command, { path: "pipeline" });
     const pipeline = await runClientTaskPipeline(
       {
         details: command,
@@ -90,9 +100,12 @@ export async function runJarvisOpsBus(
       activation,
       path: "pipeline",
       result: pipeline,
-      reply:
+      connectivity,
+      reply: [
         pipeline.approval?.client_facing_output ||
-        `Pipeline ${pipeline.pipeline_id} · stage ${pipeline.stage}`,
+          `Pipeline ${pipeline.pipeline_id} · stage ${pipeline.stage}`,
+        formatConnectivityForReply(connectivity),
+      ].join("\n"),
     };
   }
 
@@ -100,6 +113,7 @@ export async function runJarvisOpsBus(
     activation = activation || activateAllAgentTeams("explicit_activate");
     const brief = hermesOpsBrief();
     const health = healthSnapshot();
+    const connectivity = buildConnectivityPlan(command, { path: "activate" });
     return {
       ok: brief.ok,
       version: FAOS_V6_VERSION,
@@ -107,11 +121,13 @@ export async function runJarvisOpsBus(
       activation,
       path: "activate",
       result: { brief, health },
+      connectivity,
       reply: [
         brief.summary,
         `Activated ${activation.activated} agents including ${HERMES_COFOUNDER_ID}.`,
         `Lanes: ${Object.keys(brief.lanes).join(", ")}`,
         brief.issues.length ? `Issues: ${brief.issues.join("; ")}` : "Fleet clear.",
+        formatConnectivityForReply(connectivity),
       ].join("\n"),
     };
   }
@@ -130,6 +146,12 @@ export async function runJarvisOpsBus(
     auto_approve: options?.auto_approve,
   });
 
+  const connectivity = buildConnectivityPlan(command, {
+    path: "chat",
+    primary_id: routed.primary_agent,
+    supporting_ids: routed.supporting_agents,
+  });
+
   return {
     ok: true,
     version: FAOS_V6_VERSION,
@@ -137,6 +159,7 @@ export async function runJarvisOpsBus(
     activation,
     path: "chat",
     result: { graph, routed },
+    connectivity,
     reply: [
       routed.reply || "",
       "",
@@ -144,6 +167,7 @@ export async function runJarvisOpsBus(
       routed.supporting_agents?.length
         ? `Dispatched: ${[routed.primary_agent, ...routed.supporting_agents].join(", ")}`
         : "",
+      formatConnectivityForReply(connectivity),
     ]
       .filter(Boolean)
       .join("\n"),
