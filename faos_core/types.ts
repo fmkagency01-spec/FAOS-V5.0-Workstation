@@ -95,7 +95,7 @@ export type DiagnosticsReport = {
 };
 
 export const FAOS_V6_VERSION = "6.0.0" as const;
-/** 35 specialists + Hermes Co-Founder (reports to jarvis_core) */
-export const EXPECTED_SHELL_AGENT_COUNT = 36;
+/** 37 specialists + Hermes Co-Founder (reports to jarvis_core); includes 3 Jarvis Brain hubs */
+export const EXPECTED_SHELL_AGENT_COUNT = 38;
 export const ORCHESTRATOR_ID = "jarvis_core";
 export const HERMES_COFOUNDER_ID = "hermes_cofounder_agent";

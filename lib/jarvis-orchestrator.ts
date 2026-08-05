@@ -13,6 +13,7 @@ import {
   formatConnectivityForReply,
   type ConnectivityPlan,
 } from "@/lib/agent-connectivity";
+import { matchJarvisBrainHub } from "@/lib/jarvis-brain-hubs";
 
 export type JarvisAction =
   | { type: "none" }
@@ -133,8 +134,14 @@ export function planJarvisCommand(command: string): JarvisPlan {
   const matches = matchShellAgents(trimmed, 4);
   const hermes = getShellAgent("hermes_cofounder_agent");
   const action = detectErpAction(trimmed);
+  const hubMatch = matchJarvisBrainHub(trimmed);
+  const hubLead =
+    hubMatch && hubMatch.score >= 3
+      ? getShellAgent(hubMatch.hub.lead_agent_id)
+      : null;
 
   let primary =
+    hubLead ||
     matches.find((a) => a.id !== getOrchestratorId()) ||
     getShellAgent(getOrchestratorId())!;
 
@@ -146,9 +153,18 @@ export function planJarvisCommand(command: string): JarvisPlan {
     primary = hermes;
   }
 
-  const supporting: ShellAgent[] = matches
-    .filter((a) => a.id !== primary.id && a.id !== getOrchestratorId())
-    .slice(0, 3);
+  const hubSupportIds =
+    hubMatch && hubMatch.score >= 3
+      ? hubMatch.hub.supporting_agent_ids
+          .map((id) => getShellAgent(id))
+          .filter((a): a is ShellAgent => Boolean(a && a.id !== primary.id))
+      : [];
+
+  const supporting: ShellAgent[] = (
+    hubSupportIds.length
+      ? hubSupportIds
+      : matches.filter((a) => a.id !== primary.id && a.id !== getOrchestratorId())
+  ).slice(0, 3);
   // Always include Hermes Co-Founder in the support lane when available
   if (hermes && hermes.id !== primary.id && !supporting.some((a) => a.id === hermes.id)) {
     supporting.unshift(hermes);
@@ -157,6 +173,11 @@ export function planJarvisCommand(command: string): JarvisPlan {
 
   const agentList = [primary, ...supporting].map((a) => `${a.icon} ${a.name} (${a.domain})`).join(", ");
 
+  const isRealErp =
+    action.type === "create_invoice" ||
+    action.type === "add_inventory" ||
+    action.type === "add_employee";
+
   const path =
     action.type === "activate_fleet"
       ? ("activate" as const)
@@ -164,9 +185,15 @@ export function planJarvisCommand(command: string): JarvisPlan {
         ? ("code_bridge" as const)
         : action.type === "run_pipeline"
           ? ("pipeline" as const)
-          : action.type === "none"
-            ? ("chat" as const)
-            : ("erp" as const);
+          : hubLead && !isRealErp
+            ? ("hub" as const)
+            : isRealErp
+              ? ("erp" as const)
+              : action.type === "none"
+                ? ("chat" as const)
+                : hubLead
+                  ? ("hub" as const)
+                  : ("chat" as const);
 
   const connectivity = buildConnectivityPlan(trimmed, {
     path,
@@ -176,7 +203,11 @@ export function planJarvisCommand(command: string): JarvisPlan {
 
   const system_context = [
     "You are JARVIS — FMK Group FAOS v6.0 executive AI orchestrator (Jarvis Brain).",
-    "Hermes Co-Founder monitors and operates all shell-agent teams under your command.",
+    "Hermes Engine (co-founder) monitors and operates all shell-agent teams under your command.",
+    "Jarvis Brain topology: FMK WIG Agent · Agency Outreach Agent · Shell Brands Agent Hub.",
+    hubMatch && hubMatch.score >= 3
+      ? `Active hub: ${hubMatch.hub.title} — ${hubMatch.hub.capabilities.map((c) => c.label).join(" · ")}`
+      : "",
     `Primary shell agent: ${primary.name} — ${primary.description}`,
     supporting.length ? `Supporting agents: ${supporting.map((a) => a.name).join(", ")}` : "",
     `Dispatched team: ${agentList}`,

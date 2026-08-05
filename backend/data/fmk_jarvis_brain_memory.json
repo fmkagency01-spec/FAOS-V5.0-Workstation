@@ -1,22 +1,56 @@
 {
   "fmk_jarvis_brain_memory": {
     "version": "6.0.0",
+    "label": "JARVIS BRAIN (FAOS v6.0 + HERMES ENGINE)",
+    "heritage": "FAOS v5.3 + HERMES ENGINE",
     "parent_hub": "Jarvis Central Brain & TAC Common Center",
     "sync_target": "fmk_tac_ecosystem",
     "orchestrator": "jarvis_core",
+    "engine": "hermes_cofounder_agent",
     "co_founder": {
       "agent_id": "hermes_cofounder_agent",
       "role": "co_founder",
-      "title": "Hermes Co-Founder",
+      "title": "Hermes Co-Founder / Hermes Engine",
       "authority": [
         "monitor_all_shell_agents",
         "activate_agent_teams",
         "deadline_qa",
         "cursor_code_bridge_oversight",
-        "client_pipeline_oversight"
+        "client_pipeline_oversight",
+        "route_three_hub_topology"
       ],
       "reports_to": "jarvis_core",
-      "fleet_size": 36
+      "fleet_size": 38
+    },
+    "hubs": {
+      "fmk_wig_hub": {
+        "title": "FMK WIG Agent",
+        "lead_agent_id": "fmk_wig_prosthetic_hair_agent",
+        "brand_lock": "FMK WIG",
+        "capabilities": [
+          "Order Management",
+          "Inbound Lead Qualification",
+          "Ad Performance Monitoring"
+        ]
+      },
+      "agency_outreach_hub": {
+        "title": "Agency Outreach Agent",
+        "lead_agent_id": "agency_outreach_agent",
+        "capabilities": [
+          "B2B Lead Scraping",
+          "Auto-Proposal & Outreach",
+          "Client Communication Sync"
+        ]
+      },
+      "shell_brands_hub": {
+        "title": "Shell Brands Agent Hub",
+        "lead_agent_id": "shell_brands_hub_agent",
+        "capabilities": [
+          "FMK Create / Media / Records",
+          "FMK Socialistic / Editing Hub",
+          "Shoes / Clothing / G&A Sync"
+        ]
+      }
     },
     "officers": {
       "jarvis_core": {
@@ -25,7 +59,8 @@
       },
       "hermes_cofounder_agent": {
         "role": "co_founder",
-        "monitors": "all_shell_agents"
+        "monitors": "all_shell_agents",
+        "engine": "HERMES ENGINE"
       },
       "aigorithm": {
         "role": "connectivity_intelligence",
@@ -35,6 +70,7 @@
     "nodes": {
       "fmk_wig_internal_engine": {
         "type": "internal_b2b_engine",
+        "hub": "fmk_wig_hub",
         "brand": "FMK WIG",
         "parent_agent": "fmk_wig_prosthetic_hair_agent",
         "purpose": "B2B lead generation pipelines, global salon orders, export/import catalog management",
@@ -61,6 +97,7 @@
       },
       "rr_wigs_client_workspace": {
         "type": "external_tenant_workspace",
+        "hub": "agency_outreach_hub",
         "brand": "RR Wigs",
         "agency": "BulletsEye Agency (FMK Agency)",
         "parent_pillar": "connect",
@@ -96,6 +133,7 @@
     },
     "interconnect": {
       "ops_bus": "lib/jarvis-ops-bus.ts",
+      "brain_hubs": "lib/jarvis-brain-hubs.ts",
       "code_bridge": "lib/code-engineering-bridge.ts",
       "chat_store": "lib/jarvis-chat-store.ts",
       "faos_v6_api": "/api/faos-v6",

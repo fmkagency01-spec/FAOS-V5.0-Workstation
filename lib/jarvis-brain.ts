@@ -1,5 +1,11 @@
 import brainDb from "@/data/fmk_jarvis_brain_memory.json";
 import harnessDb from "@/data/fmk_harness_workers.json";
+import {
+  jarvisBrainTopologySummary,
+  listJarvisBrainHubs,
+  matchJarvisBrainHub,
+  formatJarvisBrainAscii,
+} from "@/lib/jarvis-brain-hubs";
 
 export type BrainNodeId = "fmk_wig_internal_engine" | "rr_wigs_client_workspace";
 
@@ -13,6 +19,8 @@ export type BrainNode = {
   agency?: string;
   scope?: string[];
   isolation_level?: string;
+  hub?: string;
+  parent_agent?: string;
 };
 
 export function getBrainMemoryRoot() {
@@ -38,15 +46,24 @@ export function getHarnessWorkers() {
 
 export function brainStatus() {
   const root = getBrainMemoryRoot();
+  const topology = jarvisBrainTopologySummary();
   return {
     ok: true,
     parent_hub: root.parent_hub,
+    label: topology.label,
+    heritage: topology.heritage,
+    engine: topology.engine,
+    hubs: topology.hubs,
+    ascii: formatJarvisBrainAscii(),
     nodes: listBrainNodes().map(({ id, node }) => ({
       id,
       brand: node.brand,
       type: node.type,
+      hub: node.hub || null,
       dashboard: node.routes.dashboard,
     })),
     harness_workers: Object.keys(getHarnessWorkers()),
   };
 }
+
+export { listJarvisBrainHubs, matchJarvisBrainHub, formatJarvisBrainAscii };

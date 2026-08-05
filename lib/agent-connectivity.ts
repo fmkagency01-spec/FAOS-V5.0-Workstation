@@ -6,10 +6,19 @@
 import { matchShellAgents, getShellAgent, getOrchestratorId } from "@/lib/shell-agents";
 import { HERMES_COFOUNDER_ID } from "@/lib/hermes-cofounder";
 import { agentsByLane, type AgentLane } from "@/faos_core/agents/roster";
+import { matchJarvisBrainHub } from "@/lib/jarvis-brain-hubs";
 
 export type ConnectivityHop = {
   step: number;
-  role: "command" | "orchestrator" | "co_founder" | "lane" | "executor" | "qa" | "delivery";
+  role:
+    | "command"
+    | "orchestrator"
+    | "co_founder"
+    | "hub"
+    | "lane"
+    | "executor"
+    | "qa"
+    | "delivery";
   agent_id: string;
   agent_name: string;
   duty: string;
@@ -17,7 +26,8 @@ export type ConnectivityHop = {
 
 export type ConnectivityPlan = {
   command: string;
-  path: "chat" | "pipeline" | "code_bridge" | "activate" | "erp" | "graph";
+  path: "chat" | "pipeline" | "code_bridge" | "activate" | "erp" | "graph" | "hub";
+  hub_id?: string;
   hops: ConnectivityHop[];
   lanes_engaged: AgentLane[];
   summary_line: string;
@@ -59,27 +69,56 @@ export function buildConnectivityPlan(
     else if (/invoice|inventory|employee|hire|stock/.test(lower)) path = "erp";
   }
 
+  const hubMatch = matchJarvisBrainHub(command);
+  if (!options?.path && hubMatch && hubMatch.score >= 3) {
+    path = "hub";
+  }
+
   const matches = matchShellAgents(command, 4).filter((a) => a.id !== getOrchestratorId());
   const primary =
     options?.primary_id ||
+    (path === "hub" && hubMatch ? hubMatch.hub.lead_agent_id : undefined) ||
     matches[0]?.id ||
     (path === "code_bridge" ? "code_engineering_agent" : HERMES_COFOUNDER_ID);
   const supporting =
     options?.supporting_ids ||
-    matches.slice(1, 3).map((m) => m.id);
+    (path === "hub" && hubMatch
+      ? hubMatch.hub.supporting_agent_ids
+          .filter((id) => Boolean(getShellAgent(id)))
+          .slice(0, 3)
+      : matches.slice(1, 3).map((m) => m.id));
 
   const hops: ConnectivityHop[] = [
     hop(1, "command", "jarvis_core", "You issue the requirement into Jarvis Brain"),
     hop(2, "orchestrator", getOrchestratorId(), "Jarvis parses intent and assigns teams"),
-    hop(3, "co_founder", HERMES_COFOUNDER_ID, "Hermes monitors fleet + deadlines + QA oversight"),
+    hop(3, "co_founder", HERMES_COFOUNDER_ID, "Hermes Engine monitors fleet + deadlines + QA oversight"),
   ];
 
   let step = 4;
   const lanes = new Set<AgentLane>();
 
-  if (path === "activate") {
+  if (path === "hub" && hubMatch) {
+    const hub = hubMatch.hub;
     hops.push(
-      hop(step++, "lane", HERMES_COFOUNDER_ID, "Activate all 36 agents into idle-ready state")
+      hop(
+        step++,
+        "hub",
+        hub.lead_agent_id,
+        `${hub.title} hub engaged — ${hub.capabilities.map((c) => c.label).join(" · ")}`
+      )
+    );
+    for (const id of supporting.slice(0, 3)) {
+      hops.push(hop(step++, "executor", id, `Supporting ${hub.title} capability`));
+    }
+    hops.push(
+      hop(step++, "qa", HERMES_COFOUNDER_ID, "Hermes Engine verifies hub output before delivery")
+    );
+    if (hub.id === "fmk_wig_hub") lanes.add("wig_ops");
+    if (hub.id === "agency_outreach_hub") lanes.add("agency_outreach");
+    if (hub.id === "shell_brands_hub") lanes.add("shell_brands");
+  } else if (path === "activate") {
+    hops.push(
+      hop(step++, "lane", HERMES_COFOUNDER_ID, "Activate all 38 agents into idle-ready state")
     );
     for (const lane of ["marketing_strategy", "tech_content", "brand", "operations"] as AgentLane[]) {
       const ids = agentsByLane(lane).slice(0, 2);
@@ -127,6 +166,7 @@ export function buildConnectivityPlan(
   return {
     command,
     path,
+    hub_id: path === "hub" && hubMatch ? hubMatch.hub.id : undefined,
     hops,
     lanes_engaged: [...lanes],
     summary_line: `You → ${summary_line}`,

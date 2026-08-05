@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional, TypedDict
 
 FAOS_V6_VERSION = "6.0.0"
-EXPECTED_SHELL_AGENT_COUNT = 36  # 35 specialists + Hermes Co-Founder
+EXPECTED_SHELL_AGENT_COUNT = 38  # 37 specialists + Hermes Co-Founder (3 Jarvis Brain hubs)
 ORCHESTRATOR_ID = "jarvis_core"
 HERMES_COFOUNDER_ID = "hermes_cofounder_agent"
 

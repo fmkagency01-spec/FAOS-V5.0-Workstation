@@ -17,7 +17,10 @@ export type AgentLane =
   | "people"
   | "seo_geo"
   | "harness"
-  | "support";
+  | "support"
+  | "wig_ops"
+  | "agency_outreach"
+  | "shell_brands";
 
 const LANE_BY_DOMAIN: Record<string, AgentLane> = {
   orchestration: "orchestration",
@@ -43,6 +46,12 @@ const LANE_BY_DOMAIN: Record<string, AgentLane> = {
 const LANE_OVERRIDES: Record<string, AgentLane> = {
   jarvis_core: "orchestration",
   hermes_cofounder_agent: "orchestration",
+  fmk_wig_prosthetic_hair_agent: "wig_ops",
+  agency_outreach_agent: "agency_outreach",
+  shell_brands_hub_agent: "shell_brands",
+  fmk_shoes_footwear_wing: "shell_brands",
+  fmk_mk_clothing_lifestyle_agent: "shell_brands",
+  fmk_mk_kitchen_cloud_food_agent: "shell_brands",
   social_media_agent: "marketing_strategy",
   marketing_strategy_agent: "marketing_strategy",
   creative_design_agent: "tech_content",
@@ -54,7 +63,9 @@ const LANE_OVERRIDES: Record<string, AgentLane> = {
   fmk_website_injector_agent: "tech_content",
   code_engineering_agent: "tech_content",
   harness_alpha_web_engineering: "tech_content",
-  harness_beta_marketing_automation: "marketing_strategy",
+  harness_beta_marketing_automation: "agency_outreach",
+  crm_client_agent: "agency_outreach",
+  sales_pipeline_agent: "agency_outreach",
   executive_strategy_agent: "marketing_strategy",
   research_analytics_agent: "marketing_strategy",
   bengali_localization_agent: "tech_content",
